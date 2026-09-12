@@ -25,7 +25,7 @@ class Avl:
         self._actualizarAltura(nodo)
         balance = self._factor_balance(nodo)
 
-        if balance > 1 and key < nodo.der.key:
+        if balance > 1 and key < nodo.izq.key:
             return self._rotacion_derecha(nodo)
         if balance < -1 and key > nodo.der.key:
             return self._rotacion_izquierda(nodo)
@@ -52,7 +52,7 @@ class Avl:
 
     def _obtenerAltura(self, nodo: Optional["Nodo"])->int:
         if nodo is None:
-            return 0
+            return -1
         return nodo.altura
 
     def _actualizarAltura(self, nodo:Nodo)->None:
@@ -99,7 +99,7 @@ class Avl:
         if raiz is None:
             return
 
-        print(raiz.valor, end=" ")
+        raiz.key.mostrarValores()
 
         self._pre_order(raiz.izq)
         self._pre_order(raiz.der)
@@ -120,7 +120,7 @@ class Avl:
         self._post_order(raiz.izq)
         self._post_order(raiz.der)
 
-        print(raiz.valor, end=" ")
+        raiz.key.mostrarValores()
 
 
     def anchura(self) -> None:
@@ -214,8 +214,8 @@ class Avl:
             return -1
 
         return 1 + max(
-            self._altura(nodo.izquierda),
-            self._altura(nodo.derecha)
+            self._altura(nodo.izq),
+            self._altura(nodo.der)
         )
 
     def peso(self) -> int:

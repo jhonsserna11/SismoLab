@@ -33,6 +33,4 @@ class Nodo:
 
     #Método esHoja: retorna el valor de verdad de la sentencia -> ambos hijos son None? (no hay hijos ni izq ni der)
     def esHoja(self)->bool:
-        return self._esHoja(self)
-    def _esHoja(self)->bool:
         return self.izq is None and self.der is None
