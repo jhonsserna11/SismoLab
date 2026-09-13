@@ -141,4 +141,85 @@ class Bst:
         
         self._posorden(nodo.izq)
         self._posorden(nodo.der)
-        print(nodo.key.mostrarValores())           
+        print(nodo.key.mostrarValores())
+        
+    def altura(self) -> int:
+    
+        if self.raiz is None:
+            print("El árbol está vacío, altura = -1")
+            return -1
+        else:
+            altura_resultado = self._altura(self.raiz)
+            print(f"La altura del árbol es: {altura_resultado}")
+            return altura_resultado
+    
+    def _altura(self, nodo: Optional[Nodo]) -> int:
+        
+        if nodo is None:
+            return -1
+        
+        # Calcular la altura del subárbol izquierdo
+        altura_izq = self._altura(nodo.izq)
+        
+        # Calcular la altura del subárbol derecho
+        altura_der = self._altura(nodo.der)
+        
+        # La altura del nodo es 1 + el máximo de las alturas de sus subárboles
+        altura_nodo = 1 + max(altura_izq, altura_der)
+        
+        # Actualizar la altura del nodo
+        nodo.altura = altura_nodo
+        
+        return altura_nodo
+    
+    def cantidad_nodos(self) -> int:
+    
+        if self.raiz is None:
+            print("El árbol está vacío, cantidad de nodos = 0")
+            return 0
+        else:
+            cantidad_resultado = self._cantidad_nodos(self.raiz)
+            print(f"La cantidad total de nodos es: {cantidad_resultado}")
+            return cantidad_resultado
+    
+    def _cantidad_nodos(self, nodo: Optional[Nodo]) -> int:
+        
+        if nodo is None:
+            return 0
+        
+        # Contar el nodo actual + cantidad de nodos en subárbol izquierdo + cantidad de nodos en subárbol derecho
+        cantidad_izq = self._cantidad_nodos(nodo.izq)
+        cantidad_der = self._cantidad_nodos(nodo.der)
+        
+        return 1 + cantidad_izq + cantidad_der
+    
+    def profundidad(self, dato: Key) -> int:
+        
+        if self.raiz is None:
+            print("El árbol está vacío")
+            return -1
+        
+        profundidad_resultado = self._profundidad(self.raiz, dato, 0)
+        if profundidad_resultado != -1:
+            print(f"La profundidad del nodo {dato.mostrarValores()} es: {profundidad_resultado}")
+        else:
+            print(f"El nodo {dato.mostrarValores()} no se encontró en el árbol")
+        return profundidad_resultado
+    
+    def _profundidad(self, nodo: Optional[Nodo], dato: Key, nivel: int) -> int:
+        
+        if nodo is None:
+            return -1
+        
+        # Si encontramos el nodo, retornamos su profundidad
+        if dato == nodo.key:
+            return nivel
+        
+        # Buscar en el subárbol izquierdo
+        resultado_izq = self._profundidad(nodo.izq, dato, nivel + 1)
+        if resultado_izq != -1:
+            return resultado_izq
+        
+        # Buscar en el subárbol derecho
+        resultado_der = self._profundidad(nodo.der, dato, nivel + 1)
+        return resultado_der
