@@ -184,7 +184,7 @@ class Avl:
 
             raiz.der = self._eliminar(raiz.der, sucesor.key)
 
-        self._actualizar_altura(raiz)
+        self._actualizarAltura(raiz)
 
         balance = self._factor_balance(raiz)
 
