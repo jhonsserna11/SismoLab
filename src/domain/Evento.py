@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from math import sqrt
 from decimal import Decimal, InvalidOperation
 
 class Evento:
@@ -11,17 +12,17 @@ class Evento:
         else:
             raise ValueError("Id fuera del rango permitido")
 
-        if type(magnitud) is float and -2.0<=magnitud<=10.0:
+        if isinstance(magnitud, (float, int)) and -2.0<=magnitud<=10.0:
             self.magnitud = self._validar_undecimal(magnitud)
         else:
             raise ValueError("Magnitud fuera del rango permitido")
 
-        if type(profundidad) is float and 0.0<=profundidad<=700.0:
+        if isinstance(profundidad, (float, int)) and 0.0<=profundidad<=700.0:
             self.profundidad = self._validar_undecimal(profundidad)
         else:
             raise ValueError("Profundidad fuera del rango permitido")
 
-        if type(zonax) is float and type(zonay) is float and 0.0<=zonax<=1000.0 and 0.0<=zonay<=1000.0:
+        if (isinstance(zonax, (float, int)) and isinstance(zonay, (float, int))) and (0.0<=zonax<=1000.0 and 0.0<=zonay<=1000.0):
             self.zonax = self._validar_undecimal(zonax)
             self.zonay = self._validar_undecimal(zonay)
         else:
@@ -31,29 +32,33 @@ class Evento:
             self.revision = revision
         else:
             raise ValueError("revision debe ser positivo")
+        
         if type(estacion) is str and len(estacion)>0:
             self.estacion = estacion
         else:
             raise ValueError("Estación debe ser tipo str")
-        if type(fecha) is datetime and fecha.tzinfo is timezone.utc and fecha.microsecond == 0:
+        
+        if type(fecha) is datetime and (fecha.tzinfo is timezone.utc and fecha.microsecond == 0):
             self.fechaHora = fecha
         else:
             raise ValueError("Fecha no tiene estructura válida")
+        
         self.estado = "Pendiente"
 
     def _validar_undecimal(self, decimal):
         try:
             d = Decimal(str(decimal))
+        
             molde = Decimal('0.1')
             if d.as_tuple().exponent == 0:
                 d = d.quantize(molde)
             if d.as_tuple().exponent != -1:
                 raise ValueError(f"el valor {d} debe tener solo un decimal")
             return d
-
         except InvalidOperation:
-            raise TypeError(f"el valor {d} no es válido")
+            raise TypeError(f"el valor {decimal} no es válido")
 
+        
     def calcularPrioridad(self, poblada:bool):
         if self.magnitud >= 6.0 or (self.magnitud >= 4.5 and self.profundidad <= 30.0 and poblada):
             return 3
@@ -61,3 +66,15 @@ class Evento:
             return 2
         else:
             return 1
+
+    def esCandidato(self, eventoB:"Evento", w, r):
+        if self.magnitud > eventoB.magnitud:
+            diferencia = (eventoB.fechaHora - self.fechaHora).total_seconds() / 3600
+            distancia = sqrt(((self.zonax - eventoB.zonax)**2) + ((self.zonay - eventoB.zonay)**2))
+            if 0<diferencia<= w and distancia <= r:
+                return True
+            else:
+                return False
+        else:
+            return False
+
