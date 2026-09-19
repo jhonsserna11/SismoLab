@@ -10,7 +10,6 @@ class Bst:
         
         if self.raiz is None:
             self.raiz = Nodo(key=dato)
-            print(f"El valor {dato.mostrarValores()} se ha insertado como raíz del árbol")
         else:
             self._insertar(self.raiz, dato)
     
@@ -19,24 +18,18 @@ class Bst:
             # Insertar en el subárbol izquierdo
             if nodo.izq is None:
                 nodo.izq = Nodo(key=dato)
-                print(f"El valor {dato.mostrarValores()} se ha insertado a la izquierda de {nodo.key.mostrarValores()}")
             else:
                 self._insertar(nodo.izq, dato)
         elif dato > nodo.key:
             # Insertar en el subárbol derecho
             if nodo.der is None:
                 nodo.der = Nodo(key=dato)
-                print(f"El valor {dato.mostrarValores()} se ha insertado a la derecha de {nodo.key.mostrarValores()}")
             else:
                 self._insertar(nodo.der, dato)
-        else:
-            # El valor ya existe en el árbol
-            print(f"El valor {dato.mostrarValores()} ya existe en el árbol")
-    
+        
     def buscar(self, dato: Key) -> Optional[Nodo]:
     
         if self.raiz is None:
-            print("El árbol está vacío")
             return None
         else:
             return self._buscar(self.raiz, dato)
@@ -53,14 +46,12 @@ class Bst:
             return self._buscar(nodo.der, dato)
         else:
             # Nodo encontrado
-            print(f"El valor {dato.mostrarValores()} ha sido encontrado")
             return nodo
     
     def eliminar(self, dato: Key) -> None:
         if self.raiz is None:
-            print("El árbol está vacío")
-        else:
-            self.raiz = self._eliminar(self.raiz, dato)
+            return
+        self.raiz = self._eliminar(self.raiz, dato)
     
     def _eliminar(self, nodo: Optional[Nodo], dato: Key) -> Optional[Nodo]:
         if nodo is None:
@@ -74,17 +65,14 @@ class Bst:
             # Nodo encontrado
             # Caso 1: Nodo hoja
             if nodo.izq is None and nodo.der is None:
-                print(f"El valor {dato.mostrarValores()} ha sido eliminado")
                 return None
             
             # Caso 2: Nodo con solo hijo derecho
             if nodo.izq is None:
-                print(f"El valor {dato.mostrarValores()} ha sido eliminado")
                 return nodo.der
             
             # Caso 3: Nodo con solo hijo izquierdo
             if nodo.der is None:
-                print(f"El valor {dato.mostrarValores()} ha sido eliminado")
                 return nodo.izq
             
             # Caso 4: Nodo con dos hijos
@@ -101,56 +89,56 @@ class Bst:
             actual = actual.izq
         return actual
         
-    def preorden(self) -> None:
+    def preorden(self):
         if self.raiz is None:
-            print("El árbol está vacío")
-        else:
-            self._preorden(self.raiz)
-    
-    def _preorden(self, nodo: Optional[Nodo]) -> None:
+            return []
+        return self._preorden(self.raiz)
+
+    def _preorden(self, nodo: Optional[Nodo]):
         if nodo is None:
-            return
-        
-        print(nodo.key.mostrarValores())
-        self._preorden(nodo.izq)
-        self._preorden(nodo.der)
-        
-    def inorden(self) -> None:
+            return []
+
+        resultado = [nodo.key]
+        resultado.extend(self._preorden(nodo.izq))
+        resultado.extend(self._preorden(nodo.der))
+        return resultado
+
+    def inorden(self):
         if self.raiz is None:
-            print("El árbol está vacío")
-        else:
-            self._inorden(self.raiz)
-    
-    def _inorden(self, nodo: Optional[Nodo]) -> None:
+            return []
+        return self._inorden(self.raiz)
+
+    def _inorden(self, nodo: Optional[Nodo]):
         if nodo is None:
-            return
-        
-        self._inorden(nodo.izq)
-        print(nodo.key.mostrarValores())
-        self._inorden(nodo.der)
-        
-    def posorden(self) -> None:
+            return []
+
+        resultado = []
+        resultado.extend(self._inorden(nodo.izq))
+        resultado.append(nodo.key)
+        resultado.extend(self._inorden(nodo.der))
+        return resultado
+
+    def posorden(self):
         if self.raiz is None:
-            print("El árbol está vacío")
-        else:
-            self._posorden(self.raiz)
-    
-    def _posorden(self, nodo: Optional[Nodo]) -> None:
+            return []
+        return self._posorden(self.raiz)
+
+    def _posorden(self, nodo: Optional[Nodo]):
         if nodo is None:
-            return
-        
-        self._posorden(nodo.izq)
-        self._posorden(nodo.der)
-        print(nodo.key.mostrarValores())
+            return []
+
+        resultado = []
+        resultado.extend(self._posorden(nodo.izq))
+        resultado.extend(self._posorden(nodo.der))
+        resultado.append(nodo.key)
+        return resultado
         
     def altura(self) -> int:
     
         if self.raiz is None:
-            print("El árbol está vacío, altura = -1")
             return -1
         else:
             altura_resultado = self._altura(self.raiz)
-            print(f"La altura del árbol es: {altura_resultado}")
             return altura_resultado
     
     def _altura(self, nodo: Optional[Nodo]) -> int:
@@ -175,11 +163,9 @@ class Bst:
     def cantidad_nodos(self) -> int:
     
         if self.raiz is None:
-            print("El árbol está vacío, cantidad de nodos = 0")
             return 0
         else:
             cantidad_resultado = self._cantidad_nodos(self.raiz)
-            print(f"La cantidad total de nodos es: {cantidad_resultado}")
             return cantidad_resultado
     
     def _cantidad_nodos(self, nodo: Optional[Nodo]) -> int:
@@ -196,15 +182,13 @@ class Bst:
     def profundidad(self, dato: Key) -> int:
         
         if self.raiz is None:
-            print("El árbol está vacío")
             return -1
         
         profundidad_resultado = self._profundidad(self.raiz, dato, 0)
         if profundidad_resultado != -1:
-            print(f"La profundidad del nodo {dato.mostrarValores()} es: {profundidad_resultado}")
+            return profundidad_resultado
         else:
-            print(f"El nodo {dato.mostrarValores()} no se encontró en el árbol")
-        return profundidad_resultado
+            return -1
     
     def _profundidad(self, nodo: Optional[Nodo], dato: Key, nivel: int) -> int:
         
