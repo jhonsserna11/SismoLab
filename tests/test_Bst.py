@@ -160,7 +160,7 @@ test_eliminar_hoja()
 print("test eliminar hoja: OK")
 
 
-def test_eliminar_nodo_con_un_hijo_derecho():
+def test_eliminar_nodo_con_un_hijo_izquierdo():
     arbol = Bst()
     raiz = Key(2, 5.0, 2)
     padre = Key(1, 4.0, 1)
@@ -174,11 +174,11 @@ def test_eliminar_nodo_con_un_hijo_derecho():
     assert arbol.cantidad_nodos() == 2
 
 
-test_eliminar_nodo_con_un_hijo_derecho()
-print("test eliminar nodo con un hijo derecho: OK")
+test_eliminar_nodo_con_un_hijo_izquierdo()
+print("test eliminar nodo con un hijo izquierdo: OK")
 
 
-def test_eliminar_nodo_con_un_hijo_izquierdo():
+def test_eliminar_nodo_con_un_hijo_derecho():
     arbol = Bst()
     raiz = Key(1, 4.0, 1)
     padre = Key(2, 5.0, 2)
@@ -192,8 +192,8 @@ def test_eliminar_nodo_con_un_hijo_izquierdo():
     assert arbol.cantidad_nodos() == 2
 
 
-test_eliminar_nodo_con_un_hijo_izquierdo()
-print("test eliminar nodo con un hijo izquierdo: OK")
+test_eliminar_nodo_con_un_hijo_derecho()
+print("test eliminar nodo con un hijo derecho: OK")
 
 
 def test_eliminar_nodo_con_dos_hijos_usa_sucesor_inorden():
