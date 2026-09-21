@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional
+from decimal import Decimal
+
+from src.domain.Evento import Evento
 
 @dataclass
 class Key:
     prioridad: int
-    magnitud: float
+    magnitud: Decimal
     id_key: int
 
     def __lt__(self, other):
@@ -21,11 +24,12 @@ class Key:
         return (self.prioridad, self.magnitud, self.id_key) == (other.prioridad, other.magnitud, other.id_key)
     
     def mostrarValores(self):
-        return ("["+ str(self.prioridad) + ", "+ str(self.magnitud) + ", "+ str(self.id_key)+" ]")
+        return (self.prioridad, self.magnitud, self.id_key)
 
 @dataclass
 class Nodo:
     key: Key
+    evento: Evento
 
     izq: Optional["Nodo"] = None
     der: Optional["Nodo"] = None

@@ -1,5 +1,6 @@
 from .Nodo import Nodo
 from .Nodo import Key
+from src.domain.Evento import Evento
 
 from collections import deque
 from typing import Optional
@@ -9,12 +10,11 @@ class Avl:
         self.raiz = None
 
     #Metodo insertar: agrega un nuevo nodo al árbol
-    def insertar(self, key:Key)-> None:
-        self.raiz = self._insertar(self.raiz, key)
-    def _insertar(self, nodo: Optional[Nodo], key: Key) -> Nodo:
+    def insertar(self, key:Key, evento:Evento)-> None:
+        self.raiz = self._insertar(self.raiz, key, evento)
+    def _insertar(self, nodo: Optional[Nodo], key: Key, evento:Evento) -> Nodo:
         if nodo is None:
-            return Nodo(key)
-
+            return Nodo(key, evento)
         if key < nodo.key:
             nodo.izq = self._insertar(nodo.izq, key)
         elif key > nodo.key:
@@ -135,6 +135,22 @@ class Avl:
             nodo = cola.popleft()
             print(nodo.key.mostrarValores(), end=" ")
 
+            if nodo.izq is not None:
+                cola.append(nodo.izq)
+            if nodo.der is not None:
+                cola.append(nodo.der)
+
+    def encontrarNodo(self, key:Key)->Nodo:
+        if self.raiz is None:
+            raise ValueError("No se puede buscar id_evento en un arbol vacío")
+        else:
+            self._encontrarNodo(self.raiz, key)
+    def _encontrarNodo(self, raiz:Nodo, key:Key):
+        cola = deque([raiz])
+        while cola:
+            nodo = cola.popleft()
+            if nodo.key == key:
+                return nodo
             if nodo.izq is not None:
                 cola.append(nodo.izq)
             if nodo.der is not None:
