@@ -9,12 +9,10 @@ class Escenario:
         self.estaciones = []
         self.zonas = []
 
+        self.eventos_ids = {}
+
         self.historico = []
         self.eliminados = set()
-
-        self.cola_reportes = ...
-
-        self.reloj = ...
 
         self.W = 48
         self.R = 40
@@ -23,8 +21,8 @@ class Escenario:
 
         self.modo_estres = False
 
-        self.asociaciones = ...
+    def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
+        if idEvento in self.eventos_ids:
+            ValueError("El identificador ingresado ya existe.")
 
-        self.metricas = ...
-
-        self.historial = ...
+        evento = Evento()
