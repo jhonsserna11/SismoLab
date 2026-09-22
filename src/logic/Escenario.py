@@ -24,7 +24,7 @@ class Escenario:
 
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
         try:
-            if idEvento in self.eventos_ids:
+            if not self._IdUnica(idEvento):
                 raise ValueError("El identificador ingresado ya existe.")
 
             evento = Evento(idEvento, magnitud, profundidad, zonax, zonay, fecha, 1, estacion)
@@ -36,7 +36,20 @@ class Escenario:
         key = Key(prioridad, evento.magnitud, evento.id)
         self.avl.insertar(key, evento)
 
+    def _IdUnica(self, id)->bool:
+        if type(id) is not int:
+            raise ValueError("el id ingresado debe ser numero entero")
+        if type(self.avl.encontrarNodo(id)) is Nodo:
+            return False
+        for e in self.historico:
+            if e.id == id:
+                return False
+        if id in self.eliminados:
+            return False
 
+        return True
+
+                
     def _esPoblada(self, zonax, zonay)->bool:
         pass
 
@@ -46,31 +59,37 @@ class Escenario:
         elif idEvento in self.eliminados:
             return {"status": "eliminado"}
 
-        if idEvento not in self.eventos_por_id:
+        nodo = self.avl.encontrarNodo(idEvento)
+        if nodo is None:
             raise ValueError("el id ingresado no existe")
         else:
-            nodo = self.avl.encontrarNodo(idEvento)
-            evento = nodo.evento
-            prioridad = nodo.key.prioridad
-            profundidad = self.avl.nivel_de_un_nodo(nodo)
+            self._consultarEvento(self, nodo)
 
-            poblada = self._esPoblada(evento.zonax, evento.zonay)
+    def _consultarEvento(self, nodo:Nodo):
+        evento = nodo.evento
+        prioridad = nodo.key.prioridad
+        profundidad = self.avl.nivel_de_un_nodo(nodo)
+        datos = self.avl.obtenerDatosNodo(nodo)
 
-            return {
-                "status": "activo",
-                "magnitud": evento.magnitud,
-                "profundidad": evento.profundidad,
-                "zonax": evento.zonax,
-                "zonay": evento.zonay,
-                "fecha": evento.fechaHora,
-                "revision": evento.revision,
-                "estaciones": evento.estaciones,
-                "poblada": poblada,
-                "prioridad": prioridad,
-                "clave": nodo.key.mostrarValores(),
-                "estado": evento.estado,
-                "profundidadNodo": profundidad
-            }
+        poblada = self._esPoblada(evento.zonax, evento.zonay)
+
+        return {
+            "status": "activo",
+            "magnitud": evento.magnitud,
+            "profundidad": evento.profundidad,
+            "zonax": evento.zonax,
+            "zonay": evento.zonay,
+            "fecha": evento.fechaHora,
+            "revision": evento.revision,
+            "estaciones": evento.estaciones,
+            "poblada": poblada,
+            "prioridad": prioridad,
+            "clave": nodo.key.mostrarValores(),
+            "estado": evento.estado,
+            "profundidadNodo": profundidad,
+            "altura": datos.altura,
+            "factor_balance": datos.factor
+        }
 
         
 

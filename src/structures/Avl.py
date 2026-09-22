@@ -63,6 +63,11 @@ class Avl:
             return 0
         return (self._obtenerAltura(nodo.izq) - self._obtenerAltura(nodo.der))
 
+    def obtenerDatosNodo(self, nodo:Nodo):
+        altura = self._obtenerAltura(nodo)
+        factor = self._factor_balance(nodo)
+
+        return {"altura": altura, "factor": factor}
 
     def _rotacion_derecha(self, y: Nodo) -> Nodo:
         x = y.izq
@@ -142,7 +147,7 @@ class Avl:
 
     def encontrarNodo(self, key:Key)->Nodo:
         if self.raiz is None:
-            raise ValueError("No se puede buscar id_evento en un arbol vacío")
+            None
         else:
             self._encontrarNodo(self.raiz, key)
     def _encontrarNodo(self, raiz:Nodo, key:Key):
@@ -155,6 +160,7 @@ class Avl:
                 cola.append(nodo.izq)
             if nodo.der is not None:
                 cola.append(nodo.der)
+        return None
 
 
     def _buscar_minimo(self, raiz: Nodo) -> Nodo:
