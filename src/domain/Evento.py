@@ -34,7 +34,7 @@ class Evento:
             raise ValueError("revision debe ser positivo")
         
         if type(estacion) is str and len(estacion)>0:
-            self.estacion = estacion
+            self.estaciones = [estacion]
         else:
             raise ValueError("Estación debe ser tipo str")
         
@@ -59,7 +59,7 @@ class Evento:
             raise TypeError(f"el valor {decimal} no es válido")
 
         
-    def calcularPrioridad(self, poblada:bool):
+    def calcularPrioridad(self, poblada:bool)->int:
         if self.magnitud >= 6.0 or (self.magnitud >= 4.5 and self.profundidad <= 30.0 and poblada):
             return 3
         elif self.magnitud >= 4.5:

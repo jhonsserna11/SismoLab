@@ -74,7 +74,7 @@ class Escenario:
         poblada = self._esPoblada(evento.zonax, evento.zonay)
 
         return {
-             "status": "activo",
+            "status": "activo",
             "magnitud": evento.magnitud,
             "profundidad": evento.profundidad,
             "zonax": evento.zonax,
