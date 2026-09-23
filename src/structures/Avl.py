@@ -1,5 +1,6 @@
 from .Nodo import Nodo
 from .Nodo import Key
+from src.domain.Evento import Evento
 
 from collections import deque
 from typing import Optional
@@ -9,16 +10,15 @@ class Avl:
         self.raiz = None
 
     #Metodo insertar: agrega un nuevo nodo al árbol
-    def insertar(self, key:Key)-> None:
-        self.raiz = self._insertar(self.raiz, key)
-    def _insertar(self, nodo: Optional[Nodo], key: Key) -> Nodo:
+    def insertar(self, key:Key, evento:Evento)-> None:
+        self.raiz = self._insertar(self.raiz, key, evento)
+    def _insertar(self, nodo: Optional[Nodo], key: Key, evento:Evento) -> Nodo:
         if nodo is None:
-            return Nodo(key)
-
+            return Nodo(key, evento)
         if key < nodo.key:
-            nodo.izq = self._insertar(nodo.izq, key)
+            nodo.izq = self._insertar(nodo.izq, key, evento)
         elif key > nodo.key:
-            nodo.der = self._insertar(nodo.der, key)
+            nodo.der = self._insertar(nodo.der, key, evento)
         else:
             return nodo
 
@@ -63,6 +63,11 @@ class Avl:
             return 0
         return (self._obtenerAltura(nodo.izq) - self._obtenerAltura(nodo.der))
 
+    def obtenerDatosNodo(self, nodo:Nodo):
+        altura = self._obtenerAltura(nodo)
+        factor = self._factor_balance(nodo)
+
+        return {"altura": altura, "factor": factor}
 
     def _rotacion_derecha(self, y: Nodo) -> Nodo:
         x = y.izq
@@ -139,6 +144,23 @@ class Avl:
                 cola.append(nodo.izq)
             if nodo.der is not None:
                 cola.append(nodo.der)
+
+    def encontrarNodo(self, id:int)->Nodo:
+        if self.raiz is None:
+            return None
+        else:
+            return self._encontrarNodo(self.raiz, id)
+    def _encontrarNodo(self, raiz:Nodo, id:int):
+        cola = deque([raiz])
+        while cola:
+            nodo = cola.popleft()
+            if nodo.key.id_key == id:
+                return nodo
+            if nodo.izq is not None:
+                cola.append(nodo.izq)
+            if nodo.der is not None:
+                cola.append(nodo.der)
+        return None
 
 
     def _buscar_minimo(self, raiz: Nodo) -> Nodo:
