@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 class Evento:
 
     def __init__(self, id_evento:int, magnitud:float, profundidad:float, zonax:float, zonay:float, 
-                fecha:datetime, revision:int, estacion:str):
+                fecha:datetime, revision:int, estaciones:list[str]):
 
         if type(id_evento) is int and 1<=id_evento<=999999:
             self.id = id_evento
@@ -32,12 +32,17 @@ class Evento:
             self.revision = revision
         else:
             raise ValueError("revision debe ser positivo")
-        
-        if type(estacion) is str and len(estacion)>0:
-            self.estaciones = [estacion]
+
+        if type(estaciones) is list:
+            self.estaciones = []
+            for estacion in estaciones:
+                if type(estacion) is str and len(estacion)>0:
+                    self.estaciones.append(estacion)
+                else:
+                    raise ValueError("Estación debe ser tipo str")
         else:
-            raise ValueError("Estación debe ser tipo str")
-        
+            raise ValueError("Parametro estaciones debe ser una lista")
+            
         if type(fecha) is datetime and (fecha.tzinfo is timezone.utc and fecha.microsecond == 0):
             self.fechaHora = fecha
         else:

@@ -3,26 +3,32 @@ from src.structures.Bst import Bst
 from src.structures.Nodo import Nodo, Key
 
 from src.domain.Evento import Evento
+from src.domain.Zona import Zona
 
 from collections import deque
+from datetime import datetime, timezone, timedelta
 
 class Escenario:
-    def __init__(self):
+    def __init__(self, w, r, l, t, reloj):
         self.avl = Avl()
         self.bst = Bst()
 
         self.estaciones = []
-        self.zonas = []
+        self.zonas: list[Zona] = []
 
         self.historico: list[Evento] = []
         self.eliminados = set()
 
-        self.W = 48
-        self.R = 40
-        self.L = 3
-        self.T = 72
+        self.W = w #48 
+        self.R = r #40
+        self.L = l #3
+        self.T = t #72
 
         self.modo_estres = False
+        self.reloj = reloj
+
+        self.pila_deshacer = []
+        self.cola_reportes = deque()
 
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
         try:
@@ -38,6 +44,7 @@ class Escenario:
         key = Key(prioridad, evento.magnitud, evento.id)
         self.avl.insertar(key, evento)
 
+
     def _IdUnica(self, id)->bool:
         if type(id) is not int:
             raise ValueError("el id ingresado debe ser numero entero")
@@ -52,7 +59,17 @@ class Escenario:
         return True
   
     def _esPoblada(self, zonax, zonay)->bool:
-        return True
+        for zona in self.zonas:
+            if zona.contiene(zonax, zonay) and zona.es_poblada():
+                return True
+        return False
+
+    def avanzarReloj(self, horas):
+        if type(horas) is not int:
+            raise ValueError("cantidad de horas debe ser tipo int")
+        
+        self.reloj += timedelta(hours=horas)
+
 
     def _buscarCandidatos(self, eventoB):
         candidatos = []
@@ -129,6 +146,18 @@ class Escenario:
         }
 
 
+    def encolarReporte(self, reporte):
+        self.cola_reportes.append(reporte)
+
+    def desencolarSiguienteReporte(self):
+        if not self.cola_reportes:
+            return None
+        return self.cola_reportes.popleft()
+
+    def consultarColaReportes(self):
+        return list(self.cola_reportes)
+
+
     def consultarEvento(self, idEvento:int):
         for evento in self.historico:
             if evento.id == idEvento:
@@ -187,7 +216,13 @@ class Escenario:
         nueva_zonax = evento.zonax if zonax is None else zonax
         nueva_zonay = evento.zonay if zonay is None else zonay
         nueva_fecha = evento.fechaHora if fecha is None else fecha
-        nueva_estacion = evento.estaciones if estaciones is None else estaciones
+        nueva_estacion = []
+        if estaciones is None:
+            for estacion in evento.estaciones:
+                nueva_estacion.append(estacion)
+        else:
+            for estacion in estaciones:
+                nueva_estacion.append(estacion)
         nueva_revision = evento.revision+1
 
         try:
