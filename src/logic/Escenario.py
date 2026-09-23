@@ -4,6 +4,8 @@ from src.structures.Nodo import Nodo, Key
 
 from src.domain.Evento import Evento
 
+from collections import deque
+
 class Escenario:
     def __init__(self):
         self.avl = Avl()
@@ -12,7 +14,7 @@ class Escenario:
         self.estaciones = []
         self.zonas = []
 
-        self.historico = []
+        self.historico: list[Evento] = []
         self.eliminados = set()
 
         self.W = 48
@@ -51,28 +53,102 @@ class Escenario:
 
                 
     def _esPoblada(self, zonax, zonay)->bool:
-        pass
+        return True
+
+    def _buscarCandidatos(self, eventoB):
+        candidatos = []
+
+        if self.avl.raiz is None:
+            return candidatos
+
+        cola = deque([self.avl.raiz])
+
+        while cola:
+            nodo = cola.popleft()
+
+            eventoA = nodo.evento
+
+            if eventoA.esCandidato(eventoB, self.W, self.R):
+                candidatos.append(eventoA)
+
+            if nodo.izq is not None:
+                cola.append(nodo.izq)
+
+            if nodo.der is not None:
+                cola.append(nodo.der)
+
+        return candidatos
+    def _agregarCandidatosArchivados(self, eventoB, candidatos):
+        for eventoA in self.historico:
+            if eventoA.esCandidato(eventoB, self.W, self.R):
+                candidatos.append(eventoA)
+
+    def _seleccionarCandidato(self, candidatos, eventoB):
+        if not candidatos:
+            return None
+
+        mejor = candidatos[0]
+
+        for candidato in candidatos[1:]:
+            if candidato.magnitud > mejor.magnitud:
+                mejor = candidato
+
+            elif candidato.magnitud == mejor.magnitud:
+                diferencia_candidato = (
+                    eventoB.fechaHora - candidato.fechaHora
+                ).total_seconds()
+
+                diferencia_mejor = (
+                    eventoB.fechaHora - mejor.fechaHora
+                ).total_seconds()
+
+                if diferencia_candidato < diferencia_mejor:
+                    mejor = candidato
+
+                elif diferencia_candidato == diferencia_mejor:
+                    if candidato.id < mejor.id:
+                        mejor = candidato
+
+        return mejor
+
+    def _obtenerAsociaciones(self, eventoB):
+        candidatos = self._buscarCandidatos(eventoB)
+
+        self._agregarCandidatosArchivados(
+            eventoB,
+            candidatos
+        )
+
+        asociado = self._seleccionarCandidato(
+            candidatos,
+            eventoB
+        )
+
+        return {
+            "candidatos": candidatos,
+            "asociado": asociado
+        }
 
     def consultarEvento(self, idEvento:int):
-        if idEvento in self.historico:
-            return {"status": "archivado"}
-        elif idEvento in self.eliminados:
+        for evento in self.historico:
+            if evento.id == idEvento:
+                return {"status": "archivado"}
+        if idEvento in self.eliminados:
             return {"status": "eliminado"}
 
         nodo = self.avl.encontrarNodo(idEvento)
         if nodo is None:
             raise ValueError("el id ingresado no existe")
-        else:
-            self._consultarEvento(self, nodo)
+        return self._consultarEvento(nodo)
 
     def _consultarEvento(self, nodo:Nodo):
         evento = nodo.evento
         prioridad = nodo.key.prioridad
-        profundidad = self.avl.nivel_de_un_nodo(nodo)
+        profundidad = self.avl.nivel_de_un_nodo(nodo.key)
         datos = self.avl.obtenerDatosNodo(nodo)
 
         poblada = self._esPoblada(evento.zonax, evento.zonay)
-
+        asociaciones = self._obtenerAsociaciones(evento)
         return {
             "status": "activo",
             "magnitud": evento.magnitud,
@@ -87,11 +163,10 @@ class Escenario:
             "clave": nodo.key.mostrarValores(),
             "estado": evento.estado,
             "profundidadNodo": profundidad,
-            "altura": datos.altura,
-            "factor_balance": datos.factor
+            "altura": datos["altura"],
+            "factor_balance": datos["factor"],
+            "asociaciones": {
+                "candidatos": [candidato.id for candidato in asociaciones["candidatos"]],
+                "asociado": asociaciones["asociado"].id if asociaciones["asociado"] is not None else None
+            }
         }
-
-        
-
-
-

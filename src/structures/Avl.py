@@ -16,9 +16,9 @@ class Avl:
         if nodo is None:
             return Nodo(key, evento)
         if key < nodo.key:
-            nodo.izq = self._insertar(nodo.izq, key)
+            nodo.izq = self._insertar(nodo.izq, key, evento)
         elif key > nodo.key:
-            nodo.der = self._insertar(nodo.der, key)
+            nodo.der = self._insertar(nodo.der, key, evento)
         else:
             return nodo
 
@@ -145,16 +145,16 @@ class Avl:
             if nodo.der is not None:
                 cola.append(nodo.der)
 
-    def encontrarNodo(self, key:Key)->Nodo:
+    def encontrarNodo(self, id:int)->Nodo:
         if self.raiz is None:
-            None
+            return None
         else:
-            self._encontrarNodo(self.raiz, key)
-    def _encontrarNodo(self, raiz:Nodo, key:Key):
+            return self._encontrarNodo(self.raiz, id)
+    def _encontrarNodo(self, raiz:Nodo, id:int):
         cola = deque([raiz])
         while cola:
             nodo = cola.popleft()
-            if nodo.key == key:
+            if nodo.key.id_key == id:
                 return nodo
             if nodo.izq is not None:
                 cola.append(nodo.izq)
