@@ -203,6 +203,7 @@ class Avl:
             )
 
             raiz.key = sucesor.key
+            raiz.evento = sucesor.evento
 
             raiz.der = self._eliminar(raiz.der, sucesor.key)
 

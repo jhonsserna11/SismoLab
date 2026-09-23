@@ -2,10 +2,25 @@ from src.structures.Avl import Avl
 from src.structures.Nodo import Key
 from src.structures.Nodo import Nodo
 
+from src.domain.Evento import Evento
+from datetime import datetime, timezone
+
+def crear_evento(id_evento):
+    return Evento(
+        id_evento,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        1,
+        "EST-01"
+    )
+
 def test_insercion():
     arbol = Avl()
     key = (3, 4.5, 1)
-    arbol.insertar(key)
+    arbol.insertar(key, crear_evento(1))
 
     assert arbol.raiz is not None
     assert arbol.raiz.key == key
@@ -18,9 +33,9 @@ def test_insercion_simple():
     k2 = Key(2, 3.5, 2)
     k3 = Key(2, 3.5, 3)
 
-    arbol.insertar(k2)
-    arbol.insertar(k1)
-    arbol.insertar(k3)
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k3, crear_evento(3))
 
     assert arbol.raiz.key == k2
     assert arbol.raiz.izq.key == k1
@@ -36,9 +51,9 @@ def test_insercion_rotacionLL():
     k2 = Key(2, 5.0, 2)
     k3 = Key(2, 5.2, 3)
 
-    arbol.insertar(k3)
-    arbol.insertar(k2)
-    arbol.insertar(k1)
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k1, crear_evento(1))
 
     assert arbol.raiz.key == k2
     assert arbol.raiz.altura == 1
@@ -53,9 +68,9 @@ def test_insercion_rotacionRR():
     k2 = Key(2, 7.0, 2)
     k3 = Key(2, 7.4, 3)
 
-    arbol.insertar(k1)
-    arbol.insertar(k2)
-    arbol.insertar(k3)
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k3, crear_evento(3))
 
     assert arbol.raiz.key == k2
     assert arbol.raiz.altura == 1
@@ -70,9 +85,9 @@ def test_insercion_rotacionLR():
     k2 = Key(1, 5.3, 2)
     k3 = Key(2, 8.0, 3)
 
-    arbol.insertar(k3)
-    arbol.insertar(k1)
-    arbol.insertar(k2)
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k2, crear_evento(2))
 
     assert arbol.raiz.key == k2
     assert arbol.raiz.altura == 1
@@ -87,9 +102,9 @@ def test_insercion_rotacionRL():
     k2 = Key(1, 5.4, 2)
     k3 = Key(2, 8.0, 3)
 
-    arbol.insertar(k1)
-    arbol.insertar(k3)
-    arbol.insertar(k2)
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k2, crear_evento(2))
 
     assert arbol.raiz.key == k2
     assert arbol.raiz.altura == 1
@@ -104,9 +119,9 @@ def test_eliminacion_simple():
     k2 = Key(1, 6.0, 2)
     k3 = Key(1, 6.0, 3)
 
-    arbol.insertar(k2)
-    arbol.insertar(k3)
-    arbol.insertar(k1)
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k1, crear_evento(1))
 
     arbol.eliminar(k1)
 
@@ -124,10 +139,10 @@ def test_eliminacion_conUnHijo():
     k3 = Key(1, 6.5, 3)
     k4 = Key(2, 6.8, 4)
 
-    arbol.insertar(k2)
-    arbol.insertar(k1)
-    arbol.insertar(k3)
-    arbol.insertar(k4)
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k4, crear_evento(4))
 
     arbol.eliminar(k3)
 
@@ -146,15 +161,16 @@ def test_eliminacion_conDosHijos():
     k5 = Key(3, 7.0, 5)
     k6 = Key(3, 7.1, 6)
 
-    arbol.insertar(k3)
-    arbol.insertar(k1)
-    arbol.insertar(k5)
-    arbol.insertar(k4)
-    arbol.insertar(k6)
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k5, crear_evento(5))
+    arbol.insertar(k4, crear_evento(4))
+    arbol.insertar(k6, crear_evento(6))
 
     arbol.eliminar(k3)
 
     assert arbol.raiz.key == k4
+    assert arbol.raiz.evento.id == k4.id_key
     assert arbol.raiz.der.key == k5
     assert arbol.raiz.izq.key == k1
 test_eliminacion_conDosHijos()
@@ -166,9 +182,9 @@ def test_eliminacion_Raiz():
     k2 = Key(1, 4.3, 2)
     k3 = Key(2, 5.0, 3)
 
-    arbol.insertar(k2)
-    arbol.insertar(k1)
-    arbol.insertar(k3)
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k3, crear_evento(3))
 
     arbol.eliminar(k2)
 
@@ -185,9 +201,9 @@ def test_eliminacion_keyInexistente():
     k3 = Key(2, 5.4, 3)
     k4 = Key(2, 5.5, 4)
 
-    arbol.insertar(k2)
-    arbol.insertar(k1)
-    arbol.insertar(k3)
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k1,crear_evento(1))
+    arbol.insertar(k3, crear_evento(3))
 
     arbol.eliminar(k4)
 
@@ -198,8 +214,8 @@ print("test eliminacion_keyInexistente: OK")
 def test_duplicados():
     arbol = Avl()
     k1 = Key(1, 4.5, 1)
-    arbol.insertar(k1)
-    arbol.insertar(k1)
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k1, crear_evento(1))
 
     assert arbol.raiz.key == k1
     assert arbol.raiz.izq == None
@@ -216,11 +232,11 @@ def test_peso():
     k4 = Key(1, 8.0, 4)
     k5 = Key(1, 9.0, 5)
 
-    arbol.insertar(k3)
-    arbol.insertar(k1)
-    arbol.insertar(k5)
-    arbol.insertar(k2)
-    arbol.insertar(k4)
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k5, crear_evento(5))
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k4, crear_evento(4))
 
     assert arbol.peso() == 5
 test_peso()
@@ -235,11 +251,11 @@ def test_nivelNodo():
     k4 = Key(1, 8.0, 4)
     k5 = Key(1, 9.0, 5)
 
-    arbol.insertar(k3)
-    arbol.insertar(k1)
-    arbol.insertar(k5)
-    arbol.insertar(k2)
-    arbol.insertar(k4)
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k5, crear_evento(5))
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k4, crear_evento(4))
 
     assert arbol.nivel_de_un_nodo(k3) == 0
     assert arbol.nivel_de_un_nodo(k1) == 1
@@ -255,8 +271,8 @@ def test_nivelNodo_Inexistente():
     k1 = Key(1, 5.0, 1)
     k2 = Key(1, 6.0, 2)
 
-    arbol.insertar(k1)
-    arbol.insertar(k2)
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k2, crear_evento(2))
 
     k_inexistente = Key(1, 7.0, 3)
 
@@ -273,11 +289,11 @@ def test_cantidad_de_nodos_por_nivel():
     k4 = Key(1, 8.0, 4)
     k5 = Key(1, 9.0, 5)
 
-    arbol.insertar(k3)
-    arbol.insertar(k1)
-    arbol.insertar(k5)
-    arbol.insertar(k2)
-    arbol.insertar(k4)
+    arbol.insertar(k3, crear_evento(3))
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k5, crear_evento(5))
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k4, crear_evento(4))
 
     conteo = arbol.cantidad_de_nodos_por_nivel()
 
@@ -302,8 +318,8 @@ def test_insertar_duplicado():
 
     k1 = Key(1, 5.0, 1)
 
-    arbol.insertar(k1)
-    arbol.insertar(k1)
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k1, crear_evento(1))
 
     assert arbol.peso() == 1
     assert arbol.raiz.key == k1
@@ -319,9 +335,9 @@ def test_eliminar_nodo_inexistente():
     k2 = Key(1, 6.0, 2)
     k3 = Key(1, 7.0, 3)
 
-    arbol.insertar(k1)
-    arbol.insertar(k2)
-    arbol.insertar(k3)
+    arbol.insertar(k1, crear_evento(1))
+    arbol.insertar(k2, crear_evento(2))
+    arbol.insertar(k3, crear_evento(3))
 
     k_inexistente = Key(1, 8.0, 4)
 

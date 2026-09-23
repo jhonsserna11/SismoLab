@@ -555,4 +555,136 @@ test_coordenada_mas_de_un_decimal()
 print("test coordenada mas de un decimal: OK")
 
 
-"""  """
+""" prioridades """
+def test_prioridad_menor_a_4_5():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        4.4,
+        100.0,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 1
+test_prioridad_menor_a_4_5()
+print("test prioridad_menor_a_4_5: OK")
+
+def test_prioridad_4_5_con_profundidad_mayor_a_30():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        4.5,
+        30.1,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 2
+test_prioridad_4_5_con_profundidad_mayor_a_30()
+print("test prioridad_4_5_con_profundidad_mayor_a_30: OK")
+
+def test_prioridad_4_5_con_profundidad_30():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        4.5,
+        30.0,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 3
+test_prioridad_4_5_con_profundidad_30()
+print("test prioridad_4_5_con_profundidad_30: OK")
+
+def test_prioridad_mayor_a_4_5_con_profundidad_mayor_a_30():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        30.1,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 2
+test_prioridad_mayor_a_4_5_con_profundidad_mayor_a_30()
+print("test test_prioridad_mayor_a_4_5_con_profundidad_mayor_a_30: OK")
+
+def test_prioridad_mayor_a_4_5_con_profundidad_30():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        30.0,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 3
+test_prioridad_mayor_a_4_5_con_profundidad_30()
+print("test prioridad_mayor_a_4_5_con_profundidad_30: OK")
+
+def test_prioridad_magnitud_6_siempre_es_3():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        6.0,
+        700.0,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 3
+test_prioridad_magnitud_6_siempre_es_3()
+print("test prioridad_magnitud_6_siempre_es_3: OK")
+
+def test_prioridad_magnitud_mayor_a_6():
+    escenario = Escenario()
+
+    escenario.crearEvento(
+        1,
+        6.1,
+        700.0,
+        100.0,
+        100.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        "EST-01"
+    )
+
+    resultado = escenario.consultarEvento(1)
+
+    assert resultado["prioridad"] == 3
+test_prioridad_magnitud_mayor_a_6()
+print("test prioridad_magnitud_mayor_a_6: OK")

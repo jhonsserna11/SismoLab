@@ -50,8 +50,7 @@ class Escenario:
             return False
 
         return True
-
-                
+  
     def _esPoblada(self, zonax, zonay)->bool:
         return True
 
@@ -129,6 +128,7 @@ class Escenario:
             "asociado": asociado
         }
 
+
     def consultarEvento(self, idEvento:int):
         for evento in self.historico:
             if evento.id == idEvento:
@@ -170,3 +170,39 @@ class Escenario:
                 "asociado": asociaciones["asociado"].id if asociaciones["asociado"] is not None else None
             }
         }
+
+
+    def corregirEvento(self, idEvento:int, magnitud=None, profundidad=None, zonax=None, zonay=None, fecha=None, estaciones=None):
+        nodo = self.avl.encontrarNodo(idEvento)
+        if nodo is None:
+            raise ValueError("El id de evento ingresado no existe")
+        else:
+            return self._corregirEvento(idEvento, nodo, magnitud, profundidad, zonax, zonay, fecha, estaciones)
+    def _corregirEvento(self, idEvento, nodo:Nodo, magnitud=None, profundidad=None, zonax=None, zonay=None, fecha=None, estaciones=None):
+        evento = nodo.evento
+        key = nodo.key
+
+        nueva_magnitud = evento.magnitud if magnitud is None else magnitud
+        nueva_profundidad = evento.profundidad if profundidad is None else profundidad
+        nueva_zonax = evento.zonax if zonax is None else zonax
+        nueva_zonay = evento.zonay if zonay is None else zonay
+        nueva_fecha = evento.fechaHora if fecha is None else fecha
+        nueva_estacion = evento.estaciones if estaciones is None else estaciones
+        nueva_revision = evento.revision+1
+
+        try:
+            nuevo_evento = Evento(idEvento, nueva_magnitud, nueva_profundidad, nueva_zonax, nueva_zonay, nueva_fecha, nueva_revision, nueva_estacion)
+
+            nueva_key = Key(nuevo_evento.calcularPrioridad(self._esPoblada(nuevo_evento.zonax, nuevo_evento.zonay)), nuevo_evento.magnitud, nuevo_evento.id)
+
+            if key == nueva_key:
+                nodo.evento = nuevo_evento
+            else:
+                self.avl.eliminar(key)
+                self.avl.insertar(nueva_key, nuevo_evento)
+
+            """ actualizar metricas """
+            """ actualizar visualización """
+
+        except ValueError as e:
+            print("error: ", e)
