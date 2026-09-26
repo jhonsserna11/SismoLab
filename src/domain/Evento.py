@@ -5,24 +5,24 @@ from decimal import Decimal, InvalidOperation
 class Evento:
 
     def __init__(self, id_evento:int, magnitud:float, profundidad:float, zonax:float, zonay:float, 
-                fecha:datetime, revision:int, estacion:str):
+                fecha:datetime, revision:int, estaciones:list[str]):
 
         if type(id_evento) is int and 1<=id_evento<=999999:
             self.id = id_evento
         else:
             raise ValueError("Id fuera del rango permitido")
 
-        if isinstance(magnitud, (float, int)) and -2.0<=magnitud<=10.0:
+        if isinstance(magnitud, (float, int, Decimal)) and -2.0<=magnitud<=10.0:
             self.magnitud = self._validar_undecimal(magnitud)
         else:
             raise ValueError("Magnitud fuera del rango permitido")
 
-        if isinstance(profundidad, (float, int)) and 0.0<=profundidad<=700.0:
+        if isinstance(profundidad, (float, int, Decimal)) and 0.0<=profundidad<=700.0:
             self.profundidad = self._validar_undecimal(profundidad)
         else:
             raise ValueError("Profundidad fuera del rango permitido")
 
-        if (isinstance(zonax, (float, int)) and isinstance(zonay, (float, int))) and (0.0<=zonax<=1000.0 and 0.0<=zonay<=1000.0):
+        if (isinstance(zonax, (float, int, Decimal)) and isinstance(zonay, (float, int, Decimal))) and (0.0<=zonax<=1000.0 and 0.0<=zonay<=1000.0):
             self.zonax = self._validar_undecimal(zonax)
             self.zonay = self._validar_undecimal(zonay)
         else:
@@ -32,12 +32,18 @@ class Evento:
             self.revision = revision
         else:
             raise ValueError("revision debe ser positivo")
-        
-        if type(estacion) is str and len(estacion)>0:
-            self.estaciones = [estacion]
-        else:
-            raise ValueError("Estación debe ser tipo str")
-        
+
+        if type(estaciones) is not list:
+            raise ValueError("Parametro estaciones debe ser una lista")
+
+        self.estaciones = []
+
+        for estacion in estaciones:
+            if type(estacion) is str and len(estacion) > 0:
+                self.estaciones.append(estacion)
+            else:
+                raise ValueError("Estación debe ser tipo str")
+            
         if type(fecha) is datetime and (fecha.tzinfo is timezone.utc and fecha.microsecond == 0):
             self.fechaHora = fecha
         else:
@@ -77,4 +83,7 @@ class Evento:
                 return False
         else:
             return False
+
+    def marcarRevisado(self):
+        self.estado = "Revisado"
 

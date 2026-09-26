@@ -1,6 +1,5 @@
-class Revision:
-    def __init__(self,id_revision, id_evento, nRevision, magnitud, profundidad, zonax, zonay, fecha, estacion):
-        self.id_revision = id_revision
+class Reporte:
+    def __init__(self, id_evento, nRevision, magnitud, profundidad, zonax, zonay, fecha, estacion):
         self.id_evento = id_evento
         self.nRevision = nRevision
         self.magnitud = magnitud
