@@ -10,31 +10,33 @@ class Avl:
         self.raiz = None
 
     #Metodo insertar: agrega un nuevo nodo al árbol
-    def insertar(self, key:Key, evento:Evento)-> None:
-        self.raiz = self._insertar(self.raiz, key, evento)
-    def _insertar(self, nodo: Optional[Nodo], key: Key, evento:Evento) -> Nodo:
+    def insertar(self, key:Key, evento:Evento, modo_estres:bool)-> None:
+        self.raiz = self._insertar(self.raiz, key, evento, modo_estres)
+    def _insertar(self, nodo: Optional[Nodo], key: Key, evento:Evento, modo_estres:bool) -> Nodo:
         if nodo is None:
             return Nodo(key, evento)
         if key < nodo.key:
-            nodo.izq = self._insertar(nodo.izq, key, evento)
+            nodo.izq = self._insertar(nodo.izq, key, evento, modo_estres)
         elif key > nodo.key:
-            nodo.der = self._insertar(nodo.der, key, evento)
+            nodo.der = self._insertar(nodo.der, key, evento, modo_estres)
         else:
             return nodo
 
         self._actualizarAltura(nodo)
-        balance = self._factor_balance(nodo)
 
-        if balance > 1 and key < nodo.izq.key:
-            return self._rotacion_derecha(nodo)
-        if balance < -1 and key > nodo.der.key:
-            return self._rotacion_izquierda(nodo)
-        if balance > 1 and key > nodo.izq.key:
-            nodo.izq = self._rotacion_izquierda(nodo.izq)
-            return self._rotacion_derecha(nodo)
-        if balance < -1 and key < nodo.der.key:
-            nodo.der = self._rotacion_derecha(nodo.der)
-            return self._rotacion_izquierda(nodo)
+        if not modo_estres:
+            balance = self._factor_balance(nodo)
+
+            if balance > 1 and key < nodo.izq.key:
+                return self._rotacion_derecha(nodo)
+            if balance < -1 and key > nodo.der.key:
+                return self._rotacion_izquierda(nodo)
+            if balance > 1 and key > nodo.izq.key:
+                nodo.izq = self._rotacion_izquierda(nodo.izq)
+                return self._rotacion_derecha(nodo)
+            if balance < -1 and key < nodo.der.key:
+                nodo.der = self._rotacion_derecha(nodo.der)
+                return self._rotacion_izquierda(nodo)
         return nodo
 
     #Método inOrder: imprime el arbol de menor a mayor keys
@@ -171,18 +173,18 @@ class Avl:
 
 
     # *** Pendiente: verificar el parametro de busqueda para la eliminación del nodo (key completa o solo id_key)?
-    def eliminar(self, key: Key) -> None:
-        self.raiz = self._eliminar(self.raiz, key)
+    def eliminar(self, key: Key, modo_estres:bool) -> None:
+        self.raiz = self._eliminar(self.raiz, key, modo_estres)
 
-    def _eliminar( self, raiz: Optional[Nodo], key: Key) -> Optional[Nodo]:
+    def _eliminar( self, raiz: Optional[Nodo], key: Key, modo_estres:bool) -> Optional[Nodo]:
         if raiz is None:
             return None
         
         if key < raiz.key:
-            raiz.izq = self._eliminar(raiz.izq, key)
+            raiz.izq = self._eliminar(raiz.izq, key, modo_estres)
 
         elif key > raiz.key:
-            raiz.der = self._eliminar(raiz.der, key)
+            raiz.der = self._eliminar(raiz.der, key, modo_estres)
 
         else:
             # Nodo hoja
@@ -205,23 +207,24 @@ class Avl:
             raiz.key = sucesor.key
             raiz.evento = sucesor.evento
 
-            raiz.der = self._eliminar(raiz.der, sucesor.key)
+            raiz.der = self._eliminar(raiz.der, sucesor.key, modo_estres)
 
         self._actualizarAltura(raiz)
 
-        balance = self._factor_balance(raiz)
+        if not modo_estres:
+            balance = self._factor_balance(raiz)
 
 
-        if (balance > 1 and self._factor_balance(raiz.izq) >= 0):
-            return self._rotacion_derecha(raiz)
-        if (balance > 1 and self._factor_balance(raiz.izq) < 0):
-            raiz.izq = self._rotacion_izquierda(raiz.izq)
-            return self._rotacion_derecha(raiz)
-        if (balance < -1 and self._factor_balance(raiz.der) <= 0):
-            return self._rotacion_izquierda(raiz)
-        if (balance < -1 and self._factor_balance(raiz.der) > 0):
-            raiz.der = self._rotacion_derecha(raiz.der)
-            return self._rotacion_izquierda(raiz)
+            if (balance > 1 and self._factor_balance(raiz.izq) >= 0):
+                return self._rotacion_derecha(raiz)
+            if (balance > 1 and self._factor_balance(raiz.izq) < 0):
+                raiz.izq = self._rotacion_izquierda(raiz.izq)
+                return self._rotacion_derecha(raiz)
+            if (balance < -1 and self._factor_balance(raiz.der) <= 0):
+                return self._rotacion_izquierda(raiz)
+            if (balance < -1 and self._factor_balance(raiz.der) > 0):
+                raiz.der = self._rotacion_derecha(raiz.der)
+                return self._rotacion_izquierda(raiz)
         return raiz
 
 

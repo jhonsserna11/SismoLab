@@ -42,7 +42,7 @@ class Escenario:
     def _crearEvento(self, evento:Evento):
         prioridad = evento.calcularPrioridad(self._esPoblada(evento.zonax, evento.zonay))
         key = Key(prioridad, evento.magnitud, evento.id)
-        self.avl.insertar(key, evento)
+        self.avl.insertar(key, evento, self.modo_estres)
 
 
     def _IdUnica(self, id)->bool:
@@ -216,28 +216,60 @@ class Escenario:
         nueva_zonax = evento.zonax if zonax is None else zonax
         nueva_zonay = evento.zonay if zonay is None else zonay
         nueva_fecha = evento.fechaHora if fecha is None else fecha
+
         nueva_estacion = []
+
         if estaciones is None:
             for estacion in evento.estaciones:
                 nueva_estacion.append(estacion)
         else:
             for estacion in estaciones:
                 nueva_estacion.append(estacion)
-        nueva_revision = evento.revision+1
 
-        try:
-            nuevo_evento = Evento(idEvento, nueva_magnitud, nueva_profundidad, nueva_zonax, nueva_zonay, nueva_fecha, nueva_revision, nueva_estacion)
+        nueva_revision = evento.revision + 1
 
-            nueva_key = Key(nuevo_evento.calcularPrioridad(self._esPoblada(nuevo_evento.zonax, nuevo_evento.zonay)), nuevo_evento.magnitud, nuevo_evento.id)
+        nuevo_evento = Evento(
+            idEvento,
+            nueva_magnitud,
+            nueva_profundidad,
+            nueva_zonax,
+            nueva_zonay,
+            nueva_fecha,
+            nueva_revision,
+            nueva_estacion
+        )
 
-            if key == nueva_key:
-                nodo.evento = nuevo_evento
-            else:
-                self.avl.eliminar(key)
-                self.avl.insertar(nueva_key, nuevo_evento)
+        nueva_key = Key(
+            nuevo_evento.calcularPrioridad(
+                self._esPoblada(
+                    nuevo_evento.zonax,
+                    nuevo_evento.zonay
+                )
+            ),
+            nuevo_evento.magnitud,
+            nuevo_evento.id
+        )
 
-            """ actualizar metricas """
-            """ actualizar visualización """
+        if key == nueva_key:
+            nodo.evento = nuevo_evento
+        else:
+            self.avl.eliminar(key, self.modo_estres)
+            self.avl.insertar(nueva_key, nuevo_evento, self.modo_estres)
 
-        except ValueError as e:
-            print("error: ", e)
+    """  """
+    def marcarRevisado(self, idEvento):
+        nodo = self.avl.encontrarNodo(idEvento)
+
+        if nodo is None:
+            raise ValueError("El id de evento ingresado no existe")
+
+        nodo.evento.marcarRevisado()
+
+    def eliminacionIndividual(self, key:Key):
+        nodo = self.avl.encontrarNodo(key.id_key)
+
+        if nodo is None:
+            raise ValueError("el evento a eliminar no existe o no está activo - (id incorrecto)")
+        self.avl.eliminar(key, self.modo_estres)
+        self.eliminados.add(key.id_key)
+

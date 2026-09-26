@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 class Zona:
     ESCENARIO_MIN = 0.0
     ESCENARIO_MAX = 1000.0
@@ -17,7 +19,7 @@ class Zona:
             (y_min, "y_min"),
             (y_max, "y_max"),
         ]:
-            if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+            if isinstance(valor, bool) or not isinstance(valor, (int, float, Decimal)):
                 raise TypeError(f"{nombre_campo} debe ser numérico")
 
         x_min = float(x_min)
@@ -45,9 +47,9 @@ class Zona:
 
     def contiene(self, x, y):
 
-        if isinstance(x, bool) or not isinstance(x, (int, float)):
+        if isinstance(x, bool) or not isinstance(x, (int, float, Decimal)):
             raise TypeError("La coordenada x del epicentro debe ser numérica")
-        if isinstance(y, bool) or not isinstance(y, (int, float)):
+        if isinstance(y, bool) or not isinstance(y, (int, float, Decimal)):
             raise TypeError("La coordenada y del epicentro debe ser numérica")
         x = float(x)
         y = float(y)
