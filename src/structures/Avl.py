@@ -172,7 +172,6 @@ class Avl:
         return actual
 
 
-    # *** Pendiente: verificar el parametro de busqueda para la eliminación del nodo (key completa o solo id_key)?
     def eliminar(self, key: Key, modo_estres:bool) -> None:
         self.raiz = self._eliminar(self.raiz, key, modo_estres)
 
