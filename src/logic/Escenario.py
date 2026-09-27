@@ -7,6 +7,7 @@ from src.domain.Zona import Zona
 
 from collections import deque
 from datetime import datetime, timezone, timedelta
+from decimal import Decimal
 
 class Escenario:
     def __init__(self, w, r, l, t, reloj):
@@ -167,64 +168,99 @@ class Escenario:
     def consultarColaReportes(self):
         return list(self.cola_reportes)
 # dhdhdhdhdhdh
+    def _normalizar_decimal(self, valor):
+        return Decimal(str(valor))
+
     def _datos_iguales(self, evento: Evento, reporte):
         return (
-            evento.magnitud == reporte.magnitud and
-            evento.profundidad == reporte.profundidad and
-            evento.zonax == reporte.zonax and
-            evento.zonay == reporte.zonay and
+            evento.magnitud == self._normalizar_decimal(reporte.magnitud) and
+            evento.profundidad == self._normalizar_decimal(reporte.profundidad) and
+            evento.zonax == self._normalizar_decimal(reporte.zonax) and
+            evento.zonay == self._normalizar_decimal(reporte.zonay) and
             evento.fechaHora == reporte.fecha
         )
 
     def _datos_validos_reporte(self, reporte):
-        if not isinstance(reporte.id_evento, int) or not (1 <= reporte.id_evento <= 999999):
+        try:
+            if not isinstance(reporte.fecha, datetime):
+                raise ValueError("Fecha no tiene estructura válida")
+            if reporte.fecha.tzinfo is not timezone.utc or reporte.fecha.microsecond != 0:
+                raise ValueError("Fecha no tiene estructura válida")
+
+            Evento(
+                reporte.id_evento,
+                reporte.magnitud,
+                reporte.profundidad,
+                reporte.zonax,
+                reporte.zonay,
+                reporte.fecha,
+                reporte.nRevision,
+                [reporte.estacion]
+            )
+            return True
+        except (ValueError, TypeError):
             return False
-        if not isinstance(reporte.nRevision, int) or reporte.nRevision <= 0:
-            return False
-        if not isinstance(reporte.magnitud, (int, float)):
-            return False
-        if not isinstance(reporte.profundidad, (int, float)):
-            return False
-        if not isinstance(reporte.zonax, (int, float)):
-            return False
-        if not isinstance(reporte.zonay, (int, float)):
-            return False
-        if not isinstance(reporte.fecha, datetime):
-            return False
-        if not isinstance(reporte.estacion, str) or not reporte.estacion:
-            return False
-        return True
 
     def  _confirmarEvento(self, evento: Evento, reporte):
         if reporte.estacion not in evento.estaciones:
             evento.estaciones.append(reporte.estacion)
-        evento.revision = reporte.nRevision
         return {"estado": "confirmado", "accion": "confirmar"}
 
     def _actualizarEventoReporte(self, nodo: Nodo, reporte):
         evento = nodo.evento
-        evento.magnitud = reporte.magnitud
-        evento.profundidad = reporte.profundidad
-        evento.zonax = reporte.zonax
-        evento.zonay = reporte.zonay
-        evento.fechaHora = reporte.fecha
-        evento.revision = reporte.nRevision
-        if reporte.estacion not in evento.estaciones:
-            evento.estaciones.append(reporte.estacion)
+        id_original = evento.id
+        revision_original = evento.revision
+        estaciones_originales = evento.estaciones.copy()
+        datos_originales = {
+            "magnitud": evento.magnitud,
+            "profundidad": evento.profundidad,
+            "zonax": evento.zonax,
+            "zonay": evento.zonay,
+            "fechaHora": evento.fechaHora,
+            "estado": evento.estado,
+            "key": nodo.key,
+        }
 
-        nueva_key = Key(
-            evento.calcularPrioridad(self._esPoblada(evento.zonax, evento.zonay)),
-            evento.magnitud,
-            evento.id
-        )
+        try:
+            evento_nuevo = Evento(
+                id_original,
+                reporte.magnitud,
+                reporte.profundidad,
+                reporte.zonax,
+                reporte.zonay,
+                reporte.fecha,
+                reporte.nRevision,
+                estaciones_originales + ([reporte.estacion] if reporte.estacion not in estaciones_originales else [])
+            )
 
-        if nodo.key != nueva_key:
-            self.avl.eliminar(nodo.key, self.modo_estres)
-            self.avl.insertar(nueva_key, evento, self.modo_estres)
-        else:
-            nodo.key = nueva_key
+            evento_nuevo.estado = "Pendiente"
 
-        return {"estado": "actualizado", "accion": "sustituir"}
+            nueva_key = Key(
+                evento_nuevo.calcularPrioridad(self._esPoblada(evento_nuevo.zonax, evento_nuevo.zonay)),
+                evento_nuevo.magnitud,
+                evento_nuevo.id
+            )
+
+            if nodo.key != nueva_key:
+                self.avl.eliminar(nodo.key, self.modo_estres)
+                self.avl.insertar(nueva_key, evento_nuevo, self.modo_estres)
+            else:
+                nodo.evento = evento_nuevo
+                nodo.key = nueva_key
+
+            return {"estado": "actualizado", "accion": "sustituir"}
+        except (ValueError, TypeError):
+            nodo.evento = evento
+            nodo.key = datos_originales["key"]
+            evento.magnitud = datos_originales["magnitud"]
+            evento.profundidad = datos_originales["profundidad"]
+            evento.zonax = datos_originales["zonax"]
+            evento.zonay = datos_originales["zonay"]
+            evento.fechaHora = datos_originales["fechaHora"]
+            evento.estado = datos_originales["estado"]
+            evento.revision = revision_original
+            evento.estaciones = estaciones_originales
+            return {"estado": "desconocido", "accion": "rechazar"}
 
     def _reactivarEventoArchivado(self, reporte):
         for evento in self.historico:
@@ -239,6 +275,7 @@ class Escenario:
                     reporte.nRevision,
                     [reporte.estacion] if reporte.estacion not in evento.estaciones else evento.estaciones.copy()
                 )
+                nuevo_evento.estado = "Pendiente"
                 self.historico.remove(evento)
                 self._crearEvento(nuevo_evento)
                 return {"estado": "reactivado", "accion": "reactivar"}
