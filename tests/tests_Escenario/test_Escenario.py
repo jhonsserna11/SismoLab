@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from src.domain.Evento import Evento
 from src.logic.Escenario import Escenario
@@ -21,7 +21,6 @@ def crear_escenario():
 
     return escenario
 
-
 def crear_escenario_con_zona_poblada():
     escenario = crear_escenario()
 
@@ -38,7 +37,6 @@ def crear_escenario_con_zona_poblada():
     escenario.zonas.append(zona)
 
     return escenario
-
 
 def crear_evento(id_evento=1):
     return Evento(
@@ -912,5 +910,4 @@ def test_correccion_invalida_no_modifica_evento():
     assert nodo.key == key_antes
 test_correccion_invalida_no_modifica_evento()
 print("test correccion_invalida_no_modifica_evento: OK")
-
 

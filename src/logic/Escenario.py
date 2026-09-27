@@ -273,3 +273,108 @@ class Escenario:
         self.avl.eliminar(key, self.modo_estres)
         self.eliminados.add(key.id_key)
 
+    
+    def _esMejorCandidato(self, candidatoA, candidatoB):
+        if candidatoA is None:
+            return candidatoB
+        if candidatoB is None:
+            return candidatoA
+
+        if candidatoA["cantidad"] > candidatoB["cantidad"]:
+            return candidatoA
+
+        if candidatoA["cantidad"] < candidatoB["cantidad"]:
+            return candidatoB
+
+        profundidadA = self.avl.nivel_de_un_nodo(candidatoA["nodo"].key)
+        profundidadB = self.avl.nivel_de_un_nodo(candidatoB["nodo"].key)
+
+        if profundidadA > profundidadB:
+            return candidatoA
+
+        if profundidadA < profundidadB:
+            return candidatoB
+
+        if candidatoA["nodo"].key.id_key > candidatoB["nodo"].key.id_key:
+            return candidatoA
+        return candidatoB
+
+    def obtenerRamaArchivable(self):
+        return self._obtenerRamaArchivable(self.avl.raiz)
+    def _obtenerRamaArchivable(self, subraiz:Nodo):
+        if self.avl.raiz is None:
+            return None
+
+        if subraiz is None:
+            return {
+                "elegible": True,
+                "cantidad": 0,
+                "mejor": None
+            }
+
+        subizq = self._obtenerRamaArchivable(subraiz.izq)
+        subder = self._obtenerRamaArchivable(subraiz.der)
+
+        cantidad = 1 + subizq["cantidad"] + subder["cantidad"]
+
+        subraiz_cumple = (
+            subraiz.key.prioridad == 1
+            and self.calcularAntiguedad(subraiz.evento.fechaHora) > self.T
+        )
+
+        elegible = (
+            subraiz_cumple
+            and subizq["elegible"]
+            and subder["elegible"]
+        )
+
+        mejor = self._esMejorCandidato(
+            subizq["mejor"],
+            subder["mejor"]
+        )
+
+        if elegible:
+            candidato_actual = {
+                "nodo": subraiz,
+                "cantidad": cantidad
+            }
+
+            mejor = self._esMejorCandidato(
+                mejor,
+                candidato_actual
+            )
+
+        return {
+            "elegible": elegible,
+            "cantidad": cantidad,
+            "mejor": mejor
+        }
+
+    def calcularAntiguedad(self, fechaEvento:datetime):
+        diferencia = self.reloj - fechaEvento
+        return diferencia.total_seconds()/3600
+
+    def _obtenerNodosSubarbol(self, subraiz:Nodo):
+        if subraiz.esHoja():
+            return [subraiz]
+        nodos = []
+        nodos.append(subraiz)
+        izq = self._obtenerNodosSubarbol(subraiz.izq)
+        der = self._obtenerNodosSubarbol(subraiz.der)
+        for nodo in izq: nodos.append(nodo)
+        for nodo in der: nodos.append(nodo)
+        return nodos
+
+    def archivarRama(self, subraiz:Nodo):
+        if subraiz is None:
+            raise ValueError("No hay rama elegible para archivar")
+        nodos = self._obtenerNodosSubarbol(subraiz)
+        for nodo in nodos:
+            self.historico.append(nodo.evento) 
+            self.avl.eliminar(nodo.key, self.modo_estres)
+
+        
+
+        
+
+
