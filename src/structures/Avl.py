@@ -211,21 +211,37 @@ class Avl:
         self._actualizarAltura(raiz)
 
         if not modo_estres:
-            balance = self._factor_balance(raiz)
-
-
-            if (balance > 1 and self._factor_balance(raiz.izq) >= 0):
-                return self._rotacion_derecha(raiz)
-            if (balance > 1 and self._factor_balance(raiz.izq) < 0):
-                raiz.izq = self._rotacion_izquierda(raiz.izq)
-                return self._rotacion_derecha(raiz)
-            if (balance < -1 and self._factor_balance(raiz.der) <= 0):
-                return self._rotacion_izquierda(raiz)
-            if (balance < -1 and self._factor_balance(raiz.der) > 0):
-                raiz.der = self._rotacion_derecha(raiz.der)
-                return self._rotacion_izquierda(raiz)
+            return self._balancear(raiz)
         return raiz
 
+    def _balancear(self, raiz):
+        balance = self._factor_balance(raiz)
+        
+        if (balance > 1 and self._factor_balance(raiz.izq) >= 0):
+             return self._rotacion_derecha(raiz)
+        if (balance > 1 and self._factor_balance(raiz.izq) < 0):
+            raiz.izq = self._rotacion_izquierda(raiz.izq)
+            return self._rotacion_derecha(raiz)
+        if (balance < -1 and self._factor_balance(raiz.der) <= 0):
+            return self._rotacion_izquierda(raiz)
+        if (balance < -1 and self._factor_balance(raiz.der) > 0):
+            raiz.der = self._rotacion_derecha(raiz.der)
+            return self._rotacion_izquierda(raiz)
+        return raiz
+
+    def recuperar(self):
+        self.raiz == self._recuperar(self.raiz)
+    def _recuperar(self, subraiz:Nodo):
+        if subraiz is None:
+            return None
+
+        subraiz.izq = self._recuperar(subraiz.izq)
+        subraiz.der = self._recuperar(subraiz.der)
+
+        self._actualizarAltura(subraiz)
+
+        subraiz = self._balancear(subraiz)
+        return subraiz
 
     def altura(self) -> int:
 

@@ -374,7 +374,15 @@ class Escenario:
             self.avl.eliminar(nodo.key, self.modo_estres)
 
         
+    def recuperarArbol(self):
+        #pausar procesamiento de reportes
 
+        self.avl.recuperar()
+
+        #llamar bloque auditoria
+        #recibo OK
+
+        self.modo_estres = False
         
 
 
