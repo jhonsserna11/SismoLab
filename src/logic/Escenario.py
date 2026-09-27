@@ -30,6 +30,16 @@ class Escenario:
         self.pila_deshacer = []
         self.cola_reportes = deque()
 
+    def actualizarW(self, valor):
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise ValueError("W debe ser un número positivo")
+        self.W = float(valor)
+
+    def actualizarR(self, valor):
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise ValueError("R debe ser un número positivo")
+        self.R = float(valor)
+
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
         try:
             if not self._IdUnica(idEvento):
@@ -156,7 +166,135 @@ class Escenario:
 
     def consultarColaReportes(self):
         return list(self.cola_reportes)
+# dhdhdhdhdhdh
+    def _datos_iguales(self, evento: Evento, reporte):
+        return (
+            evento.magnitud == reporte.magnitud and
+            evento.profundidad == reporte.profundidad and
+            evento.zonax == reporte.zonax and
+            evento.zonay == reporte.zonay and
+            evento.fechaHora == reporte.fecha
+        )
 
+    def _datos_validos_reporte(self, reporte):
+        if not isinstance(reporte.id_evento, int) or not (1 <= reporte.id_evento <= 999999):
+            return False
+        if not isinstance(reporte.nRevision, int) or reporte.nRevision <= 0:
+            return False
+        if not isinstance(reporte.magnitud, (int, float)):
+            return False
+        if not isinstance(reporte.profundidad, (int, float)):
+            return False
+        if not isinstance(reporte.zonax, (int, float)):
+            return False
+        if not isinstance(reporte.zonay, (int, float)):
+            return False
+        if not isinstance(reporte.fecha, datetime):
+            return False
+        if not isinstance(reporte.estacion, str) or not reporte.estacion:
+            return False
+        return True
+
+    def  _confirmarEvento(self, evento: Evento, reporte):
+        if reporte.estacion not in evento.estaciones:
+            evento.estaciones.append(reporte.estacion)
+        evento.revision = reporte.nRevision
+        return {"estado": "confirmado", "accion": "confirmar"}
+
+    def _actualizarEventoReporte(self, nodo: Nodo, reporte):
+        evento = nodo.evento
+        evento.magnitud = reporte.magnitud
+        evento.profundidad = reporte.profundidad
+        evento.zonax = reporte.zonax
+        evento.zonay = reporte.zonay
+        evento.fechaHora = reporte.fecha
+        evento.revision = reporte.nRevision
+        if reporte.estacion not in evento.estaciones:
+            evento.estaciones.append(reporte.estacion)
+
+        nueva_key = Key(
+            evento.calcularPrioridad(self._esPoblada(evento.zonax, evento.zonay)),
+            evento.magnitud,
+            evento.id
+        )
+
+        if nodo.key != nueva_key:
+            self.avl.eliminar(nodo.key, self.modo_estres)
+            self.avl.insertar(nueva_key, evento, self.modo_estres)
+        else:
+            nodo.key = nueva_key
+
+        return {"estado": "actualizado", "accion": "sustituir"}
+
+    def _reactivarEventoArchivado(self, reporte):
+        for evento in self.historico:
+            if evento.id == reporte.id_evento:
+                nuevo_evento = Evento(
+                    evento.id,
+                    reporte.magnitud,
+                    reporte.profundidad,
+                    reporte.zonax,
+                    reporte.zonay,
+                    reporte.fecha,
+                    reporte.nRevision,
+                    [reporte.estacion] if reporte.estacion not in evento.estaciones else evento.estaciones.copy()
+                )
+                self.historico.remove(evento)
+                self._crearEvento(nuevo_evento)
+                return {"estado": "reactivado", "accion": "reactivar"}
+        return {"estado": "archivado", "accion": "descartar"}
+
+    def procesarReporte(self, reporte):
+        if not self._datos_validos_reporte(reporte):
+            return {"estado": "desconocido", "accion": "rechazar"}
+
+        if reporte.id_evento in self.eliminados:
+            return {"estado": "eliminado", "accion": "rechazar"}
+
+        nodo = self.avl.encontrarNodo(reporte.id_evento)
+        if nodo is not None:
+            evento = nodo.evento
+
+            if reporte.nRevision < evento.revision:
+                return {"estado": "antiguo", "accion": "descartar"}
+
+            if reporte.nRevision > evento.revision:
+                return self._actualizarEventoReporte(nodo, reporte)
+
+            if self._datos_iguales(evento, reporte):
+                return self._confirmarEvento(evento, reporte)
+
+            return {"estado": "conflicto", "accion": "rechazar"}
+
+        for evento in self.historico:
+            if evento.id == reporte.id_evento:
+                if reporte.nRevision > evento.revision:
+                    return self._reactivarEventoArchivado(reporte)
+                return {"estado": "archivado", "accion": "descartar"}
+
+        if not self._IdUnica(reporte.id_evento):
+            return {"estado": "desconocido", "accion": "rechazar"}
+
+        evento_nuevo = Evento(
+            reporte.id_evento,
+            reporte.magnitud,
+            reporte.profundidad,
+            reporte.zonax,
+            reporte.zonay,
+            reporte.fecha,
+            reporte.nRevision,
+            [reporte.estacion]
+        )
+        self._crearEvento(evento_nuevo)
+        return {"estado": "registrado", "accion": "registrar"}
+
+    def procesarSiguienteReporte(self):
+        reporte = self.desencolarSiguienteReporte()
+        if reporte is None:
+            return None
+        return self.procesarReporte(reporte)
+
+# dhdhdhdhdh
 
     def consultarEvento(self, idEvento:int):
         for evento in self.historico:
@@ -272,4 +410,6 @@ class Escenario:
             raise ValueError("el evento a eliminar no existe o no está activo - (id incorrecto)")
         self.avl.eliminar(key, self.modo_estres)
         self.eliminados.add(key.id_key)
+        
+    
 
