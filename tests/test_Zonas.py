@@ -5,7 +5,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from src.domain.Zonas import Zona
+from src.domain.Zona import Zona
 
 
 def test_zona_creacion_basica():
@@ -24,7 +24,7 @@ print("test_zona_creacion_basica: OK")
 
 
 def test_zona_contiene_punto():
-    zona = Zona("A", "Sur", 0, 100, 0, 50)
+    zona = Zona(1, "Sur", 0, 100, 0, 50)
 
     assert zona.contiene(25, 25) is True
     assert zona.contiene(150, 30) is False
