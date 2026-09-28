@@ -30,6 +30,20 @@ class Escenario:
         self.pila_deshacer = []
         self.cola_reportes = deque()
 
+        self.metricas = {
+            "correcciones_aceptadas": 0,
+            "reportes_descartados": 0,
+            "conflictos": 0,
+            "archivos_masivos": 0,
+            "eventos_archivados": 0,
+            "casos_LL": 0,
+            "casos_RR": 0,
+            "casos_LR": 0,
+            "casos_RL": 0,
+            "giros_izquierda": 0,
+            "giros_derecha": 0
+        }
+
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
         try:
             if not self._IdUnica(idEvento):
@@ -255,7 +269,7 @@ class Escenario:
         else:
             self.avl.eliminar(key, self.modo_estres)
             self.avl.insertar(nueva_key, nuevo_evento, self.modo_estres)
-
+        self.metricas["correcciones_aceptadas"] += 1
     """  """
     def marcarRevisado(self, idEvento):
         nodo = self.avl.encontrarNodo(idEvento)
@@ -370,8 +384,10 @@ class Escenario:
             raise ValueError("No hay rama elegible para archivar")
         nodos = self._obtenerNodosSubarbol(subraiz)
         for nodo in nodos:
-            self.historico.append(nodo.evento) 
+            self.historico.append(nodo.evento)
             self.avl.eliminar(nodo.key, self.modo_estres)
+            self.metricas["eventos_archivados"] += 1
+        self.metricas["archivos_masivos"] += 1
 
         
 
