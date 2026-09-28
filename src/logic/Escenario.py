@@ -265,6 +265,10 @@ class Escenario:
     def _reactivarEventoArchivado(self, reporte):
         for evento in self.historico:
             if evento.id == reporte.id_evento:
+                estaciones_reactivadas = evento.estaciones.copy()
+                if reporte.estacion not in estaciones_reactivadas:
+                    estaciones_reactivadas.append(reporte.estacion)
+
                 nuevo_evento = Evento(
                     evento.id,
                     reporte.magnitud,
@@ -273,7 +277,7 @@ class Escenario:
                     reporte.zonay,
                     reporte.fecha,
                     reporte.nRevision,
-                    [reporte.estacion] if reporte.estacion not in evento.estaciones else evento.estaciones.copy()
+                    estaciones_reactivadas
                 )
                 nuevo_evento.estado = "Pendiente"
                 self.historico.remove(evento)

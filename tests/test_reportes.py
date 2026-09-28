@@ -363,6 +363,36 @@ test_reporte_archivado_con_revision_igual_o_menor_no_reactiva()
 print("test reporte archivado con revision igual o menor no reactiva: OK")
 
 
+def test_reporte_archivado_reacciona_conservando_estaciones_previas():
+    escenario = crear_escenario()
+    fecha = datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc)
+    evento = Evento(62, 4.0, 15.0, 50.0, 50.0, fecha, 3, ["E1", "E2"])
+    escenario.historico.append(evento)
+
+    reporte = Reporte(
+        62,
+        4,
+        5.0,
+        20.0,
+        80.0,
+        80.0,
+        datetime(2026, 9, 22, 13, 0, 0, tzinfo=timezone.utc),
+        "E3",
+    )
+
+    resultado = escenario.procesarReporte(reporte)
+    nodo = escenario.avl.encontrarNodo(62)
+
+    assert resultado["estado"] == "reactivado"
+    assert nodo is not None
+    assert nodo.evento.estaciones == ["E1", "E2", "E3"]
+    assert evento not in escenario.historico
+
+
+test_reporte_archivado_reacciona_conservando_estaciones_previas()
+print("test reporte archivado reacciona conservando estaciones previas: OK")
+
+
 def test_reporte_eliminado_se_rechaza():
     escenario = crear_escenario()
     fecha = datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc)
