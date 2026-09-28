@@ -390,7 +390,15 @@ class Escenario:
         self.metricas["archivos_masivos"] += 1
 
         
+    def recuperarArbol(self):
+        #pausar procesamiento de reportes
 
+        self.avl.recuperar()
+
+        #llamar bloque auditoria
+        #recibo OK
+
+        self.modo_estres = False
         
 
 
