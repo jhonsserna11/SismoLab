@@ -8,6 +8,7 @@ from src.domain.Zona import Zona
 from collections import deque
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
+from copy import deepcopy
 
 class Escenario:
     def __init__(self, w, r, l, t, reloj):
@@ -38,15 +39,27 @@ class Escenario:
             "archivos_masivos": 0,
             "eventos_archivados": 0,
         }
+
     def actualizarW(self, valor):
         if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("W debe ser un número positivo")
+        self._guardar_estado()
         self.W = float(valor)
-
     def actualizarR(self, valor):
         if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("R debe ser un número positivo")
+        self._guardar_estado()
         self.R = float(valor)
+    def actualizarL(self, valor):
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise ValueError("L debe ser un número positivo")
+        self._guardar_estado()
+        self.L = float(valor)
+    def actualizarT(self, valor):
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise ValueError("T debe ser un número positivo")
+        self._guardar_estado()
+        self.T = float(valor)
 
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
         try:
@@ -54,6 +67,7 @@ class Escenario:
                 raise ValueError("El identificador ingresado ya existe.")
 
             evento = Evento(idEvento, magnitud, profundidad, zonax, zonay, fecha, 1, estacion)
+            self._guardar_estado()
             self._crearEvento(evento)
         except ValueError as e:
             print("error: ", e)
@@ -85,7 +99,7 @@ class Escenario:
     def avanzarReloj(self, horas):
         if type(horas) is not int:
             raise ValueError("cantidad de horas debe ser tipo int")
-        
+        self._guardar_estado()
         self.reloj += timedelta(hours=horas)
 
 
@@ -345,9 +359,11 @@ class Escenario:
         return {"estado": "registrado", "accion": "registrar"}
 
     def procesarSiguienteReporte(self):
-        reporte = self.desencolarSiguienteReporte()
-        if reporte is None:
+        if not self.cola_reportes:
             return None
+        self._guardar_estado()
+        
+        reporte = self.desencolarSiguienteReporte()
         return self.procesarReporte(reporte)
 
 # dhdhdhdhdh
@@ -402,6 +418,8 @@ class Escenario:
         else:
             return self._corregirEvento(idEvento, nodo, magnitud, profundidad, zonax, zonay, fecha, estaciones)
     def _corregirEvento(self, idEvento, nodo:Nodo, magnitud=None, profundidad=None, zonax=None, zonay=None, fecha=None, estaciones=None):
+        self._guardar_estado()
+
         evento = nodo.evento
         key = nodo.key
 
@@ -456,14 +474,16 @@ class Escenario:
 
         if nodo is None:
             raise ValueError("El id de evento ingresado no existe")
-
+        self._guardar_estado()
         nodo.evento.marcarRevisado()
 
     def eliminacionIndividual(self, key:Key):
+        if type(key) is not Key:
+            raise ValueError("La key ingresada es invalida (debe ser type Key)")
         nodo = self.avl.encontrarNodo(key.id_key)
-
         if nodo is None:
             raise ValueError("el evento a eliminar no existe o no está activo - (id incorrecto)")
+        self._guardar_estado()
         self.avl.eliminar(key, self.modo_estres)
         self.eliminados.add(key.id_key)
         
@@ -565,6 +585,7 @@ class Escenario:
         if subraiz is None:
             raise ValueError("No hay rama elegible para archivar")
         nodos = self._obtenerNodosSubarbol(subraiz)
+        self._guardar_estado()
         for nodo in nodos:
             self.historico.append(nodo.evento)
             self.avl.eliminar(nodo.key, self.modo_estres)
@@ -573,6 +594,7 @@ class Escenario:
 
         
     def recuperarArbol(self):
+        self._guardar_estado()
         #pausar procesamiento de reportes
 
         self.avl.recuperar()
@@ -655,3 +677,47 @@ class Escenario:
                 for nodo, profundidad in eventos
             ]
         }
+
+    def deshacer(self):
+        if not self.pila_deshacer:
+            return False
+        estado = self.pila_deshacer.pop()
+        self._restaurarEstado(estado)
+        return True
+    def _restaurarEstado(self, estado):
+        self.avl = estado["avl"]
+        self.bst = estado["bst"]
+        self.estaciones = estado["estaciones"]
+        self.zonas = estado["zonas"]
+        self.historico = estado["historico"]
+        self.eliminados = estado["eliminados"]
+
+        self.W = estado["W"]
+        self.R = estado["R"]
+        self.L = estado["L"]
+        self.T = estado["T"]
+
+        self.modo_estres = estado["modo_estres"]
+        self.reloj = estado["reloj"]
+
+        self.metricas = estado["metricas"]
+        self.cola_reportes = estado["cola_reportes"]
+
+    def _guardar_estado(self):
+        estado = {
+            "avl": deepcopy(self.avl),
+            "bst": deepcopy(self.bst),
+            "estaciones": deepcopy(self.estaciones),
+            "zonas": deepcopy(self.zonas),
+            "historico": deepcopy(self.historico),
+            "eliminados": deepcopy(self.eliminados),
+            "W": self.W,
+            "R": self.R,
+            "L": self.L,
+            "T": self.T,
+            "modo_estres": self.modo_estres,
+            "metricas": deepcopy(self.metricas),
+            "cola_reportes": deepcopy(self.cola_reportes),
+            "reloj": deepcopy(self.reloj)
+            }
+        self.pila_deshacer.append(estado)
