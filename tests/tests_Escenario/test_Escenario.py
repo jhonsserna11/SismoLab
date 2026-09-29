@@ -911,3 +911,82 @@ def test_correccion_invalida_no_modifica_evento():
 test_correccion_invalida_no_modifica_evento()
 print("test correccion_invalida_no_modifica_evento: OK")
 
+def test_eventos_por_prioridad():
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1, 3.5, 50.0, 10.0, 10.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        ["EST-01"]
+    )
+
+    escenario.crearEvento(
+        2, 5.0, 50.0, 20.0, 20.0,
+        datetime(2026, 9, 22, 13, 0, 0, tzinfo=timezone.utc),
+        ["EST-02"]
+    )
+
+    escenario.crearEvento(
+        3, 6.5, 100.0, 30.0, 30.0,
+        datetime(2026, 9, 22, 14, 0, 0, tzinfo=timezone.utc),
+        ["EST-03"]
+    )
+
+    escenario.crearEvento(
+        4, 7.0, 20.0, 40.0, 40.0,
+        datetime(2026, 9, 22, 15, 0, 0, tzinfo=timezone.utc),
+        ["EST-04"]
+    )
+
+    resultado = escenario._indicadorEventosPorPrioridad()
+
+    assert resultado[1]["cantidad"] == 1
+    assert resultado[2]["cantidad"] == 1
+    assert resultado[3]["cantidad"] == 2
+
+    assert len(resultado[1]["eventos"]) == 1
+    assert len(resultado[2]["eventos"]) == 1
+    assert len(resultado[3]["eventos"]) == 2
+
+    assert [evento["id"] for evento in resultado[1]["eventos"]] == [1]
+    assert [evento["id"] for evento in resultado[2]["eventos"]] == [2]
+    assert [evento["id"] for evento in resultado[3]["eventos"]] == [3, 4]
+test_eventos_por_prioridad()
+print("test eventos_por_prioridad: OK")
+
+
+def test_eventos_pendientes():
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1, 3.5, 50.0, 10.0, 10.0,
+        datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc),
+        ["EST-01"]
+    )
+
+    escenario.crearEvento(
+        2, 5.0, 50.0, 20.0, 20.0,
+        datetime(2026, 9, 22, 13, 0, 0, tzinfo=timezone.utc),
+        ["EST-02"]
+    )
+
+    escenario.crearEvento(
+        3, 6.5, 100.0, 30.0, 30.0,
+        datetime(2026, 9, 22, 14, 0, 0, tzinfo=timezone.utc),
+        ["EST-03"]
+    )
+
+    escenario.crearEvento(
+        4, 7.0, 20.0, 40.0, 40.0,
+        datetime(2026, 9, 22, 15, 0, 0, tzinfo=timezone.utc),
+        ["EST-04"]
+    )
+
+    escenario.marcarRevisado(2)
+
+    resultado = escenario._indicadorEventosPendientes()
+
+    assert resultado["cantidad"] == 3
+    assert [evento["id"] for evento in resultado["eventos"]] == [1, 3, 4]
+test_eventos_pendientes()
+print("test eventos_pendientes: OK")

@@ -8,6 +8,14 @@ from typing import Optional
 class Avl:
     def __init__(self):
         self.raiz = None
+        self.metricas = {
+            "casos_LL": 0,
+            "casos_RR": 0,
+            "casos_LR": 0,
+            "casos_RL": 0,
+            "giros_izquierda": 0,
+            "giros_derecha": 0
+        }
 
     #Metodo insertar: agrega un nuevo nodo al árbol
     def insertar(self, key:Key, evento:Evento, modo_estres:bool)-> None:
@@ -28,29 +36,21 @@ class Avl:
             balance = self._factor_balance(nodo)
 
             if balance > 1 and key < nodo.izq.key:
+                self.metricas["casos_LL"] += 1
                 return self._rotacion_derecha(nodo)
             if balance < -1 and key > nodo.der.key:
+                self.metricas["casos_RR"] += 1
                 return self._rotacion_izquierda(nodo)
             if balance > 1 and key > nodo.izq.key:
+                self.metricas["casos_LR"] += 1
                 nodo.izq = self._rotacion_izquierda(nodo.izq)
                 return self._rotacion_derecha(nodo)
             if balance < -1 and key < nodo.der.key:
+                self.metricas["casos_RL"] += 1
                 nodo.der = self._rotacion_derecha(nodo.der)
                 return self._rotacion_izquierda(nodo)
         return nodo
 
-    #Método inOrder: imprime el arbol de menor a mayor keys
-    def inOrder(self):
-        if self.raiz is None:
-            print("Árbol vacío")
-        self._inOrder(self.raiz)
-    def _inOrder(self, nodo:Nodo):
-        if nodo is None:
-            return
-        else:
-            self._inOrder(nodo.izq)
-            print(nodo.key.mostrarValores(), end=" ")
-            self._inOrder(nodo.der)
 
     def _obtenerAltura(self, nodo: Optional["Nodo"])->int:
         if nodo is None:
@@ -72,6 +72,7 @@ class Avl:
         return {"altura": altura, "factor": factor}
 
     def _rotacion_derecha(self, y: Nodo) -> Nodo:
+        self.metricas["giros_derecha"] += 1
         x = y.izq
         temporal = x.der
 
@@ -84,6 +85,7 @@ class Avl:
         return x
 
     def _rotacion_izquierda(self, x: Nodo) -> Nodo:
+        self.metricas["giros_izquierda"] += 1
         y = x.der
         temporal = y.izq
 
@@ -96,56 +98,63 @@ class Avl:
         return y
 
     """ -------------------------------------------------------------------------------------- """
-    def pre_order(self) -> None:
-        if self.raiz is None:
-            print("", end="")
-        else:
-            self._pre_order(self.raiz)
-    def _pre_order(self, raiz: Optional[Nodo]) -> None:
 
-        if raiz is None:
+     #Método inOrder: imprime el arbol de menor a mayor keys
+    def inOrder(self):
+       recorrido = []
+       self._inOrder(self.raiz, recorrido)
+       return recorrido
+    def _inOrder(self, nodo: Optional[Nodo], recorrido: list):
+       if nodo is None:
+           return
+       self._inOrder(nodo.izq, recorrido)
+       recorrido.append(nodo.key)
+       self._inOrder(nodo.der, recorrido)
+
+    def pre_order(self):
+        recorrido = []
+        self._pre_order(self.raiz, recorrido)
+        return recorrido
+    def _pre_order(self, nodo: Optional[Nodo], recorrido: list):
+        if nodo is None:
             return
+        recorrido.append(nodo.key)
+        self._pre_order(nodo.izq, recorrido)
+        self._pre_order(nodo.der, recorrido)
 
-        raiz.key.mostrarValores()
-
-        self._pre_order(raiz.izq)
-        self._pre_order(raiz.der)
-
-
-    def post_order(self) -> None:
-
-        if self.raiz is None:
-            print("", end="")
-        else:
-            self._post_order(self.raiz)
-
-    def _post_order(self, raiz: Optional[Nodo]) -> None:
-
-        if raiz is None:
+    def post_order(self):
+        recorrido = []
+        self._post_order(self.raiz, recorrido)
+        return recorrido
+    def _post_order(self, nodo: Optional[Nodo], recorrido: list):
+        if nodo is None:
             return
-
-        self._post_order(raiz.izq)
-        self._post_order(raiz.der)
-
-        raiz.key.mostrarValores()
+        self._post_order(nodo.izq, recorrido)
+        self._post_order(nodo.der, recorrido)
+        recorrido.append(nodo.key)
 
 
     def anchura(self) -> None:
         if self.raiz is None:
-            print("", end="")
+            []
         else:
             self._anchura(self.raiz)
 
     def _anchura(self, raiz: Nodo) -> None:
+        recorrido = []
         cola = deque([raiz])
+
         while cola:
             nodo = cola.popleft()
-            print(nodo.key.mostrarValores(), end=" ")
+            recorrido.append(nodo.key)
 
             if nodo.izq is not None:
                 cola.append(nodo.izq)
+
             if nodo.der is not None:
                 cola.append(nodo.der)
+
+        return recorrido
 
     def encontrarNodo(self, id:int)->Nodo:
         if self.raiz is None:
@@ -218,19 +227,23 @@ class Avl:
         balance = self._factor_balance(raiz)
         
         if (balance > 1 and self._factor_balance(raiz.izq) >= 0):
-             return self._rotacion_derecha(raiz)
+            self.metricas["casos_LL"] += 1
+            return self._rotacion_derecha(raiz)
         if (balance > 1 and self._factor_balance(raiz.izq) < 0):
+            self.metricas["casos_LR"] += 1
             raiz.izq = self._rotacion_izquierda(raiz.izq)
             return self._rotacion_derecha(raiz)
         if (balance < -1 and self._factor_balance(raiz.der) <= 0):
+            self.metricas["casos_RR"] += 1
             return self._rotacion_izquierda(raiz)
         if (balance < -1 and self._factor_balance(raiz.der) > 0):
+            self.metricas["casos_RL"] += 1
             raiz.der = self._rotacion_derecha(raiz.der)
             return self._rotacion_izquierda(raiz)
         return raiz
 
     def recuperar(self):
-        self.raiz == self._recuperar(self.raiz)
+        self.raiz = self._recuperar(self.raiz)
     def _recuperar(self, subraiz:Nodo):
         if subraiz is None:
             return None
@@ -328,6 +341,28 @@ class Avl:
                 nivel_actual + 1
             )
 
+    def nodos_con_profundidad(self):
+        nodos = []
+        self._nodos_con_profundidad(self.raiz, 0, nodos)
+        return nodos
+
+    def _nodos_con_profundidad(self, nodo, profundidad, nodos):
+        if nodo is None:
+            return
+
+        nodos.append((nodo, profundidad))
+
+        self._nodos_con_profundidad(
+            nodo.izq,
+            profundidad + 1,
+            nodos
+        )
+
+        self._nodos_con_profundidad(
+            nodo.der,
+            profundidad + 1,
+            nodos
+        )
 
     def cantidad_de_nodos_por_nivel(self) -> dict:
         if self.raiz is None:
@@ -364,3 +399,46 @@ class Avl:
             nivel + 1,
             conteo
         )
+
+    def hojas(self) -> int:
+        return self._hojas(self.raiz)
+    def _hojas(self, nodo: Optional[Nodo]) -> int:
+        if nodo is None:
+            return 0
+
+        if nodo.esHoja():
+            return 1
+
+        return self._hojas(nodo.izq) + self._hojas(nodo.der)
+
+    def eventos_por_prioridad(self):
+        eventos = {
+            1: [],
+            2: [],
+            3: []
+        }
+        self._eventos_por_prioridad(self.raiz, eventos)
+        return eventos
+    def _eventos_por_prioridad(self, nodo, eventos):
+        if nodo is None:
+            return
+
+        prioridad = nodo.key.prioridad
+        eventos[prioridad].append(nodo)
+
+        self._eventos_por_prioridad(nodo.izq, eventos)
+        self._eventos_por_prioridad(nodo.der, eventos)
+
+    def eventos_pendientes(self):
+        pendientes = []
+        self._eventos_pendientes(self.raiz, pendientes)
+        return pendientes
+    def _eventos_pendientes(self, nodo:Nodo, pendientes):
+        if nodo is None:
+            return
+
+        if nodo.evento.estado == "Pendiente":
+            pendientes.append(nodo)
+
+        self._eventos_pendientes(nodo.izq, pendientes)
+        self._eventos_pendientes(nodo.der, pendientes)

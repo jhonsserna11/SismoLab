@@ -36,12 +36,6 @@ class Escenario:
             "conflictos": 0,
             "archivos_masivos": 0,
             "eventos_archivados": 0,
-            "casos_LL": 0,
-            "casos_RR": 0,
-            "casos_LR": 0,
-            "casos_RL": 0,
-            "giros_izquierda": 0,
-            "giros_derecha": 0
         }
 
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
@@ -400,5 +394,74 @@ class Escenario:
 
         self.modo_estres = False
         
+    def obtenerIndicadores(self):
+        return {
+            "eventos_activos": self.avl.peso(),
+            "eventos_historicos": len(self.historico),
+            "altura_avl": self.avl.altura(),
+            "hojas": self.avl.hojas(),
+            "inorden": self.avl.inOrder(),
+            "preorden": self.avl.pre_order(),
+            "postorden": self.avl.post_order(),
+            "anchura": self.avl.anchura(),
+            "eventos_por_prioridad": self._indicadorEventosPorPrioridad(),
+            "eventos_pendientes": self._indicadorEventosPendientes(),
+            "eventos_costosos": self._indicadorEventosCostosos()
+        }
 
+    def _datosIndicadorEvento(self, nodo, profundidad=None):
+        evento = nodo.evento
 
+        datos = {
+            "id": evento.id,
+            "magnitud": evento.magnitud,
+            "profundidad": evento.profundidad,
+            "zonax": evento.zonax,
+            "zonay": evento.zonay,
+            "fecha": evento.fechaHora,
+            "prioridad": nodo.key.prioridad,
+            "estado": evento.estado
+        }
+
+        if profundidad is not None:
+            datos["profundidad_nodo"] = profundidad
+
+        return datos
+    
+    def _indicadorEventosPorPrioridad(self):
+        grupos = self.avl.eventos_por_prioridad()
+
+        return {
+            prioridad: {
+                "cantidad": len(nodos),
+                "eventos": [
+                    self._datosIndicadorEvento(nodo) for nodo in nodos
+                ]
+            }
+            for prioridad, nodos in grupos.items()
+        }
+
+    def _indicadorEventosPendientes(self):
+        pendientes = self.avl.eventos_pendientes()
+
+        return {
+                "cantidad": len(pendientes),
+                "eventos": [
+                      self._datosIndicadorEvento(nodo) for nodo in pendientes
+                   ]
+           }
+
+    def _indicadorEventosCostosos(self):
+        eventos = []
+
+        for nodo, profundidad in self.avl.nodos_con_profundidad():
+            if nodo.key.prioridad == 3 and profundidad > self.L:
+                eventos.append((nodo, profundidad))
+
+        return {
+            "cantidad": len(eventos),
+            "eventos": [
+                self._datosIndicadorEvento(nodo, profundidad)
+                for nodo, profundidad in eventos
+            ]
+        }
