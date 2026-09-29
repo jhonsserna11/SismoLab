@@ -255,6 +255,7 @@ class Escenario:
                 nodo.evento = evento_nuevo
                 nodo.key = nueva_key
 
+            self.metricas["correcciones_aceptadas"] += 1
             return {"estado": "actualizado", "accion": "sustituir"}
         except (ValueError, TypeError):
             nodo.evento = evento
@@ -267,6 +268,7 @@ class Escenario:
             evento.estado = datos_originales["estado"]
             evento.revision = revision_original
             evento.estaciones = estaciones_originales
+            self.metricas["reportes_descartados"] += 1
             return {"estado": "desconocido", "accion": "rechazar"}
 
     def _reactivarEventoArchivado(self, reporte):
@@ -294,9 +296,11 @@ class Escenario:
 
     def procesarReporte(self, reporte):
         if not self._datos_validos_reporte(reporte):
+            self.metricas["reportes_descartados"] += 1
             return {"estado": "desconocido", "accion": "rechazar"}
 
         if reporte.id_evento in self.eliminados:
+            self.metricas["reportes_descartados"] += 1
             return {"estado": "eliminado", "accion": "rechazar"}
 
         nodo = self.avl.encontrarNodo(reporte.id_evento)
@@ -304,6 +308,7 @@ class Escenario:
             evento = nodo.evento
 
             if reporte.nRevision < evento.revision:
+                self.metricas["reportes_descartados"] += 1
                 return {"estado": "antiguo", "accion": "descartar"}
 
             if reporte.nRevision > evento.revision:
@@ -312,15 +317,18 @@ class Escenario:
             if self._datos_iguales(evento, reporte):
                 return self._confirmarEvento(evento, reporte)
 
+            self.metricas["conflictos"] += 1
             return {"estado": "conflicto", "accion": "rechazar"}
 
         for evento in self.historico:
             if evento.id == reporte.id_evento:
                 if reporte.nRevision > evento.revision:
                     return self._reactivarEventoArchivado(reporte)
+                self.metricas["reportes_descartados"] += 1
                 return {"estado": "archivado", "accion": "descartar"}
 
         if not self._IdUnica(reporte.id_evento):
+            self.metricas["reportes_descartados"] += 1
             return {"estado": "desconocido", "accion": "rechazar"}
 
         evento_nuevo = Evento(
@@ -576,6 +584,8 @@ class Escenario:
         
     def obtenerIndicadores(self):
         return {
+            "metricasAcumulativas": self.metricas,
+            "metricasAVL": self.avl.metricas,
             "eventos_activos": self.avl.peso(),
             "eventos_historicos": len(self.historico),
             "altura_avl": self.avl.altura(),

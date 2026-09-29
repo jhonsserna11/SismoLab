@@ -136,9 +136,9 @@ class Avl:
 
     def anchura(self) -> None:
         if self.raiz is None:
-            []
+            return []
         else:
-            self._anchura(self.raiz)
+            return self._anchura(self.raiz)
 
     def _anchura(self, raiz: Nodo) -> None:
         recorrido = []
