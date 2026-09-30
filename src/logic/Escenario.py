@@ -591,8 +591,7 @@ class Escenario:
             self.avl.eliminar(nodo.key, self.modo_estres)
             self.metricas["eventos_archivados"] += 1
         self.metricas["archivos_masivos"] += 1
-
-#kjbsdkbksd
+#skafbaldyhflasjh
     def verificarEstructura(self):
         reporte = self.avl.verificarEstructura(self.modo_estres)
         inconsistentes = reporte["eventos_inconsistentes"]
@@ -675,7 +674,8 @@ class Escenario:
                 pila.append(nodo.der)
 
         eventos = activos + self.historico
-        referencias_validas = {id(evento) for evento in eventos}
+        eventos_por_id = {evento.id: evento for evento in eventos}
+        referencias_validas = set(eventos_por_id)
         referencias = {}
         hay_ciclo_estructural = any(
             "ciclo" in error.lower() or "nodo repetido" in error.lower()
@@ -690,19 +690,19 @@ class Escenario:
                     candidatos = asociaciones["candidatos"]
                     asociado = asociaciones["asociado"]
                     for candidato in candidatos:
-                        if id(candidato) not in referencias_validas or candidato is evento:
+                        if candidato.id not in referencias_validas or candidato.id == evento.id:
                             agregar_error(evento.id, estado, "Asociación candidata con referencia inválida")
                         elif not candidato.esCandidato(evento, self.W, self.R):
                             agregar_error(evento.id, estado, "Asociación candidata no cumple las reglas")
                     if asociado is not None:
-                        if not any(asociado is candidato for candidato in candidatos):
+                        if not any(asociado.id == candidato.id for candidato in candidatos):
                             agregar_error(evento.id, estado, "Referencia elegida no pertenece a los candidatos")
                         else:
-                            referencias[id(evento)] = id(asociado)
+                            referencias[evento.id] = asociado.id
                 except (AttributeError, TypeError, ValueError):
                     agregar_error(evento.id, estado, "No fue posible verificar las asociaciones")
 
-        eventos_por_referencia = {id(evento): evento for evento in eventos}
+        eventos_por_referencia = eventos_por_id
         visitados_referencias = set()
         for inicio in referencias:
             camino = []
@@ -721,20 +721,55 @@ class Escenario:
             visitados_referencias.update(camino)
 
         reporte["eventos_inconsistentes"] = inconsistentes
+        reporte["sincronizacion_bst"] = self._auditarSincronizacionBst(activos)
+        if not reporte["sincronizacion_bst"]["valido"]:
+            inconsistentes.append({
+                "id": None,
+                "estado": "estructura",
+                "errores": reporte["sincronizacion_bst"]["errores"],
+                "advertencias": []
+            })
         reporte["valido"] = not any(item.get("errores") for item in inconsistentes)
         return reporte
-#sdblhsdlbhd
+
+    def _auditarSincronizacionBst(self, activos):
+        errores = []
+        claves_avl = self.avl.inOrder()
+        claves_bst = self.bst.inorden()
+
+        mapa_avl = {clave.id_key: clave for clave in claves_avl}
+        mapa_bst = {clave.id_key: clave for clave in claves_bst}
+
+        ids_avl = set(mapa_avl)
+        ids_bst = set(mapa_bst)
+        for identificador in sorted(ids_avl - ids_bst):
+            errores.append(f"El identificador {identificador} falta en el BST")
+        for identificador in sorted(ids_bst - ids_avl):
+            errores.append(f"El identificador {identificador} falta en el AVL")
+
+        for identificador in sorted(ids_avl & ids_bst):
+            if mapa_avl[identificador] != mapa_bst[identificador]:
+                errores.append(
+                    f"La clave del identificador {identificador} no coincide entre AVL y BST"
+                )
+
+        return {
+            "valido": not errores,
+            "ids_avl": sorted(ids_avl),
+            "ids_bst": sorted(ids_bst),
+            "errores": errores
+        }
 
     def recuperarArbol(self):
         self._guardar_estado()
         #pausar procesamiento de reportes
 
         self.avl.recuperar()
-
-        #llamar bloque auditoria
-        #recibo OK
-
-        self.modo_estres = False
+        reporte = self.verificarEstructura()
+        if reporte["valido"] and reporte["equilibrado"]:
+            self.modo_estres = False
+        return reporte
+#hdlssudcskbds
         
     def obtenerIndicadores(self):
         return {
