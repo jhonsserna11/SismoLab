@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SismoLab — Observatorio Sísmico</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ─── Sidebar ──────────────────────────────────────────────────────── -->
+    <aside id="sidebar">
+
+      <div class="sb-logo">
+        <div class="sb-logo-icon">⊕</div>
+        <div>
+          <div class="sb-logo-title">SismoLab</div>
+          <div class="sb-logo-sub">Observatorio Sísmico</div>
+        </div>
+      </div>
+
+      <nav>
+        <button class="nav-btn active" data-section="resumen">
+          <span class="nav-icon">⊞</span> Resumen
+        </button>
+        <button class="nav-btn" data-section="eventos">
+          <span class="nav-icon">📡</span> Eventos
+        </button>
+        <button class="nav-btn" data-section="reportes">
+          <span class="nav-icon">📋</span> Reportes
+          <span class="nav-badge" id="reports-badge">4</span>
+        </button>
+        <button class="nav-btn" data-section="zonas">
+          <span class="nav-icon">🗺</span> Zonas
+        </button>
+        <button class="nav-btn" data-section="estaciones">
+          <span class="nav-icon">▲</span> Estaciones
+        </button>
+        <button class="nav-btn" data-section="historico">
+          <span class="nav-icon">🗄</span> Histórico
+        </button>
+        <button class="nav-btn" data-section="metricas">
+          <span class="nav-icon">◎</span> Métricas
+        </button>
+        <button class="nav-btn" data-section="configuracion">
+          <span class="nav-icon">⚙</span> Configuración
+        </button>
+        <button class="nav-btn" data-section="versiones">
+          <span class="nav-icon">⎌</span> Versiones
+        </button>
+        <button class="nav-btn" data-section="arboles">
+          <span class="nav-icon">⬡</span> Árboles AVL/BST
+        </button>
+      </nav>
+
+      <div class="sb-status">
+        <div class="sb-status-row">
+          <span class="pulse-dot"></span>
+          Sistema operativo
+        </div>
+        <div class="sb-status-row">
+          <span class="mono" id="sb-event-count">7</span>&nbsp;eventos · AVL
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ─── Main ─────────────────────────────────────────────────────────── -->
+    <div id="main">
+
+      <!-- Header -->
+      <header id="header">
+        <div class="hdr-titles">
+          <div class="hdr-section" id="hdr-section">Resumen</div>
+          <div class="hdr-sub">SismoLab · Escenario Principal</div>
+        </div>
+
+        <span id="utc-clock"></span>
+
+        <button class="hdr-btn btn-normal" id="stress-btn">Modo normal</button>
+
+        <div class="hdr-divider"></div>
+
+        <!-- Theme toggle -->
+        <button class="hdr-icon-btn" id="theme-toggle" title="Cambiar tema">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <div class="hdr-divider"></div>
+
+        <button class="btn-mono">↩ Deshacer</button>
+        <button class="btn-mono" disabled>↪ Rehacer</button>
+      </header>
+
+      <!-- Content area -->
+      <main id="content"></main>
+
+    </div><!-- /main -->
+
+  </div><!-- /app -->
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
