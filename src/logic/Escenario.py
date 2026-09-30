@@ -721,14 +721,6 @@ class Escenario:
             visitados_referencias.update(camino)
 
         reporte["eventos_inconsistentes"] = inconsistentes
-        reporte["sincronizacion_bst"] = self._auditarSincronizacionBst(activos)
-        if not reporte["sincronizacion_bst"]["valido"]:
-            inconsistentes.append({
-                "id": None,
-                "estado": "estructura",
-                "errores": reporte["sincronizacion_bst"]["errores"],
-                "advertencias": []
-            })
         reporte["valido"] = not any(item.get("errores") for item in inconsistentes)
         return reporte
 
