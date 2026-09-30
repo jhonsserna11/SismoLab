@@ -1029,3 +1029,334 @@ def test_eventos_pendientes():
     assert [evento["id"] for evento in resultado["eventos"]] == [1, 3, 4]
 test_eventos_pendientes()
 print("test eventos_pendientes: OK")
+
+# ================================================================
+# SINCRONIZACION AVL - BST
+# ================================================================
+
+def test_bst_se_sincroniza_con_creacion():
+
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(
+            2026, 9, 22, 12, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-01"]
+    )
+
+    escenario.crearEvento(
+        2,
+        4.0,
+        30.0,
+        200.0,
+        200.0,
+        datetime(
+            2026, 9, 22, 13, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-02"]
+    )
+
+    escenario.crearEvento(
+        3,
+        6.0,
+        10.0,
+        300.0,
+        300.0,
+        datetime(
+            2026, 9, 22, 14, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-03"]
+    )
+
+    assert escenario.avl.peso() == 3
+    assert escenario.bst.cantidad_nodos() == 3
+test_bst_se_sincroniza_con_creacion()
+print("test bst se sincroniza con creacion: OK")
+
+
+def test_bst_se_sincroniza_correccion_sin_cambio_key():
+
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(
+            2026, 9, 22, 12, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-01"]
+    )
+
+    nodo_avl = escenario.avl.encontrarNodo(1)
+    key_original = nodo_avl.key
+
+    escenario.corregirEvento(
+        1,
+        profundidad=25.0
+    )
+
+    nodo_avl = escenario.avl.encontrarNodo(1)
+    nodo_bst = escenario.bst.buscar(key_original)
+
+    assert nodo_avl is not None
+    assert nodo_bst is not None
+
+    assert nodo_avl.key == key_original
+    assert nodo_bst.key == key_original
+
+    assert nodo_avl.evento.profundidad == 25.0
+    assert nodo_bst.evento.profundidad == 25.0
+
+    assert escenario.avl.peso() == 1
+    assert escenario.bst.cantidad_nodos() == 1
+test_bst_se_sincroniza_correccion_sin_cambio_key()
+print("test bst se sincroniza correccion sin cambio key: OK")
+
+
+def test_bst_se_sincroniza_correccion_con_cambio_key():
+
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(
+            2026, 9, 22, 12, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-01"]
+    )
+
+    escenario.crearEvento(
+        2,
+        4.0,
+        30.0,
+        200.0,
+        200.0,
+        datetime(
+            2026, 9, 22, 13, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-02"]
+    )
+
+    nodo_original = escenario.avl.encontrarNodo(1)
+    key_original = nodo_original.key
+
+    escenario.corregirEvento(
+        1,
+        magnitud=7.0
+    )
+
+    nodo_avl = escenario.avl.encontrarNodo(1)
+
+    assert nodo_avl is not None
+
+    nueva_key = nodo_avl.key
+
+    assert nueva_key != key_original
+
+    assert escenario.bst.buscar(key_original) is None
+
+    nodo_bst = escenario.bst.buscar(nueva_key)
+
+    assert nodo_bst is not None
+    assert nodo_bst.evento.id == 1
+    assert nodo_bst.evento.magnitud == 7.0
+
+    assert escenario.avl.peso() == 2
+    assert escenario.bst.cantidad_nodos() == 2
+test_bst_se_sincroniza_correccion_con_cambio_key()
+print("test bst se sincroniza correccion con cambio key: OK")
+
+
+def test_bst_se_sincroniza_con_eliminacion():
+
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(
+            2026, 9, 22, 12, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-01"]
+    )
+
+    escenario.crearEvento(
+        2,
+        4.0,
+        30.0,
+        200.0,
+        200.0,
+        datetime(
+            2026, 9, 22, 13, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-02"]
+    )
+
+    escenario.crearEvento(
+        3,
+        6.0,
+        10.0,
+        300.0,
+        300.0,
+        datetime(
+            2026, 9, 22, 14, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-03"]
+    )
+
+    nodo = escenario.avl.encontrarNodo(2)
+    key = nodo.key
+
+    escenario.eliminacionIndividual(key)
+
+    assert escenario.avl.encontrarNodo(2) is None
+    assert escenario.bst.buscar(key) is None
+
+    assert escenario.avl.peso() == 2
+    assert escenario.bst.cantidad_nodos() == 2
+test_bst_se_sincroniza_con_eliminacion()
+print("test bst se sincroniza con eliminacion: OK")
+
+
+def test_undo_restaura_avl_y_bst():
+
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(
+            2026, 9, 22, 12, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-01"]
+    )
+
+    escenario.crearEvento(
+        2,
+        4.0,
+        30.0,
+        200.0,
+        200.0,
+        datetime(
+            2026, 9, 22, 13, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-02"]
+    )
+
+    escenario.crearEvento(
+        3,
+        6.0,
+        10.0,
+        300.0,
+        300.0,
+        datetime(
+            2026, 9, 22, 14, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-03"]
+    )
+
+    nodo = escenario.avl.encontrarNodo(2)
+    key = nodo.key
+
+    escenario.eliminacionIndividual(key)
+
+    assert escenario.avl.peso() == 2
+    assert escenario.bst.cantidad_nodos() == 2
+
+    escenario.deshacer()
+
+    assert escenario.avl.peso() == 3
+    assert escenario.bst.cantidad_nodos() == 3
+
+    assert escenario.avl.encontrarNodo(2) is not None
+    assert escenario.bst.buscar(key) is not None
+test_undo_restaura_avl_y_bst()
+print("test undo restaura avl y bst: OK")
+
+
+def test_bst_se_sincroniza_con_reporte_mayor_revision():
+
+    escenario = crear_escenario()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        20.0,
+        100.0,
+        100.0,
+        datetime(
+            2026, 9, 22, 12, 0, 0,
+            tzinfo=timezone.utc
+        ),
+        ["EST-01"]
+    )
+
+    class Reporte:
+        pass
+
+    reporte = Reporte()
+    reporte.id_evento = 1
+    reporte.magnitud = 7.0
+    reporte.profundidad = 25.0
+    reporte.zonax = 100.0
+    reporte.zonay = 100.0
+    reporte.fecha = datetime(
+        2026, 9, 22, 12, 0, 0,
+        tzinfo=timezone.utc
+    )
+    reporte.nRevision = 2
+    reporte.estacion = "EST-02"
+
+    resultado = escenario.procesarReporte(reporte)
+
+    assert resultado["estado"] == "actualizado"
+
+    nodo_avl = escenario.avl.encontrarNodo(1)
+
+    assert nodo_avl is not None
+
+    nodo_bst = escenario.bst.buscar(nodo_avl.key)
+
+    assert nodo_bst is not None
+
+    assert nodo_avl.evento.magnitud == 7.0
+    assert nodo_bst.evento.magnitud == 7.0
+
+    assert nodo_avl.evento.revision == 2
+    assert nodo_bst.evento.revision == 2
+
+    assert escenario.avl.peso() == 1
+    assert escenario.bst.cantidad_nodos() == 1
+test_bst_se_sincroniza_con_reporte_mayor_revision()
+print("test bst se sincroniza con reporte mayor revision: OK")

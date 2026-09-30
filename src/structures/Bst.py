@@ -1,31 +1,32 @@
 from .Nodo import Nodo
 from .Nodo import Key
+from src.domain.Evento import Evento
 from typing import Optional
 
 class Bst:
     def __init__(self):
         self.raiz = None
         
-    def insertar(self, dato: Key) -> None:
+    def insertar(self, dato: Key, evento:Evento) -> None:
         
         if self.raiz is None:
-            self.raiz = Nodo(key=dato)
+            self.raiz = Nodo(key=dato, evento=evento)
         else:
-            self._insertar(self.raiz, dato)
+            self._insertar(self.raiz, dato, evento)
     
-    def _insertar(self, nodo: Nodo, dato: Key) -> None:
+    def _insertar(self, nodo: Nodo, dato: Key, evento:Evento) -> None:
         if dato < nodo.key:
             # Insertar en el subárbol izquierdo
             if nodo.izq is None:
-                nodo.izq = Nodo(key=dato)
+                nodo.izq = Nodo(key=dato, evento=evento)
             else:
-                self._insertar(nodo.izq, dato)
+                self._insertar(nodo.izq, dato, evento)
         elif dato > nodo.key:
             # Insertar en el subárbol derecho
             if nodo.der is None:
-                nodo.der = Nodo(key=dato)
+                nodo.der = Nodo(key=dato, evento=evento)
             else:
-                self._insertar(nodo.der, dato)
+                self._insertar(nodo.der, dato, evento)
         
     def buscar(self, dato: Key) -> Optional[Nodo]:
     
@@ -79,6 +80,7 @@ class Bst:
             # Buscar el mínimo en el subárbol derecho (sucesor inorden)
             nodo_minimo = self._encontrar_minimo(nodo.der)
             nodo.key = nodo_minimo.key
+            nodo.evento = nodo_minimo.evento
             nodo.der = self._eliminar(nodo.der, nodo_minimo.key)
         
         return nodo
