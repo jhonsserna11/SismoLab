@@ -1,6 +1,14 @@
 import { estado } from "./estado.js";
 import { renderResumen } from "./resumen.js";
 import { renderEventos } from "./eventos.js";
+import { renderEstaciones } from "./estaciones.js";
+import { renderZonas } from "./zonas.js";
+import { renderReportes } from "./reportes.js";
+import { renderHistorico } from "./historico.js";
+import { renderMetricas } from "./metricas.js";
+import { renderConfiguracion } from "./configuracion.js";
+import { renderVersiones } from "./versiones.js";
+import { renderArboles } from "./arboles.js";
 
 const titulos = {
     resumen: "Resumen",
@@ -35,9 +43,32 @@ export function navegar(seccion) {
     if (seccion === "resumen") {
         renderResumen();
     }
-
     if (seccion === "eventos") {
         renderEventos();
+    }
+    if (seccion === "estaciones") {
+        renderEstaciones();
+    }
+    if (seccion === "zonas") {
+        renderZonas();
+    }
+    if (seccion === "reportes") {
+        renderReportes();
+    }
+    if (seccion === "historico") {
+        renderHistorico();
+    }
+    if (seccion === "metricas") {
+        renderMetricas();
+    }
+    if (seccion === "configuracion") {
+        renderConfiguracion();
+    }
+    if (seccion === "versiones") {
+        renderVersiones();
+    }
+    if (seccion === "arboles") {
+        renderArboles();
     }
 }
 

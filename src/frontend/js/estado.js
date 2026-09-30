@@ -9,8 +9,30 @@ export const estado = {
 
     eventos: [],
     reportes: [],
-    zonas: [],
-    estaciones: [],
+    zonas: [
+        {
+            id: "Z-1",
+            nombre: "Zona mia",
+            xMin: 0,
+            xMax: 250,
+            yMin: 0,
+            yMax: 250
+        },
+        {
+            id: "Z-2",
+            nombre: "Zona suya",
+            xMin: 250,
+            xMax: 500,
+            yMin: 250,
+            yMax: 500
+        }
+    ],
+    estaciones: [
+        {
+            id_estacion: "EST-1",
+            nombre: "Estación Manizales",
+        }
+    ],
 
     historico: [],
     versiones: []

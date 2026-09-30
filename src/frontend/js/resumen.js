@@ -202,53 +202,34 @@ function crearMapa() {
         `;
     }
 
-    const zonas = estado.zonas.map((zona) => `
-        <rect
-            x="${convertirX(zona.x)}"
-            y="${convertirY(zona.y)}"
-            width="${convertirX(zona.width)}"
-            height="${convertirY(zona.height)}"
-            fill="${zona.poblada ? "#bfdbfe30" : "#f1f5f940"}"
-            stroke="${zona.poblada ? "#93c5fd" : "#cbd5e1"}"
-            stroke-width="1"
-            ${zona.poblada ? "" : 'stroke-dasharray="3,3"'}
-            rx="2"
-        />
+    const zonas = estado.zonas.map((zona) => {
+        const x = Number(zona.xMin);
+        const y = Number(zona.yMin);
+        const anchoZona = Number(zona.xMax) - x;
+        const altoZona = Number(zona.yMax) - y;
 
-        <text
-            x="${convertirX(zona.x) + 4}"
-            y="${convertirY(zona.y) + 11}"
-            font-size="7"
-            fill="#64748b"
-        >
-            ${escaparHTML(zona.nombre ?? zona.id ?? "")}
-        </text>
-    `).join("");
-
-    const estaciones = estado.estaciones.map((estacion) => `
-        <g transform="
-            translate(
-                ${convertirX(estacion.x)},
-                ${convertirY(estacion.y)}
-            )
-        ">
-            <polygon
-                points="0,-7 6,5 -6,5"
-                fill="${estacion.activa ? "#0ea5e9" : "#94a3b8"}"
-                stroke="white"
+        return `
+            <rect
+                x="${convertirX(x)}"
+                y="${convertirY(y)}"
+                width="${convertirX(anchoZona)}"
+                height="${convertirY(altoZona)}"
+                fill="#bfdbfe30"
+                stroke="#93c5fd"
                 stroke-width="1"
+                rx="2"
             />
 
             <text
-                y="14"
-                text-anchor="middle"
-                font-size="6"
-                fill="#475569"
+                x="${convertirX(x) + 4}"
+                y="${convertirY(y) + 11}"
+                font-size="7"
+                fill="#64748b"
             >
-                ${escaparHTML(estacion.id ?? "")}
+                ${escaparHTML(zona.nombre ?? zona.id ?? "")}
             </text>
-        </g>
-    `).join("");
+        `;
+    }).join("");
 
     const eventos = estado.eventos.map((evento) => {
         const magnitud = Number(evento.magnitud ?? evento.magnitude ?? 0);
@@ -319,7 +300,6 @@ function crearMapa() {
 
             ${cuadricula}
             ${zonas}
-            ${estaciones}
             ${eventos}
 
             <text

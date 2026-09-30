@@ -358,21 +358,15 @@ function abrirFormularioEvento() {
 
 
                         <div class="form-group" style="margin-top: 20px;">
+                            <label>Estaciones emisoras</label>
 
-                            <label for="evento-estaciones">
-                                Estaciones emisoras
-                            </label>
-
-                            <input
-                                id="evento-estaciones"
-                                type="text"
-                                placeholder="Ej. EST-1, EST-3"
-                            >
-
-                            <div class="form-help">
-                                Separe las estaciones mediante comas.
+                            <div id="estaciones-seleccion">
+                                ${crearSelectorEstaciones()}
                             </div>
 
+                            <div class="form-help">
+                                Seleccione las estaciones que reportan el evento.
+                            </div>
                         </div>
 
 
@@ -436,6 +430,27 @@ function abrirFormularioEvento() {
 
             mensaje.style.display = "block";
         });
+}
+function crearSelectorEstaciones() {
+    if (estado.estaciones.length === 0) {
+        return `
+            <div class="detail-empty">
+                No hay estaciones configuradas.
+            </div>
+        `;
+    }
+
+    return estado.estaciones.map((estacion) => `
+        <label>
+            <input
+                type="checkbox"
+                name="estacion-evento"
+                value="${escaparHTML(String(estacion.id_estacion))}"
+            >
+            ${escaparHTML(String(estacion.id_estacion))}
+            — ${escaparHTML(String(estacion.nombre))}
+        </label>
+    `).join("");
 }
 
 
