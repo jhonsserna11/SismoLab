@@ -592,7 +592,139 @@ class Escenario:
             self.metricas["eventos_archivados"] += 1
         self.metricas["archivos_masivos"] += 1
 
-        
+#kjbsdkbksd
+    def verificarEstructura(self):
+        reporte = self.avl.verificarEstructura(self.modo_estres)
+        inconsistentes = reporte["eventos_inconsistentes"]
+        activos = []
+        visitados = set()
+
+        def recopilar(nodo):
+            if nodo is None or id(nodo) in visitados:
+                return
+            visitados.add(id(nodo))
+            if getattr(nodo, "evento", None) is not None:
+                activos.append(nodo.evento)
+            recopilar(getattr(nodo, "izq", None))
+            recopilar(getattr(nodo, "der", None))
+
+        recopilar(self.avl.raiz)
+
+        def agregar_error(identificador, estado, mensaje):
+            registros = [
+                item for item in inconsistentes
+                if item.get("id") == identificador and item.get("estado", estado) == estado
+            ]
+            if not registros:
+                registros = [{
+                    "id": identificador,
+                    "estado": estado,
+                    "errores": [],
+                    "advertencias": []
+                }]
+                inconsistentes.extend(registros)
+            for item in registros:
+                item.setdefault("estado", estado)
+                if mensaje not in item["errores"]:
+                    item["errores"].append(mensaje)
+
+        activos_por_id = {}
+        historicos_por_id = {}
+        for evento in activos:
+            activos_por_id.setdefault(evento.id, []).append(evento)
+        for evento in self.historico:
+            historicos_por_id.setdefault(evento.id, []).append(evento)
+
+        for identificador, eventos in activos_por_id.items():
+            if len(eventos) > 1:
+                for evento in eventos:
+                    agregar_error(evento.id, "activo", "Identificador duplicado entre eventos activos")
+            if identificador in historicos_por_id:
+                agregar_error(identificador, "activo", "Identificador duplicado entre activos e histórico")
+                agregar_error(identificador, "archivado", "Identificador duplicado entre activos e histórico")
+            if identificador in self.eliminados:
+                agregar_error(identificador, "activo", "Identificador también marcado como eliminado")
+
+        for identificador, eventos in historicos_por_id.items():
+            if len(eventos) > 1:
+                agregar_error(identificador, "archivado", "Identificador duplicado en el histórico")
+            if identificador in self.eliminados:
+                agregar_error(identificador, "archivado", "Identificador también marcado como eliminado")
+
+        pila = [] if self.avl.raiz is None else [self.avl.raiz]
+        revisados = set()
+        while pila:
+            nodo = pila.pop()
+            if id(nodo) in revisados:
+                continue
+            revisados.add(id(nodo))
+            evento = getattr(nodo, "evento", None)
+            clave = getattr(nodo, "key", None)
+            if evento is not None and isinstance(clave, Key):
+                try:
+                    prioridad = evento.calcularPrioridad(
+                        self._esPoblada(evento.zonax, evento.zonay)
+                    )
+                    if clave.prioridad != prioridad:
+                        agregar_error(evento.id, "activo", "La prioridad de la clave no coincide con la calculada")
+                except (AttributeError, TypeError, ValueError):
+                    agregar_error(evento.id, "activo", "No fue posible validar la prioridad de la clave")
+            if getattr(nodo, "izq", None) is not None:
+                pila.append(nodo.izq)
+            if getattr(nodo, "der", None) is not None:
+                pila.append(nodo.der)
+
+        eventos = activos + self.historico
+        referencias_validas = {id(evento) for evento in eventos}
+        referencias = {}
+        hay_ciclo_estructural = any(
+            "ciclo" in error.lower() or "nodo repetido" in error.lower()
+            for item in inconsistentes
+            for error in item.get("errores", [])
+        )
+        if not hay_ciclo_estructural:
+            for evento in eventos:
+                estado = "activo" if any(evento is actual for actual in activos) else "archivado"
+                try:
+                    asociaciones = self._obtenerAsociaciones(evento)
+                    candidatos = asociaciones["candidatos"]
+                    asociado = asociaciones["asociado"]
+                    for candidato in candidatos:
+                        if id(candidato) not in referencias_validas or candidato is evento:
+                            agregar_error(evento.id, estado, "Asociación candidata con referencia inválida")
+                        elif not candidato.esCandidato(evento, self.W, self.R):
+                            agregar_error(evento.id, estado, "Asociación candidata no cumple las reglas")
+                    if asociado is not None:
+                        if not any(asociado is candidato for candidato in candidatos):
+                            agregar_error(evento.id, estado, "Referencia elegida no pertenece a los candidatos")
+                        else:
+                            referencias[id(evento)] = id(asociado)
+                except (AttributeError, TypeError, ValueError):
+                    agregar_error(evento.id, estado, "No fue posible verificar las asociaciones")
+
+        eventos_por_referencia = {id(evento): evento for evento in eventos}
+        visitados_referencias = set()
+        for inicio in referencias:
+            camino = []
+            posiciones = {}
+            actual = inicio
+            while actual in referencias and actual not in visitados_referencias:
+                if actual in posiciones:
+                    for referencia in camino[posiciones[actual]:]:
+                        evento = eventos_por_referencia[referencia]
+                        estado = "activo" if any(evento is activo for activo in activos) else "archivado"
+                        agregar_error(evento.id, estado, "Ciclo detectado en las asociaciones")
+                    break
+                posiciones[actual] = len(camino)
+                camino.append(actual)
+                actual = referencias[actual]
+            visitados_referencias.update(camino)
+
+        reporte["eventos_inconsistentes"] = inconsistentes
+        reporte["valido"] = not any(item.get("errores") for item in inconsistentes)
+        return reporte
+#sdblhsdlbhd
+
     def recuperarArbol(self):
         self._guardar_estado()
         #pausar procesamiento de reportes

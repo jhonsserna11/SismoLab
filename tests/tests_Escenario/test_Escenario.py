@@ -92,6 +92,45 @@ test_crear_y_consultar_evento()
 print("test crear y consultar evento: OK")
 
 
+def test_auditoria_escenario_valida_asociacion_y_detecta_prioridad():
+    escenario = crear_escenario()
+    anterior = Evento(
+        1, 6.0, 20.0, 100.0, 100.0,
+        datetime(2026, 9, 23, 10, 0, tzinfo=timezone.utc),
+        1, ["EST-01"]
+    )
+    posterior = Evento(
+        2, 5.0, 20.0, 100.0, 100.0,
+        datetime(2026, 9, 23, 11, 0, tzinfo=timezone.utc),
+        1, ["EST-02"]
+    )
+    escenario._crearEvento(anterior)
+    escenario._crearEvento(posterior)
+
+    reporte = escenario.verificarEstructura()
+    assert reporte["valido"]
+    assert escenario._obtenerAsociaciones(posterior)["asociado"] is anterior
+
+    escenario.avl.encontrarNodo(2).key.prioridad = 3
+    reporte = escenario.verificarEstructura()
+    assert not reporte["valido"]
+    assert any(
+        "prioridad de la clave no coincide" in error
+        for evento in reporte["eventos_inconsistentes"]
+        for error in evento["errores"]
+    )
+
+    escenario.historico.append(crear_evento(1))
+    reporte = escenario.verificarEstructura()
+    assert any(
+        "Identificador duplicado entre activos e histórico" in error
+        for evento in reporte["eventos_inconsistentes"]
+        for error in evento["errores"]
+    )
+test_auditoria_escenario_valida_asociacion_y_detecta_prioridad()
+print("test auditoria escenario: OK")
+
+
 # ================================================================
 # ID TESTS
 # ================================================================

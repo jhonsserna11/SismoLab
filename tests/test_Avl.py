@@ -432,3 +432,53 @@ def test_recuperacion_arbol_desbalanceado():
     verificar_avl(arbol.raiz)
 test_recuperacion_arbol_desbalanceado()
 print("test recuperacion_arbol_desbalanceado: OK")
+
+
+def test_auditoria_detecta_orden_global_incorrecto():
+    arbol = Avl()
+    arbol.insertar(Key(1, 5.0, 20), crear_evento(20), True)
+    arbol.insertar(Key(1, 5.0, 10), crear_evento(10), True)
+    arbol.insertar(Key(1, 5.0, 30), crear_evento(30), True)
+    arbol.raiz.izq.der = Nodo(Key(1, 5.0, 25), crear_evento(25))
+
+    reporte = arbol.verificarEstructura(True)
+    registro = next(
+        evento for evento in reporte["eventos_inconsistentes"]
+        if evento["id"] == 25
+    )
+    assert not reporte["valido"]
+    assert "Clave fuera del límite superior global" in registro["errores"]
+test_auditoria_detecta_orden_global_incorrecto()
+print("test auditoria orden global: OK")
+
+
+def test_auditoria_distingue_desbalance_en_estres():
+    arbol = Avl()
+    for id_evento in (1, 2, 3):
+        arbol.insertar(Key(1, 5.0, id_evento), crear_evento(id_evento), True)
+
+    reporte_estres = arbol.verificarEstructura(True)
+    reporte_normal = arbol.verificarEstructura(False)
+    assert reporte_estres["valido"]
+    assert not reporte_estres["equilibrado"]
+    assert any(evento["advertencias"] for evento in reporte_estres["eventos_inconsistentes"])
+    assert not reporte_normal["valido"]
+    assert any(
+        "Factor de balance" in error
+        for evento in reporte_normal["eventos_inconsistentes"]
+        for error in evento["errores"]
+    )
+test_auditoria_distingue_desbalance_en_estres()
+print("test auditoria modo estres: OK")
+
+
+def test_auditoria_detecta_altura_incorrecta():
+    arbol = Avl()
+    arbol.insertar(Key(1, 5.0, 1), crear_evento(1), False)
+    arbol.raiz.altura = 3
+
+    reporte = arbol.verificarEstructura()
+    assert not reporte["valido"]
+    assert "Altura almacenada 3; recalculada 0" in reporte["eventos_inconsistentes"][0]["errores"]
+test_auditoria_detecta_altura_incorrecta()
+print("test auditoria altura: OK")
