@@ -151,3 +151,179 @@ def test_deshacer_eliminar():
     assert escenario.eliminados == set()
 test_deshacer_eliminar()
 print("test test_deshacer_eliminar: OK\n\n")
+
+def test_deshacer_parametro():
+    print("-------------------------- test_deshacer_parametro --------------------------\n")
+
+    escenario = crear_escenario()
+
+    assert escenario.W == 48
+
+    escenario.actualizarW(100)
+
+    assert escenario.W == 100
+
+    escenario.deshacer()
+
+    assert escenario.W == 48
+
+
+test_deshacer_parametro()
+
+print("test deshacer_parametro: OK\n\n")
+
+def test_deshacer_reloj():
+    print("-------------------------- test_deshacer_reloj --------------------------\n")
+
+    escenario = crear_escenario()
+
+    reloj_original = escenario.reloj
+
+    escenario.avanzarReloj(10)
+
+    assert escenario.reloj != reloj_original
+
+    escenario.deshacer()
+
+    assert escenario.reloj == reloj_original
+
+
+test_deshacer_reloj()
+
+print("test deshacer_reloj: OK\n\n")
+
+def test_deshacer_marcar_revisado():
+    print("-------------------------- test_deshacer_marcar_revisado --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        200.0,
+        100.0,
+        300.0,
+        datetime(2026, 10, 1, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-2"]
+    )
+
+    assert escenario.avl.raiz.evento.estado == "Pendiente"
+
+    escenario.marcarRevisado(1)
+
+    assert escenario.avl.raiz.evento.estado != "Pendiente"
+
+    escenario.deshacer()
+
+    assert escenario.avl.raiz.evento.estado == "Pendiente"
+
+
+test_deshacer_marcar_revisado()
+
+print("test deshacer_marcar_revisado: OK\n\n")
+
+def test_deshacer_procesamiento_cola():
+    print("-------------------------- test_deshacer_procesamiento_cola --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    class Reporte:
+        def __init__(self):
+            self.id_evento = 1
+            self.magnitud = 5.0
+            self.profundidad = 200.0
+            self.zonax = 100.0
+            self.zonay = 300.0
+            self.fecha = datetime(
+                2026, 10, 1, 10, 0, 0,
+                tzinfo=timezone.utc
+            )
+            self.nRevision = 1
+            self.estacion = "EST-1"
+
+    reporte = Reporte()
+
+    escenario.encolarReporte(reporte)
+
+    assert len(escenario.consultarColaReportes()) == 1
+    assert escenario.avl.raiz is None
+
+    resultado = escenario.procesarSiguienteReporte()
+
+    assert resultado["estado"] == "registrado"
+    assert len(escenario.consultarColaReportes()) == 0
+    assert escenario.avl.raiz is not None
+
+    escenario.deshacer()
+
+    assert len(escenario.consultarColaReportes()) == 1
+    assert escenario.avl.raiz is None
+
+
+test_deshacer_procesamiento_cola()
+
+print("test deshacer_procesamiento_cola: OK\n\n")
+
+def test_varios_deshacer():
+    print("-------------------------- test_varios_deshacer --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    escenario.crearEvento(
+        1,
+        5.0,
+        200.0,
+        100.0,
+        300.0,
+        datetime(2026, 10, 1, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-2"]
+    )
+
+    escenario.crearEvento(
+        2,
+        7.0,
+        100.0,
+        700.0,
+        500.0,
+        datetime(2026, 11, 1, 4, 0, 10, tzinfo=timezone.utc),
+        ["EST-1", "EST-2"]
+    )
+
+    escenario.avanzarReloj(5)
+
+    assert escenario.avl.peso() == 2
+    assert escenario.reloj.hour == 17
+
+    # Deshace el avance del reloj
+    escenario.deshacer()
+
+    assert escenario.avl.peso() == 2
+    assert escenario.reloj.hour == 12
+
+    # Deshace la creación del evento 2
+    escenario.deshacer()
+
+    assert escenario.avl.peso() == 1
+    assert escenario.avl.encontrarNodo(2) is None
+
+    # Deshace la creación del evento 1
+    escenario.deshacer()
+
+    assert escenario.avl.raiz is None
+
+
+test_varios_deshacer()
+
+print("test varios_deshacer: OK\n\n")
+
+def test_deshacer_sin_historial():
+    print("-------------------------- test_deshacer_sin_historial --------------------------\n")
+
+    escenario = crear_escenario()
+
+    assert escenario.deshacer() is False
+    assert escenario.pila_deshacer == []
+
+test_deshacer_sin_historial()
+
+print("test deshacer_sin_historial: OK\n\n")
