@@ -251,14 +251,22 @@ def test_archivar_rama():
         2, 4.0, 100.0, 100.0, 100.0,
         fecha, ["EST-01"]
     )
+
     escenario.crearEvento(
         1, 4.0, 100.0, 200.0, 200.0,
         fecha, ["EST-01"]
     )
+
     escenario.crearEvento(
         3, 4.0, 100.0, 300.0, 300.0,
         fecha, ["EST-01"]
     )
+
+    claves = {
+        1: escenario.avl.encontrarNodo(1).key,
+        2: escenario.avl.encontrarNodo(2).key,
+        3: escenario.avl.encontrarNodo(3).key,
+    }
 
     resultado = escenario.obtenerRamaArchivable()
     nodo_raiz = resultado["mejor"]["nodo"]
@@ -267,9 +275,15 @@ def test_archivar_rama():
 
     assert {evento.id for evento in escenario.historico} == {1, 2, 3}
 
+    # AVL
     assert escenario.avl.encontrarNodo(1) is None
     assert escenario.avl.encontrarNodo(2) is None
     assert escenario.avl.encontrarNodo(3) is None
+
+    # BST
+    assert escenario.bst.buscar(claves[1]) is None
+    assert escenario.bst.buscar(claves[2]) is None
+    assert escenario.bst.buscar(claves[3]) is None
 test_archivar_rama()
 print("test archivar_rama: OK")
 
@@ -357,6 +371,10 @@ def test_archivar_subarbol_con_reorganizacion():
     assert resultado["mejor"]["nodo"].key.id_key == 4
     assert resultado["mejor"]["cantidad"] == 3
 
+    claves = {
+        id_evento: escenario.avl.encontrarNodo(id_evento).key
+        for id_evento in [2, 4, 6, 8, 12, 14]
+    }
     rama = resultado["mejor"]["nodo"]
 
     escenario.archivarRama(rama)
@@ -378,6 +396,18 @@ def test_archivar_subarbol_con_reorganizacion():
     assert escenario.avl.encontrarNodo(2) is None
     assert escenario.avl.encontrarNodo(4) is None
     assert escenario.avl.encontrarNodo(6) is None
+
+    # Los eventos archivados tampoco deben estar en el BST
+    assert escenario.bst.buscar(claves[2]) is None
+    assert escenario.bst.buscar(claves[4]) is None
+    assert escenario.bst.buscar(claves[6]) is None
+
+    # Los eventos que permanecieron activos deben seguir en el BST
+    assert escenario.bst.buscar(claves[8]) is not None
+    assert escenario.bst.buscar(claves[12]) is not None
+    assert escenario.bst.buscar(claves[14]) is not None
+
+    assert escenario.bst.cantidad_nodos() == 3
 test_archivar_subarbol_con_reorganizacion()
 print("test archivar_rama_con_reorganizacion: OK")
 

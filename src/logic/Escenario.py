@@ -75,6 +75,7 @@ class Escenario:
         prioridad = evento.calcularPrioridad(self._esPoblada(evento.zonax, evento.zonay))
         key = Key(prioridad, evento.magnitud, evento.id)
         self.avl.insertar(key, evento, self.modo_estres)
+        self.bst.insertar(key, evento)
 
 
     def _IdUnica(self, id)->bool:
@@ -262,12 +263,22 @@ class Escenario:
                 evento_nuevo.id
             )
 
+            nodo_bst = self.bst.buscar(nodo.key)
+            if nodo_bst is None:
+                raise RuntimeError("AVL y BST están desincronizados")
+
             if nodo.key != nueva_key:
                 self.avl.eliminar(nodo.key, self.modo_estres)
+                self.bst.eliminar(nodo.key)
+
                 self.avl.insertar(nueva_key, evento_nuevo, self.modo_estres)
+                self.bst.insertar(nueva_key, evento_nuevo)
             else:
                 nodo.evento = evento_nuevo
                 nodo.key = nueva_key
+
+                nodo_bst.evento = evento_nuevo
+                nodo_bst.key = nueva_key
 
             self.metricas["correcciones_aceptadas"] += 1
             return {"estado": "actualizado", "accion": "sustituir"}
@@ -423,6 +434,10 @@ class Escenario:
         evento = nodo.evento
         key = nodo.key
 
+        nodo_bst = self.bst.buscar(key)
+        if nodo_bst is None:
+            raise RuntimeError("AVL y BST están desincronizados")   
+
         nueva_magnitud = evento.magnitud if magnitud is None else magnitud
         nueva_profundidad = evento.profundidad if profundidad is None else profundidad
         nueva_zonax = evento.zonax if zonax is None else zonax
@@ -464,9 +479,13 @@ class Escenario:
 
         if key == nueva_key:
             nodo.evento = nuevo_evento
+            nodo_bst.evento = nuevo_evento
         else:
             self.avl.eliminar(key, self.modo_estres)
+            self.bst.eliminar(key)
+
             self.avl.insertar(nueva_key, nuevo_evento, self.modo_estres)
+            self.bst.insertar(nueva_key, nuevo_evento)
         self.metricas["correcciones_aceptadas"] += 1
     """  """
     def marcarRevisado(self, idEvento):
@@ -485,6 +504,7 @@ class Escenario:
             raise ValueError("el evento a eliminar no existe o no está activo - (id incorrecto)")
         self._guardar_estado()
         self.avl.eliminar(key, self.modo_estres)
+        self.bst.eliminar(key)
         self.eliminados.add(key.id_key)
         
     
@@ -587,8 +607,11 @@ class Escenario:
         nodos = self._obtenerNodosSubarbol(subraiz)
         self._guardar_estado()
         for nodo in nodos:
-            self.historico.append(nodo.evento)
-            self.avl.eliminar(nodo.key, self.modo_estres)
+            evento = nodo.evento
+            key = nodo.key
+            self.historico.append(evento)
+            self.avl.eliminar(key, self.modo_estres)
+            self.bst.eliminar(key)
             self.metricas["eventos_archivados"] += 1
         self.metricas["archivos_masivos"] += 1
 
