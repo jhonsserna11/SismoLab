@@ -482,3 +482,95 @@ def test_auditoria_detecta_altura_incorrecta():
     assert "Altura almacenada 3; recalculada 0" in reporte["eventos_inconsistentes"][0]["errores"]
 test_auditoria_detecta_altura_incorrecta()
 print("test auditoria altura: OK")
+
+
+def test_auditoria_detecta_identificadores_duplicados():
+    arbol = Avl()
+    arbol.raiz = Nodo(Key(1, 5.0, 7), crear_evento(7))
+    arbol.raiz.der = Nodo(Key(2, 5.0, 7), crear_evento(7))
+    arbol.raiz.altura = 1
+
+    reporte = arbol.verificarEstructura()
+
+    assert not reporte["valido"]
+    assert sum(
+        any("Identificador duplicado: 7" in error for error in evento["errores"])
+        for evento in reporte["eventos_inconsistentes"]
+    ) == 2
+test_auditoria_detecta_identificadores_duplicados()
+print("test auditoria IDs duplicados: OK")
+
+
+def test_auditoria_detecta_referencia_ciclica_y_termina():
+    arbol = Avl()
+    arbol.raiz = Nodo(Key(1, 5.0, 1), crear_evento(1))
+    arbol.raiz.izq = Nodo(Key(1, 5.0, 2), crear_evento(2))
+    arbol.raiz.izq.der = arbol.raiz.izq
+    arbol.raiz.altura = 1
+
+    reporte = arbol.verificarEstructura()
+    registros_repetidos = [
+        evento for evento in reporte["eventos_inconsistentes"]
+        if "repetido_de" in evento
+    ]
+
+    assert not reporte["valido"]
+    assert len(registros_repetidos) == 1
+    assert registros_repetidos[0]["id"] == 2
+    assert registros_repetidos[0]["altura_recalculada"] is None
+    assert reporte["nodos_visitados"] == 2
+test_auditoria_detecta_referencia_ciclica_y_termina()
+print("test auditoria referencia ciclica: OK")
+
+
+def test_auditoria_detecta_factor_invalido_en_modo_normal():
+    arbol = Avl()
+    arbol.raiz = Nodo(Key(1, 5.0, 1), crear_evento(1))
+    arbol.raiz.der = Nodo(Key(1, 5.0, 2), crear_evento(2))
+    arbol.raiz.der.der = Nodo(Key(1, 5.0, 3), crear_evento(3))
+    arbol.raiz.altura = 2
+    arbol.raiz.der.altura = 1
+
+    reporte = arbol.verificarEstructura(modo_estres=False)
+    registro_raiz = next(
+        evento for evento in reporte["eventos_inconsistentes"]
+        if evento["id"] == 1
+    )
+
+    assert not reporte["valido"]
+    assert registro_raiz["factor_balance_recalculado"] == -2
+    assert any("Factor de balance" in error for error in registro_raiz["errores"])
+test_auditoria_detecta_factor_invalido_en_modo_normal()
+print("test auditoria factor normal: OK")
+
+
+def test_auditoria_detecta_id_key_distinto_del_evento():
+    arbol = Avl()
+    arbol.raiz = Nodo(Key(1, 5.0, 2), crear_evento(1))
+
+    reporte = arbol.verificarEstructura()
+
+    assert not reporte["valido"]
+    assert any(
+        "El identificador de la clave no coincide con el evento" in error
+        for evento in reporte["eventos_inconsistentes"]
+        for error in evento["errores"]
+    )
+test_auditoria_detecta_id_key_distinto_del_evento()
+print("test auditoria ID de clave: OK")
+
+
+def test_auditoria_detecta_magnitud_key_distinta_del_evento():
+    arbol = Avl()
+    arbol.raiz = Nodo(Key(1, 5.5, 1), crear_evento(1))
+
+    reporte = arbol.verificarEstructura()
+
+    assert not reporte["valido"]
+    assert any(
+        "La magnitud de la clave no coincide con el evento" in error
+        for evento in reporte["eventos_inconsistentes"]
+        for error in evento["errores"]
+    )
+test_auditoria_detecta_magnitud_key_distinta_del_evento()
+print("test auditoria magnitud de clave: OK")
