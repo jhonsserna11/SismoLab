@@ -32,7 +32,6 @@ class Escenario:
         self.pila_deshacer = []
         self.cola_reportes = deque()
 
-        self.historial_acciones = []
         self.metricas = {
             "correcciones_aceptadas": 0,
             "reportes_descartados": 0,
@@ -46,25 +45,21 @@ class Escenario:
             raise ValueError("W debe ser un número positivo")
         self._guardar_estado()
         self.W = float(valor)
-        self._registrar_accion("cambio_parametro", {"parametro": "W", "valor": self.W})
     def actualizarR(self, valor):
         if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("R debe ser un número positivo")
         self._guardar_estado()
         self.R = float(valor)
-        self._registrar_accion("cambio_parametro", {"parametro": "R", "valor": self.R})
     def actualizarL(self, valor):
         if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("L debe ser un número positivo")
         self._guardar_estado()
         self.L = float(valor)
-        self._registrar_accion("cambio_parametro", {"parametro": "L", "valor": self.L})
     def actualizarT(self, valor):
         if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("T debe ser un número positivo")
         self._guardar_estado()
         self.T = float(valor)
-        self._registrar_accion("cambio_parametro", {"parametro": "T", "valor": self.T})
 
     def crearEvento(self, idEvento, magnitud, profundidad, zonax, zonay, fecha, estacion):
         try:
@@ -74,7 +69,6 @@ class Escenario:
             evento = Evento(idEvento, magnitud, profundidad, zonax, zonay, fecha, 1, estacion)
             self._guardar_estado()
             self._crearEvento(evento)
-            self._registrar_accion("creacion", {"id": idEvento})
         except ValueError as e:
             print("error: ", e)
     def _crearEvento(self, evento:Evento):
@@ -108,7 +102,6 @@ class Escenario:
             raise ValueError("cantidad de horas debe ser tipo int")
         self._guardar_estado()
         self.reloj += timedelta(hours=horas)
-        self._registrar_accion("avance_reloj", {"horas": horas, "nuevo_reloj": self.reloj})
 
 
     def _buscarCandidatos(self, eventoB):
@@ -233,9 +226,7 @@ class Escenario:
     def  _confirmarEvento(self, evento: Evento, reporte):
         if reporte.estacion not in evento.estaciones:
             evento.estaciones.append(reporte.estacion)
-        resultado = {"estado": "confirmado", "accion": "confirmar"}
-        self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-        return resultado
+        return {"estado": "confirmado", "accion": "confirmar"}
 
     def _actualizarEventoReporte(self, nodo: Nodo, reporte):
         evento = nodo.evento
@@ -290,9 +281,7 @@ class Escenario:
                 nodo_bst.key = nueva_key
 
             self.metricas["correcciones_aceptadas"] += 1
-            resultado = {"estado": "actualizado", "accion": "sustituir"}
-            self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-            return resultado
+            return {"estado": "actualizado", "accion": "sustituir"}
         except (ValueError, TypeError):
             nodo.evento = evento
             nodo.key = datos_originales["key"]
@@ -305,9 +294,7 @@ class Escenario:
             evento.revision = revision_original
             evento.estaciones = estaciones_originales
             self.metricas["reportes_descartados"] += 1
-            resultado = {"estado": "desconocido", "accion": "rechazar"}
-            self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-            return resultado
+            return {"estado": "desconocido", "accion": "rechazar"}
 
     def _reactivarEventoArchivado(self, reporte):
         for evento in self.historico:
@@ -329,26 +316,17 @@ class Escenario:
                 nuevo_evento.estado = "Pendiente"
                 self.historico.remove(evento)
                 self._crearEvento(nuevo_evento)
-                self.metricas["correcciones_aceptadas"] += 1
-                resultado = {"estado": "reactivado", "accion": "reactivar"}
-                self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-                return resultado
-        resultado = {"estado": "archivado", "accion": "descartar"}
-        self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-        return resultado
+                return {"estado": "reactivado", "accion": "reactivar"}
+        return {"estado": "archivado", "accion": "descartar"}
 
     def procesarReporte(self, reporte):
         if not self._datos_validos_reporte(reporte):
             self.metricas["reportes_descartados"] += 1
-            resultado = {"estado": "desconocido", "accion": "rechazar"}
-            self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-            return resultado
+            return {"estado": "desconocido", "accion": "rechazar"}
 
         if reporte.id_evento in self.eliminados:
             self.metricas["reportes_descartados"] += 1
-            resultado = {"estado": "eliminado", "accion": "rechazar"}
-            self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-            return resultado
+            return {"estado": "eliminado", "accion": "rechazar"}
 
         nodo = self.avl.encontrarNodo(reporte.id_evento)
         if nodo is not None:
@@ -356,9 +334,7 @@ class Escenario:
 
             if reporte.nRevision < evento.revision:
                 self.metricas["reportes_descartados"] += 1
-                resultado = {"estado": "antiguo", "accion": "descartar"}
-                self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-                return resultado
+                return {"estado": "antiguo", "accion": "descartar"}
 
             if reporte.nRevision > evento.revision:
                 return self._actualizarEventoReporte(nodo, reporte)
@@ -367,24 +343,18 @@ class Escenario:
                 return self._confirmarEvento(evento, reporte)
 
             self.metricas["conflictos"] += 1
-            resultado = {"estado": "conflicto", "accion": "rechazar"}
-            self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-            return resultado
+            return {"estado": "conflicto", "accion": "rechazar"}
 
         for evento in self.historico:
             if evento.id == reporte.id_evento:
                 if reporte.nRevision > evento.revision:
                     return self._reactivarEventoArchivado(reporte)
                 self.metricas["reportes_descartados"] += 1
-                resultado = {"estado": "archivado", "accion": "descartar"}
-                self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-                return resultado
+                return {"estado": "archivado", "accion": "descartar"}
 
         if not self._IdUnica(reporte.id_evento):
             self.metricas["reportes_descartados"] += 1
-            resultado = {"estado": "desconocido", "accion": "rechazar"}
-            self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-            return resultado
+            return {"estado": "desconocido", "accion": "rechazar"}
 
         evento_nuevo = Evento(
             reporte.id_evento,
@@ -397,9 +367,7 @@ class Escenario:
             [reporte.estacion]
         )
         self._crearEvento(evento_nuevo)
-        resultado = {"estado": "registrado", "accion": "registrar"}
-        self._registrar_accion("procesamiento_reporte", {"id": reporte.id_evento, "revision": reporte.nRevision, "resultado": resultado["accion"]})
-        return resultado
+        return {"estado": "registrado", "accion": "registrar"}
 
     def procesarSiguienteReporte(self):
         if not self.cola_reportes:
@@ -519,7 +487,6 @@ class Escenario:
             self.avl.insertar(nueva_key, nuevo_evento, self.modo_estres)
             self.bst.insertar(nueva_key, nuevo_evento)
         self.metricas["correcciones_aceptadas"] += 1
-        self._registrar_accion("correccion",{"id": idEvento,"revision": nueva_revision})
     """  """
     def marcarRevisado(self, idEvento):
         nodo = self.avl.encontrarNodo(idEvento)
@@ -528,7 +495,6 @@ class Escenario:
             raise ValueError("El id de evento ingresado no existe")
         self._guardar_estado()
         nodo.evento.marcarRevisado()
-        self._registrar_accion("cambio_estado",{"id": idEvento, "estado": "Revisado"})
 
     def eliminacionIndividual(self, key:Key):
         if type(key) is not Key:
@@ -540,7 +506,6 @@ class Escenario:
         self.avl.eliminar(key, self.modo_estres)
         self.bst.eliminar(key)
         self.eliminados.add(key.id_key)
-        self._registrar_accion("eliminacion",{"id": key.id_key})
         
     
 
@@ -649,7 +614,6 @@ class Escenario:
             self.bst.eliminar(key)
             self.metricas["eventos_archivados"] += 1
         self.metricas["archivos_masivos"] += 1
-        self._registrar_accion("archivo_masivo",{"cantidad": len(nodos),"raiz": subraiz.key.id_key})
 
         
     def recuperarArbol(self):
@@ -662,11 +626,9 @@ class Escenario:
         #recibo OK
 
         self.modo_estres = False
-        self._registrar_accion("recuperacion",{})
-        
+
     def obtenerIndicadores(self):
         return {
-            "historialAcciones": self.historial_acciones,
             "metricasAcumulativas": self.metricas,
             "metricasAVL": self.avl.metricas,
             "eventos_activos": self.avl.peso(),
@@ -761,7 +723,6 @@ class Escenario:
         self.modo_estres = estado["modo_estres"]
         self.reloj = estado["reloj"]
 
-        self.historial_acciones = estado["historial_acciones"]
         self.metricas = estado["metricas"]
         self.cola_reportes = estado["cola_reportes"]
 
@@ -778,21 +739,8 @@ class Escenario:
             "L": self.L,
             "T": self.T,
             "modo_estres": self.modo_estres,
-            "historial_acciones": deepcopy(self.historial_acciones),
             "metricas": deepcopy(self.metricas),
             "cola_reportes": deepcopy(self.cola_reportes),
             "reloj": deepcopy(self.reloj)
             }
         self.pila_deshacer.append(estado)
-
-    def _registrar_accion(self, tipo, detalles=None):
-        accion = {
-            "tipo": tipo,
-            "detalles": detalles or {},
-            "metricas": {
-                "escenario": deepcopy(self.metricas),
-                "avl": deepcopy(self.avl.metricas)
-            }
-        }
-
-        self.historial_acciones.append(accion)
