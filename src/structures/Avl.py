@@ -64,7 +64,126 @@ class Avl:
         if nodo is None:
             return 0
         return (self._obtenerAltura(nodo.izq) - self._obtenerAltura(nodo.der))
+    #dfbl<sdfhdsbfjh
+    def verificarEstructura(self, modo_estres: bool = False) -> dict:
+        registros = []
+        visitados = {}
+        ids_eventos = {}
+        equilibrado = True
 
+        def auditar(nodo, limite_inferior, limite_superior):
+            nonlocal equilibrado
+            if nodo is None:
+                return -1, True
+
+            referencia = id(nodo)
+            if referencia in visitados:
+                registros.append({
+                    "referencia": referencia,
+                    "repetido_de": visitados[referencia],
+                    "id": getattr(getattr(nodo, "evento", None), "id", None),
+                    "errores": ["Nodo repetido o ciclo en los enlaces"],
+                    "advertencias": [],
+                    "altura_recalculada": None,
+                    "factor_balance_recalculado": None
+                })
+                return None, False
+            visitados[referencia] = len(registros)
+
+            evento = getattr(nodo, "evento", None)
+            clave = getattr(nodo, "key", None)
+            identificador = getattr(evento, "id", getattr(clave, "id_key", None))
+            registro = {
+                "referencia": referencia,
+                "id": identificador,
+                "errores": [],
+                "advertencias": []
+            }
+            registros.append(registro)
+
+            if not isinstance(clave, Key):
+                registro["errores"].append("Clave ausente o inválida")
+            else:
+                if clave.prioridad not in {1, 2, 3}:
+                    registro["errores"].append(
+                        f"Prioridad inválida en la clave: {clave.prioridad}"
+                    )
+                try:
+                    if limite_inferior is not None and not limite_inferior < clave:
+                        registro["errores"].append("Clave fuera del límite inferior global")
+                    if limite_superior is not None and not clave < limite_superior:
+                        registro["errores"].append("Clave fuera del límite superior global")
+                except (AttributeError, TypeError):
+                    registro["errores"].append("Clave no comparable")
+
+            if evento is None or not hasattr(evento, "id"):
+                registro["errores"].append("Evento ausente o inválido")
+            else:
+                try:
+                    ids_eventos.setdefault(evento.id, []).append(registro)
+                except TypeError:
+                    registro["errores"].append("Identificador de evento inválido")
+                if isinstance(clave, Key):
+                    if clave.id_key != evento.id:
+                        registro["errores"].append("El identificador de la clave no coincide con el evento")
+                    if clave.magnitud != evento.magnitud:
+                        registro["errores"].append("La magnitud de la clave no coincide con el evento")
+
+            altura_izquierda, izquierda_valida = auditar(
+                getattr(nodo, "izq", None), limite_inferior,
+                clave if isinstance(clave, Key) else limite_superior
+            )
+            altura_derecha, derecha_valida = auditar(
+                getattr(nodo, "der", None),
+                clave if isinstance(clave, Key) else limite_inferior, limite_superior
+            )
+            subarbol_valido = izquierda_valida and derecha_valida
+            altura_calculada = (
+                1 + max(altura_izquierda, altura_derecha)
+                if subarbol_valido else None
+            )
+            factor_calculado = (
+                altura_izquierda - altura_derecha
+                if subarbol_valido else None
+            )
+            registro["altura_recalculada"] = altura_calculada
+            registro["factor_balance_recalculado"] = factor_calculado
+
+            if subarbol_valido and getattr(nodo, "altura", None) != altura_calculada:
+                registro["errores"].append(
+                    f"Altura almacenada {getattr(nodo, 'altura', None)}; recalculada {altura_calculada}"
+                )
+
+            if subarbol_valido and abs(factor_calculado) > 1:
+                equilibrado = False
+                mensaje = f"Factor de balance recalculado fuera de [-1, 1]: {factor_calculado}"
+                if modo_estres:
+                    registro["advertencias"].append("Desbalance esperado en modo estrés: " + mensaje)
+                else:
+                    registro["errores"].append(mensaje)
+
+            return altura_calculada, subarbol_valido
+
+        auditar(self.raiz, None, None)
+
+        for identificador, eventos in ids_eventos.items():
+            if len(eventos) > 1:
+                for registro in eventos:
+                    registro["errores"].append(f"Identificador duplicado: {identificador}")
+
+        inconsistentes = [
+            {clave: valor for clave, valor in registro.items() if clave != "referencia"}
+            for registro in registros
+            if registro["errores"] or registro["advertencias"]
+        ]
+        return {
+            "valido": not any(registro["errores"] for registro in registros),
+            "equilibrado": equilibrado,
+            "modo": "estres" if modo_estres else "normal",
+            "nodos_visitados": len(visitados),
+            "eventos_inconsistentes": inconsistentes
+        }
+    #akfbkadhfkbhaj
     def obtenerDatosNodo(self, nodo:Nodo):
         altura = self._obtenerAltura(nodo)
         factor = self._factor_balance(nodo)
@@ -96,8 +215,6 @@ class Avl:
         self._actualizarAltura(y)
 
         return y
-
-    """ -------------------------------------------------------------------------------------- """
 
      #Método inOrder: imprime el arbol de menor a mayor keys
     def inOrder(self):
