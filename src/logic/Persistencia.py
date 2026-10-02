@@ -101,8 +101,8 @@ class Persistencia:
 
         return {
             "tipo": "inserciones",
-            "avl": self._serializarArbol(avl),
-            "bst": self._serializarArbol(bst)
+            "avl": avl,
+            "bst": bst
         }
 
     def _esPoblada(self, zonas, zonax, zonay):
@@ -225,7 +225,16 @@ class Persistencia:
         self._conectarNodos(nodos_datos, nodos)
         self._validarConectividad(nodos, raiz_id)
         self._validarOrdenGlobal(nodos, raiz_id)
-        self._validarAlturasYFactores(nodos, nodos_datos, raiz_id)
+        balanceado = self._validarAlturasYFactores(nodos, nodos_datos, raiz_id)
+        nuevo_avl = Avl()
+
+        if raiz_id is not None:
+            nuevo_avl.raiz = nodos[raiz_id]
+        return {
+            "tipo": "topologia",
+            "balanceado": balanceado,
+            "avl": nuevo_avl
+        }
 
 
     def _validarNodo(self, datos_nodo, ids: set, nodos: dict, zonas):
@@ -445,23 +454,23 @@ class Persistencia:
                 "altura": datos_nodo["altura"],
                 "factor": datos_nodo["factor"]
             }
-
+        balanceado = True
         def _calcular(nodo):
 
             if nodo is None:
-                return -1
+                # entrega -1 porque es hoja y sus hijos none le retornan -1, para que la altura calculada de la hoja sea 0 (-1 -(-1) = 0)
+                # entrega True porque si esta vacio esta balanceado y si es una hoja supone que desde la hoja es balanceado y se manda el True al escenario superior de la pila de recursion
+                return -1, True
 
-            altura_izquierda = _calcular(nodo.izq)
-            altura_derecha = _calcular(nodo.der)
+            altura_izquierda, balanceado_izquierda = _calcular(nodo.izq)
+            altura_derecha, balanceado_derecha = _calcular(nodo.der)
 
             altura_calculada = 1 + max(
                 altura_izquierda,
                 altura_derecha
             )
 
-            factor_calculado = (
-                altura_izquierda - altura_derecha
-            )
+            factor_calculado = (altura_izquierda - altura_derecha)
 
             id_nodo = nodo.key.id_key
             datos_nodo = datos_por_id[id_nodo]
@@ -480,7 +489,11 @@ class Persistencia:
                     f"calculado: {factor_calculado}."
                 )
 
-            return altura_calculada
+            balanceado = (balanceado_izquierda and balanceado_derecha and -1 <= factor_calculado <= 1)
+
+            return altura_calculada, balanceado
 
         if raiz_id is not None:
-            _calcular(nodos[raiz_id])      
+            altura_calculada, balanceado = _calcular(nodos[raiz_id])  
+            return balanceado
+        return True

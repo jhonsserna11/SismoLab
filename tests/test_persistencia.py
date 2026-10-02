@@ -1,4 +1,3 @@
-from src.logic.Persistencia import Persistencia
 from src.logic.Escenario import Escenario
 from datetime import datetime, timezone
 from src.domain.Zona import Zona
@@ -74,12 +73,8 @@ def test_cargar_inserciones():
     print("-------------------------- test_cargar_inserciones --------------------------\n")
 
     escenario = crear_escenario_con_zonas()
-    persistencia = Persistencia()
 
-    resultado = persistencia.cargarInserciones(
-        obtenerDict("data/prueba_insercion.json"),
-        escenario.zonas
-    )
+    resultado = escenario.cargarInserciones(obtenerDict("data/prueba_insercion.json"))
 
     avl = resultado["avl"]
     bst = resultado["bst"]
@@ -124,9 +119,15 @@ def test_cargar_inserciones():
     assert nodo2["prioridad"] == 1
     assert nodo3["prioridad"] == 3
 
-    # La carga por inserciones NO modifica el escenario actual.
-    assert escenario.avl.raiz is None
-    assert escenario.bst.raiz is None
+    # La carga por inserciones reemplaza el catálogo activo.
+    assert escenario.avl.raiz is not None
+    assert escenario.bst.raiz is not None
+
+    assert escenario.avl.raiz.key.id_key == avl["raiz"]
+    assert escenario.bst.raiz.key.id_key == bst["raiz"]
+
+    assert escenario.avl.peso() == 3
+    assert escenario.bst.cantidad_nodos() == 3
 
     print("AVL cargado:", len(avl["nodos"]), "eventos")
     print("BST cargado:", len(bst["nodos"]), "eventos")
@@ -139,12 +140,8 @@ def test_cargar_inserciones_balancea_avl():
     print("-------------------------- test_cargar_inserciones_balancea_avl --------------------------\n")
 
     escenario = crear_escenario_con_zonas()
-    persistencia = Persistencia()
 
-    resultado = persistencia.cargarInserciones(
-        obtenerDict("data/prueba_insercion_orden.json"),
-        escenario.zonas
-    )
+    resultado = escenario.cargarInserciones(obtenerDict("data/prueba_insercion_orden.json"))
 
     avl = resultado["avl"]
     bst = resultado["bst"]
@@ -178,6 +175,9 @@ def test_cargar_inserciones_balancea_avl():
 
     assert bst["altura"] == 3
 
+    assert escenario.avl.raiz is not None
+    assert escenario.bst.raiz is not None
+
     print("altura AVL:", avl["altura"])
     print("altura BST:", bst["altura"])
 test_cargar_inserciones_balancea_avl()
@@ -189,14 +189,20 @@ def test_cargar_inserciones_id_duplicado():
     print("-------------------------- test_cargar_inserciones_id_duplicado --------------------------\n")
 
     escenario = crear_escenario_con_zonas()
-    persistencia = Persistencia()
+    escenario.crearEvento(
+        99,
+        5.0,
+        20.0,
+        100.0,
+        300.0,
+        datetime(2026, 9, 23, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-1"]
+    )
+    raiz_antes = escenario.avl.raiz
 
     try:
 
-        persistencia.cargarInserciones(
-            obtenerDict("data/prueba_insercion_duplicado.json"),
-            escenario.zonas
-        )
+        escenario.cargarInserciones(obtenerDict("data/prueba_insercion_duplicado.json"))
 
         assert False, "Se esperaba ValueError por ID duplicado."
 
@@ -204,6 +210,10 @@ def test_cargar_inserciones_id_duplicado():
 
         assert "identificador" in str(e).lower()
         print("Error detectado correctamente:", e)
+
+    # La carga inválida no modifica el escenario.
+    assert escenario.avl.raiz is raiz_antes
+    assert escenario.avl.raiz is not None
 test_cargar_inserciones_id_duplicado()
 print("test cargar_inserciones_id_duplicado: OK\n\n")
 
@@ -212,12 +222,8 @@ def test_indicadores_carga_inserciones():
     print("-------------------------- test_indicadores_carga_inserciones --------------------------\n")
 
     escenario = crear_escenario_con_zonas()
-    persistencia = Persistencia()
 
-    resultado = persistencia.cargarInserciones(
-        obtenerDict("data/prueba_insercion_orden.json"),
-        escenario.zonas
-    )
+    resultado = escenario.cargarInserciones(obtenerDict("data/prueba_insercion_orden.json"))
 
     avl = resultado["avl"]
     bst = resultado["bst"]
@@ -262,6 +268,12 @@ def test_indicadores_carga_inserciones():
     # que este BST degenerado.
     assert profundidad_maxima_avl < profundidad_maxima_bst
 
+    assert escenario.avl.raiz is not None
+    assert escenario.bst.raiz is not None
+
+    assert avl["raiz"] is not None
+    assert bst["raiz"] is not None
+
     print("AVL")
     print("  raíz:", avl["raiz"])
     print("  altura:", avl["altura"])
@@ -275,3 +287,69 @@ def test_indicadores_carga_inserciones():
     print("  hojas:", bst["hojas"])
 test_indicadores_carga_inserciones()
 print("\ntest indicadores_carga_inserciones: OK\n\n")
+
+
+def test_deshacer_carga_inserciones():
+    print("-------------------------- test_deshacer_carga_inserciones --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    escenario.crearEvento(
+        99,
+        5.0,
+        20.0,
+        100.0,
+        300.0,
+        datetime(2026, 9, 23, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-1"]
+    )
+    escenario.crearEvento(
+        100,
+        5.0,
+        20.0,
+        100.0,
+        300.0,
+        datetime(2026, 9, 23, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-1"]
+    )
+    escenario.crearEvento(
+        90,
+        5.0,
+        20.0,
+        100.0,
+        300.0,
+        datetime(2026, 9, 23, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-1"]
+    )
+
+    raiz_antes = escenario.avl.raiz.key.id_key
+
+    # Eliminar un evento: su ID queda en eliminados.
+    nodo = escenario.avl.encontrarNodo(100)
+    escenario.eliminacionIndividual(nodo.key)
+
+    # Archivar el otro evento: pasa a historico.
+    nodo = escenario.avl.encontrarNodo(90)
+    escenario.archivarRama(nodo)
+
+    assert 100 in escenario.eliminados
+    assert len(escenario.historico) == 1
+    escenario.cargarInserciones(
+        obtenerDict("data/prueba_insercion.json")
+    )
+
+    assert escenario.avl.raiz.key.id_key != raiz_antes
+    assert escenario.avl.raiz.key.id_key == 1
+
+    assert escenario.historico == []
+    assert escenario.eliminados == set()
+
+    resultado = escenario.deshacer()
+
+    assert resultado is True
+    assert escenario.avl.raiz.key.id_key == raiz_antes
+    assert 100 in escenario.eliminados
+    assert len(escenario.historico) == 1
+    print("Catálogo anterior restaurado correctamente.")
+test_deshacer_carga_inserciones()
+print("test deshacer_carga_inserciones: OK")

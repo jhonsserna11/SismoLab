@@ -5,6 +5,8 @@ from src.structures.Nodo import Nodo, Key
 from src.domain.Evento import Evento
 from src.domain.Zona import Zona
 
+from src.logic.Persistencia import Persistencia
+
 from collections import deque
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
@@ -311,7 +313,7 @@ class Escenario:
                     reporte.zonay,
                     reporte.fecha,
                     reporte.nRevision,
-                    estaciones_reactivadas
+                    estaciones_reactivadas 
                 )
                 nuevo_evento.estado = "Pendiente"
                 self.historico.remove(evento)
@@ -744,3 +746,47 @@ class Escenario:
             "reloj": deepcopy(self.reloj)
             }
         self.pila_deshacer.append(estado)
+
+
+    def cargarInserciones(self, datos:dict):
+        persistencia = Persistencia()
+
+        resultado = persistencia.cargarInserciones(datos, self.zonas)
+
+        nuevo_avl = resultado.get("avl")
+        nuevo_bst = resultado.get("bst")
+
+        if not isinstance(nuevo_avl, Avl):
+            raise RuntimeError("La carga por inserciones no produjo un AVL válido.")
+
+        if not isinstance(nuevo_bst, Bst):
+            raise RuntimeError("La carga por inserciones no produjo un BST válido.")
+
+        self._guardar_estado()
+
+        self.avl = nuevo_avl
+        self.bst = nuevo_bst
+        self.historico = []
+        self.eliminados = set()
+
+        return {
+            "tipo": "inserciones",
+            "avl": persistencia._serializarArbol(self.avl),
+            "bst": persistencia._serializarArbol(self.bst)
+        }
+
+    def cargarTopologia(self, datos:dict):
+        persistencia = Persistencia()
+
+        resultado = persistencia.cargarTopologia(datos, self.zonas)
+
+        if not self.modo_estres and not resultado["balanceado"]:
+            raise ValueError("la topologia del arbol esta desbalanceada: no puede cargarse en modo normal")
+        
+        self._guardar_estado()
+
+        self.avl = resultado["avl"]
+        return {
+            "tipo": "topologia",
+            "avl": persistencia._serializarArbol(self.avl)
+        }
