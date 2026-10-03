@@ -13,6 +13,9 @@ from src.structures.Nodo import Key, Nodo
 from decimal import Decimal
 from collections import deque
 
+import json
+from pathlib import Path
+
 class Persistencia:
 
     def cargarInserciones(self, datos, zonas, estaciones):
@@ -1183,3 +1186,78 @@ class Persistencia:
 
         return recorrer(arbol.raiz, 0)
     
+
+    def guardarVersion(self, escenario, nombre):
+        import json
+        import re
+        from pathlib import Path
+
+        if not isinstance(nombre, str) or not nombre.strip():
+            raise ValueError("El nombre de la versión es obligatorio.")
+
+        nombre = nombre.strip()
+
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", nombre):
+            raise ValueError(
+                "El nombre de la versión solo puede contener letras, números, guion y guion bajo."
+            )
+
+        carpeta = Path(__file__).resolve().parent.parent.parent / "data" / "versiones"
+        carpeta.mkdir(parents=True, exist_ok=True)
+
+        nombre_archivo = nombre
+        contador = 1
+
+        while (carpeta / f"{nombre_archivo}.json").exists():
+            nombre_archivo = f"{nombre}_{contador}"
+            contador += 1
+
+        datos = self.guardarEscenario(escenario)
+
+        ruta = carpeta / f"{nombre_archivo}.json"
+
+        with ruta.open("w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo, indent=4, ensure_ascii=False)
+
+        return {
+            "nombre": nombre_archivo
+        }
+
+    def listarVersiones(self):
+        from pathlib import Path
+
+        carpeta = Path(__file__).resolve().parent.parent.parent / "data" / "versiones"
+        carpeta.mkdir(parents=True, exist_ok=True)
+
+        versiones = []
+
+        for archivo in carpeta.glob("*.json"):
+            versiones.append(archivo.stem)
+
+        versiones.sort()
+
+        return versiones
+
+    def cargarVersion(self, nombre):
+        import json
+        import re
+        from pathlib import Path
+
+        if not isinstance(nombre, str) or not nombre.strip():
+            raise ValueError("El nombre de la versión es obligatorio.")
+
+        nombre = nombre.strip()
+
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", nombre):
+            raise ValueError("Nombre de versión no válido.")
+
+        carpeta = Path(__file__).resolve().parent.parent.parent / "data" / "versiones"
+        ruta = carpeta / f"{nombre}.json"
+
+        if not ruta.exists():
+            raise ValueError(f"La versión '{nombre}' no existe.")
+
+        with ruta.open("r", encoding="utf-8") as archivo:
+            datos = json.load(archivo)
+
+        return datos

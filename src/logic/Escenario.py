@@ -824,16 +824,4 @@ class Escenario:
 
     def guardarEscenario(self):
         persistencia = Persistencia()
-        return persistencia.guardarEscenario(self)
-
-
-    def guardarVersion(self, nombre):
-        persistencia = Persistencia()
-        return persistencia.guardarEscenario(self)
-    
-    def listarVersiones(self):
-
-    def cargarVersion(self, nombre, datos):
-        persistencia = Persistencia()
-
-        
+        return persistencia.guardarEscenario(self)   
