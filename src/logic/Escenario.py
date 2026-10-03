@@ -68,11 +68,14 @@ class Escenario:
             if not self._IdUnica(idEvento):
                 raise ValueError("El identificador ingresado ya existe.")
 
+            self._validarEstaciones(estacion)
+
             evento = Evento(idEvento, magnitud, profundidad, zonax, zonay, fecha, 1, estacion)
             self._guardar_estado()
             self._crearEvento(evento)
         except ValueError as e:
             print("error: ", e)
+            raise
     def _crearEvento(self, evento:Evento):
         prioridad = evento.calcularPrioridad(self._esPoblada(evento.zonax, evento.zonay))
         key = Key(prioridad, evento.magnitud, evento.id)
@@ -92,7 +95,22 @@ class Escenario:
             return False
 
         return True
-  
+    
+    def _validarEstaciones(self, estaciones):
+        if not isinstance(estaciones, list):
+            raise ValueError("Las estaciones deben ser una lista.")
+
+        ids_estaciones = { estacion.id_estacion for estacion in self.estaciones }
+
+        for id_estacion in estaciones:
+            if type(id_estacion) is not str or not id_estacion.strip():
+                raise ValueError(
+                    "La referencia de estación debe ser un string no vacío."
+                )
+
+            if id_estacion not in ids_estaciones:
+                raise ValueError(f"La estación {id_estacion} no existe en el escenario.")
+            
     def _esPoblada(self, zonax, zonay)->bool:
         for zona in self.zonas:
             if zona.contiene(zonax, zonay) and zona.es_poblada():
@@ -210,6 +228,8 @@ class Escenario:
                 raise ValueError("Fecha no tiene estructura válida")
             if reporte.fecha.tzinfo is not timezone.utc or reporte.fecha.microsecond != 0:
                 raise ValueError("Fecha no tiene estructura válida")
+
+            self._validarEstaciones([reporte.estacion])
 
             Evento(
                 reporte.id_evento,
@@ -452,8 +472,12 @@ class Escenario:
             for estacion in evento.estaciones:
                 nueva_estacion.append(estacion)
         else:
+            self._validarEstaciones(estaciones)
+            nueva_estacion = evento.estaciones.copy()
+
             for estacion in estaciones:
-                nueva_estacion.append(estacion)
+                if estacion not in nueva_estacion:
+                    nueva_estacion.append(estacion)
 
         nueva_revision = evento.revision + 1
 
@@ -620,14 +644,15 @@ class Escenario:
         
     def recuperarArbol(self):
         self._guardar_estado()
-        #pausar procesamiento de reportes
 
         self.avl.recuperar()
-
-        #llamar bloque auditoria
-        #recibo OK
+        reporte = self.avl.verificarEstructura(False)
+        if not reporte["valido"] or not reporte["equilibrado"]:
+            self.deshacer()
+            raise ValueError("La recuperación del AVL no logró restablecer una estructura válida y equilibrada.")
 
         self.modo_estres = False
+        self._registrar_accion("recuperacion", {})
 
     def obtenerIndicadores(self):
         return {
@@ -751,7 +776,7 @@ class Escenario:
     def cargarInserciones(self, datos:dict):
         persistencia = Persistencia()
 
-        resultado = persistencia.cargarInserciones(datos, self.zonas)
+        resultado = persistencia.cargarInserciones(datos, self.zonas, self.estaciones)
 
         nuevo_avl = resultado.get("avl")
         nuevo_bst = resultado.get("bst")
@@ -778,7 +803,7 @@ class Escenario:
     def cargarTopologia(self, datos:dict):
         persistencia = Persistencia()
 
-        resultado = persistencia.cargarTopologia(datos, self.zonas)
+        resultado = persistencia.cargarTopologia(datos, self.zonas, self.estaciones)
 
         if not self.modo_estres and not resultado["balanceado"]:
             raise ValueError("la topologia del arbol esta desbalanceada: no puede cargarse en modo normal")
@@ -790,3 +815,25 @@ class Escenario:
             "tipo": "topologia",
             "avl": persistencia._serializarArbol(self.avl)
         }
+
+    def cargarEscenario(self, datos:dict):
+        persistencia = Persistencia()
+        estado = persistencia.cargarEscenario(datos)
+        self._guardar_estado()
+        self._restaurarEstado(estado)
+
+    def guardarEscenario(self):
+        persistencia = Persistencia()
+        return persistencia.guardarEscenario(self)
+
+
+    def guardarVersion(self, nombre):
+        persistencia = Persistencia()
+        return persistencia.guardarEscenario(self)
+    
+    def listarVersiones(self):
+
+    def cargarVersion(self, nombre, datos):
+        persistencia = Persistencia()
+
+        
