@@ -27,6 +27,7 @@ class SismoLabApp:
         self.ventana.title("SismoLab AVL")
         self.ventana.geometry("1200x700")
         self.ventana.minsize(1000, 600)
+        self.ventana.state("zoomed")
 
         self.seccion_actual = "Resumen"
 
@@ -128,28 +129,60 @@ class SismoLabApp:
             padx=25
         )
 
-        # Reloj + botón para avanzar
-        reloj_frame = tk.Frame(self.header)
-        reloj_frame.pack(
+        # ===== INFORMACIÓN Y CONTROLES =====
+
+        controles = tk.Frame(self.header)
+        controles.pack(
             side="right",
             padx=20
         )
 
-        self.reloj_label = tk.Label(
-            reloj_frame,
-            text="",
-            font=("Arial", 11, "bold")
+        # Parámetros del escenario
+        self.parametros_label = tk.Label(
+            controles,
+            text=(
+                f"W: {self.escenario.W} h   |   "
+                f"R: {self.escenario.R} km   |   "
+                f"L: {self.escenario.L}   |   "
+                f"T: {self.escenario.T} h"
+            ),
+            font=("Arial", 9)
         )
-        self.reloj_label.pack(
+        self.parametros_label.pack(
+            side="left",
+            padx=(0, 15)
+        )
+
+        # Modo estrés
+        self.boton_estres = tk.Button(
+            controles,
+            text="⚡ Estrés: OFF",
+            font=("Arial", 9),
+            command=self.cambiar_modo_estres
+        )
+        self.boton_estres.pack(
             side="left",
             padx=(0, 10)
         )
 
+        # Avanzar reloj
         tk.Button(
-            reloj_frame,
+            controles,
             text="⏩ Avanzar",
+            font=("Arial", 9),
             command=self.mostrar_avanzar_reloj
         ).pack(
+            side="left",
+            padx=(0, 10)
+        )
+
+        # Reloj
+        self.reloj_label = tk.Label(
+            controles,
+            text="",
+            font=("Arial", 10, "bold")
+        )
+        self.reloj_label.pack(
             side="left"
         )
 
@@ -288,6 +321,22 @@ class SismoLabApp:
         ).pack(
             side="right"
         )
+    def cambiar_modo_estres(self):
+        self.escenario.modo_estres = not self.escenario.modo_estres
+
+        estado = (
+            "ON"
+            if self.escenario.modo_estres
+            else "OFF"
+        )
+
+        self.boton_estres.config(
+            text=f"⚡ Estrés: {estado}"
+        )
+
+        self.actualizar_estado(
+            f"Modo estrés {'activado' if self.escenario.modo_estres else 'desactivado'}"
+        )
 
     def crear_menu(self):
 
@@ -422,6 +471,16 @@ class SismoLabApp:
                 f"UTC: "
                 f"{self.escenario.reloj.strftime('%Y-%m-%d %H:%M:%S')}"
             )
+        )
+
+        estado = (
+            "ON"
+            if self.escenario.modo_estres
+            else "OFF"
+        )
+
+        self.boton_estres.config(
+            text=f"⚡ Estrés: {estado}"
         )
 
     def deshacer(self):
