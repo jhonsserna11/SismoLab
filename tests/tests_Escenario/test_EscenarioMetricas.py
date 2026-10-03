@@ -263,6 +263,156 @@ def test_limite_L_acceso_costoso():
 test_limite_L_acceso_costoso()
 print("test limite_L_acceso_costoso: OK")
 
+def test_consultar_evento_reporta_nodos_avl_examinados():
+    escenario = Escenario(
+        48,
+        40,
+        3,
+        72,
+        datetime(2026, 9, 28, 12, 0, tzinfo=timezone.utc)
+    )
+    fecha = datetime(2026, 9, 28, 10, 0, tzinfo=timezone.utc)
+
+    for id_evento, magnitud in [(1, 4.0), (2, 5.0), (3, 6.0), (4, 4.5)]:
+        escenario.crearEvento(
+            id_evento,
+            magnitud,
+            100.0,
+            0.0,
+            0.0,
+            fecha,
+            []
+        )
+
+    id_raiz = escenario.avl.raiz.evento.id
+    resultado = escenario.consultarEvento(id_raiz)
+
+    profundidad, visitas_profundidad = escenario.avl.nivel_de_un_nodoConConteo(
+        escenario.avl.raiz.key
+    )
+    assert profundidad == 0
+    assert resultado["nodos_avl_examinados"] == escenario.avl.peso() + 1 + visitas_profundidad
+    assert resultado["asociaciones"]["candidatos"] == []
+    assert resultado["asociaciones"]["asociado"] is None
+
+test_consultar_evento_reporta_nodos_avl_examinados()
+print("test consultar evento reporta nodos AVL examinados: OK")
+
+def crear_escenario_consultas(cantidad=7, limite=0):
+    escenario = Escenario(
+        48,
+        40,
+        limite,
+        72,
+        datetime(2026, 9, 28, 12, 0, tzinfo=timezone.utc)
+    )
+    fecha_base = datetime(2026, 9, 28, 10, 0, tzinfo=timezone.utc)
+    for id_evento in range(1, cantidad + 1):
+        escenario.crearEvento(
+            id_evento,
+            float(id_evento),
+            float(id_evento * 10),
+            0.0,
+            0.0,
+            fecha_base,
+            []
+        )
+    return escenario
+
+
+def test_consultas_top_k_y_rangos_inclusivos():
+    escenario = crear_escenario_consultas()
+    escenario.marcarRevisado(7)
+
+    primeros = escenario.consultarPrimerosPendientes(2)
+    assert [evento["id"] for evento in primeros["eventos"]] == [6, 5]
+    assert primeros["nodos_avl_examinados"] <= escenario.avl.peso()
+    assert len(escenario.consultarPrimerosPendientes(100)["eventos"]) == 6
+
+    magnitudes = escenario.consultarPorMagnitud(2, 4)
+    assert {evento["id"] for evento in magnitudes["eventos"]} == {2, 3, 4}
+    assert magnitudes["nodos_avl_examinados"] == escenario.avl.peso()
+
+    inicio = datetime(2026, 9, 28, 10, 0, tzinfo=timezone.utc)
+    fin = datetime(2026, 9, 28, 10, 0, tzinfo=timezone.utc)
+    profundidad = escenario.consultarPorProfundidadYFechas(30, inicio, fin)
+    assert {evento["id"] for evento in profundidad["eventos"]} == {1, 2, 3}
+    assert profundidad["nodos_avl_examinados"] == escenario.avl.peso()
+
+    clave_antes = escenario.avl.encontrarNodo(7).key
+    escenario.marcarRevisado(6)
+    assert escenario.avl.encontrarNodo(7).key == clave_antes
+
+
+test_consultas_top_k_y_rangos_inclusivos()
+print("test consultas top k y rangos inclusivos: OK")
+
+
+def test_asociaciones_indican_estado_y_referencias_inversas():
+    escenario = Escenario(
+        48,
+        40,
+        3,
+        72,
+        datetime(2026, 9, 28, 12, 0, tzinfo=timezone.utc)
+    )
+    fecha_anterior = datetime(2026, 9, 28, 9, 0, tzinfo=timezone.utc)
+    fecha_posterior = datetime(2026, 9, 28, 10, 0, tzinfo=timezone.utc)
+    escenario.crearEvento(1, 6.0, 20.0, 0.0, 0.0, fecha_anterior, [])
+    escenario.crearEvento(2, 4.0, 20.0, 0.0, 0.0, fecha_posterior, [])
+
+    nodo_archivado = escenario.avl.encontrarNodo(1)
+    escenario.historico.append(nodo_archivado.evento)
+    escenario.avl.eliminar(nodo_archivado.key, escenario.modo_estres)
+    escenario.bst.eliminar(nodo_archivado.key)
+
+    asociaciones = escenario.consultarAsociaciones(2)
+    assert asociaciones["candidatos"] == [{"id": 1, "estado": "archivado"}]
+    assert asociaciones["referencia_elegida"] == {"id": 1, "estado": "archivado"}
+    assert asociaciones["referenciado_por"] == [{"id": 2, "estado": "activo"}]
+    assert asociaciones["nodos_avl_examinados"] > 0
+
+
+test_asociaciones_indican_estado_y_referencias_inversas()
+print("test asociaciones indican estado y referencias inversas: OK")
+
+
+def test_eventos_costosos_reportan_busqueda_por_clave():
+    escenario = crear_escenario_consultas(cantidad=7, limite=0)
+    costosos = escenario.consultarEventosCostosos()
+
+    assert costosos["limite"] == 0
+    assert costosos["eventos"]
+    for evento in costosos["eventos"]:
+        assert evento["prioridad"] == 3
+        assert evento["profundidad_nodo"] > evento["limite"]
+        assert evento["nodos_visitados_busqueda"] == evento["profundidad_nodo"] + 1
+    assert costosos["nodos_avl_examinados"] == (
+        escenario.avl.peso()
+        + sum(evento["nodos_visitados_busqueda"] for evento in costosos["eventos"])
+    )
+
+
+test_eventos_costosos_reportan_busqueda_por_clave()
+print("test eventos costosos reportan busqueda por clave: OK")
+
+
+def test_comparar_ordenes_avl_bst_mismas_claves():
+    escenario = crear_escenario_consultas(cantidad=7)
+    resultados = escenario.compararOrdenesInsercion()
+
+    ascendente = resultados["ascendente"]
+    assert ascendente["altura_bst"] == 6
+    assert ascendente["altura_avl"] < ascendente["altura_bst"]
+    assert ascendente["comparaciones_bst"] > ascendente["comparaciones_avl"]
+    assert ascendente["hojas_avl"] > 0
+    assert ascendente["hojas_bst"] == 1
+    assert len(ascendente["comparaciones_por_clave"]) == 7
+
+
+test_comparar_ordenes_avl_bst_mismas_claves()
+print("test comparar ordenes AVL y BST con mismas claves: OK")
+
 def test_metrica_correccion_al_reactivar_archivado():
 
     reloj = datetime(
