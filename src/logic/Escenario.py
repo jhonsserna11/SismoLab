@@ -43,22 +43,22 @@ class Escenario:
         }
 
     def actualizarW(self, valor):
-        if not isinstance(valor, (int, float)) or valor <= 0:
+        if not isinstance(valor, (int)) or valor <= 0:
             raise ValueError("W debe ser un número positivo")
         self._guardar_estado()
         self.W = float(valor)
     def actualizarR(self, valor):
-        if not isinstance(valor, (int, float)) or valor <= 0:
+        if not isinstance(valor, (int)) or valor <= 0:
             raise ValueError("R debe ser un número positivo")
         self._guardar_estado()
         self.R = float(valor)
     def actualizarL(self, valor):
-        if not isinstance(valor, (int, float)) or valor <= 0:
+        if not isinstance(valor, (int)) or valor <= 0:
             raise ValueError("L debe ser un número positivo")
         self._guardar_estado()
         self.L = float(valor)
     def actualizarT(self, valor):
-        if not isinstance(valor, (int, float)) or valor <= 0:
+        if not isinstance(valor, (int)) or valor <= 0:
             raise ValueError("T debe ser un número positivo")
         self._guardar_estado()
         self.T = float(valor)
