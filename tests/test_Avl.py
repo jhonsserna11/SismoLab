@@ -352,7 +352,7 @@ def test_eliminar_nodo_inexistente():
 test_eliminar_nodo_inexistente()
 print("test eliminar_nodo_inexistente: OK")
 
-""" def test_modoestres_VerificarPostOrden():
+def test_modoestres_VerificarPostOrden():
     arbol = Avl()
 
     k10 = Key(1, 2, 10)
@@ -376,8 +376,14 @@ print("test eliminar_nodo_inexistente: OK")
     arbol.insertar(k50, crear_evento(50), True)
 
     arbol.raiz = arbol._recuperar(arbol.raiz)
-    arbol._inOrder(arbol.raiz)
-test_modoestres_VerificarPostOrden() """
+    inorder = []
+    arbol._inOrder(arbol.raiz, inorder)
+
+    ids_inorder = [key.id_key for key in inorder]
+
+    assert ids_inorder == [10, 15, 20, 22, 25, 27, 30, 40, 50]
+test_modoestres_VerificarPostOrden()
+print("test modoestres_VerificarPostOrden: ")
 
 def test_recuperacion_arbol_desbalanceado():
 
