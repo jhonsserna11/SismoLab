@@ -1,0 +1,250 @@
+{
+    "tipo_carga": "escenario",
+    "configuracion": {
+        "W": 48,
+        "R": 40,
+        "L": 3,
+        "T": 72,
+        "modo_estres": false,
+        "reloj": "2026-10-01T10:00:00+00:00"
+    },
+    "avl": {
+        "raiz": 100,
+        "altura": 1,
+        "profundidad_maxima": 1,
+        "hojas": 2,
+        "nodos": [
+            {
+                "id": 100,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.0,
+                    "id_key": 100
+                },
+                "evento": {
+                    "id": 100,
+                    "magnitud": 5.0,
+                    "profundidad": 20.0,
+                    "zonax": 100.0,
+                    "zonay": 100.0,
+                    "fechaHora": "2026-10-01T09:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": 300,
+                "derecha": 200,
+                "factor": 0
+            },
+            {
+                "id": 300,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 4.0,
+                    "id_key": 300
+                },
+                "evento": {
+                    "id": 300,
+                    "magnitud": 4.0,
+                    "profundidad": 50.0,
+                    "zonax": 200.0,
+                    "zonay": 700.0,
+                    "fechaHora": "2026-10-01T09:20:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            },
+            {
+                "id": 200,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.0,
+                    "id_key": 200
+                },
+                "evento": {
+                    "id": 200,
+                    "magnitud": 6.0,
+                    "profundidad": 30.0,
+                    "zonax": 600.0,
+                    "zonay": 600.0,
+                    "fechaHora": "2026-10-01T09:10:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-2"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            }
+        ]
+    },
+    "bst": {
+        "raiz": 100,
+        "altura": 1,
+        "profundidad_maxima": 1,
+        "hojas": 2,
+        "nodos": [
+            {
+                "id": 100,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.0,
+                    "id_key": 100
+                },
+                "evento": {
+                    "id": 100,
+                    "magnitud": 5.0,
+                    "profundidad": 20.0,
+                    "zonax": 100.0,
+                    "zonay": 100.0,
+                    "fechaHora": "2026-10-01T09:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": 300,
+                "derecha": 200
+            },
+            {
+                "id": 300,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 4.0,
+                    "id_key": 300
+                },
+                "evento": {
+                    "id": 300,
+                    "magnitud": 4.0,
+                    "profundidad": 50.0,
+                    "zonax": 200.0,
+                    "zonay": 700.0,
+                    "fechaHora": "2026-10-01T09:20:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 200,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.0,
+                    "id_key": 200
+                },
+                "evento": {
+                    "id": 200,
+                    "magnitud": 6.0,
+                    "profundidad": 30.0,
+                    "zonax": 600.0,
+                    "zonay": 600.0,
+                    "fechaHora": "2026-10-01T09:10:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-2"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            }
+        ]
+    },
+    "historico": [],
+    "eliminados": [],
+    "estaciones": [
+        {
+            "id_estacion": "EST-1",
+            "nombre": "Manizales"
+        },
+        {
+            "id_estacion": "EST-2",
+            "nombre": "Medellín"
+        },
+        {
+            "id_estacion": "EST-3",
+            "nombre": "Bogotá"
+        },
+        {
+            "id_estacion": "EST-4",
+            "nombre": "Armenia"
+        }
+    ],
+    "zonas": [
+        {
+            "id_zona": 1,
+            "nombre": "Zona poblada 1",
+            "x_min": 0.0,
+            "x_max": 500.0,
+            "y_min": 0.0,
+            "y_max": 500.0,
+            "poblada": true
+        },
+        {
+            "id_zona": 2,
+            "nombre": "Zona poblada 2",
+            "x_min": 501.0,
+            "x_max": 1000.0,
+            "y_min": 501.0,
+            "y_max": 1000.0,
+            "poblada": true
+        },
+        {
+            "id_zona": 3,
+            "nombre": "Zona no poblada 1",
+            "x_min": 0.0,
+            "x_max": 500.0,
+            "y_min": 501.0,
+            "y_max": 1000.0,
+            "poblada": false
+        },
+        {
+            "id_zona": 4,
+            "nombre": "Zona no poblada 2",
+            "x_min": 501.0,
+            "x_max": 1000.0,
+            "y_min": 0.0,
+            "y_max": 500.0,
+            "poblada": false
+        }
+    ],
+    "cola_reportes": [],
+    "metricas": {
+        "escenario": {
+            "correcciones_aceptadas": 0,
+            "reportes_descartados": 0,
+            "conflictos": 0,
+            "archivos_masivos": 0,
+            "eventos_archivados": 0
+        },
+        "avl": {
+            "casos_LL": 0,
+            "casos_RR": 0,
+            "casos_LR": 0,
+            "casos_RL": 0,
+            "giros_izquierda": 0,
+            "giros_derecha": 0
+        }
+    }
+}

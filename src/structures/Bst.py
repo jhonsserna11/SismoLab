@@ -209,3 +209,33 @@ class Bst:
         # Buscar en el subárbol derecho
         resultado_der = self._profundidad(nodo.der, dato, nivel + 1)
         return resultado_der
+
+    def hojas(self):
+        def contar_hojas(nodo):
+            if nodo is None:
+                return 0
+
+            if nodo.izq is None and nodo.der is None:
+                return 1
+
+            return contar_hojas(nodo.izq) + contar_hojas(nodo.der)
+
+        return contar_hojas(self.raiz)
+
+    def profundidad_maxima(self):
+        def calcular(nodo, profundidad):
+            if nodo is None:
+                return -1
+
+            if nodo.izq is None and nodo.der is None:
+                return profundidad
+
+            profundidad_izq = calcular(nodo.izq, profundidad + 1)
+            profundidad_der = calcular(nodo.der, profundidad + 1)
+
+            return max(profundidad_izq, profundidad_der)
+
+        if self.raiz is None:
+            return -1
+
+        return calcular(self.raiz, 0)
