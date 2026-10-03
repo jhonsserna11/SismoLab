@@ -1,7 +1,9 @@
 from src.logic.Escenario import Escenario
 from datetime import datetime, timezone
 from src.domain.Zona import Zona
+
 import json
+from copy import deepcopy
 
 def obtenerDict(ruta):
     with open(ruta, "r", encoding="utf-8") as archivo:
@@ -115,9 +117,9 @@ def test_cargar_inserciones():
     assert nodo2["evento"]["magnitud"] == 4.1
     assert nodo3["evento"]["magnitud"] == 6.0
 
-    assert nodo1["prioridad"] == 3
-    assert nodo2["prioridad"] == 1
-    assert nodo3["prioridad"] == 3
+    assert nodo1["key"]["prioridad"] == 3
+    assert nodo2["key"]["prioridad"] == 1
+    assert nodo3["key"]["prioridad"] == 3
 
     # La carga por inserciones reemplaza el catálogo activo.
     assert escenario.avl.raiz is not None
@@ -248,19 +250,13 @@ def test_indicadores_carga_inserciones():
     assert avl["altura"] >= 0
     assert avl["hojas"] >= 1
 
-    profundidad_maxima_avl = max(
-        nodo["profundidad"]
-        for nodo in avl["nodos"]
-    )
+    profundidad_maxima_avl = avl["profundidad_maxima"]
 
     # Indicadores del BST.
     assert bst["altura"] == 3
     assert bst["hojas"] == 1
 
-    profundidad_maxima_bst = max(
-        nodo["profundidad"]
-        for nodo in bst["nodos"]
-    )
+    profundidad_maxima_bst = bst["profundidad_maxima"]
 
     assert profundidad_maxima_bst == 3
 
@@ -334,9 +330,8 @@ def test_deshacer_carga_inserciones():
 
     assert 100 in escenario.eliminados
     assert len(escenario.historico) == 1
-    escenario.cargarInserciones(
-        obtenerDict("data/prueba_insercion.json")
-    )
+
+    escenario.cargarInserciones(obtenerDict("data/prueba_insercion.json"))
 
     assert escenario.avl.raiz.key.id_key != raiz_antes
     assert escenario.avl.raiz.key.id_key == 1
@@ -353,3 +348,273 @@ def test_deshacer_carga_inserciones():
     print("Catálogo anterior restaurado correctamente.")
 test_deshacer_carga_inserciones()
 print("test deshacer_carga_inserciones: OK")
+
+
+def test_cargar_topologia():
+    print("-------------------------- test_cargar_topologia --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    resultado = escenario.cargarTopologia(
+        obtenerDict("data/prueba_topologia.json")
+    )
+
+    avl = resultado["avl"]
+
+    assert resultado["tipo"] == "topologia"
+    assert avl["raiz"] == 2
+    assert len(avl["nodos"]) == 3
+
+    nodo1 = next(
+        nodo for nodo in avl["nodos"]
+        if nodo["id"] == 1
+    )
+
+    nodo2 = next(
+        nodo for nodo in avl["nodos"]
+        if nodo["id"] == 2
+    )
+
+    nodo3 = next(
+        nodo for nodo in avl["nodos"]
+        if nodo["id"] == 3
+    )
+
+    assert nodo2["izquierda"] == 1
+    assert nodo2["derecha"] == 3
+
+    assert nodo1["izquierda"] is None
+    assert nodo1["derecha"] is None
+
+    assert nodo3["izquierda"] is None
+    assert nodo3["derecha"] is None
+
+    assert nodo2["altura"] == 1
+    assert nodo2["factor"] == 0
+
+    assert escenario.avl.raiz is not None
+    assert escenario.avl.raiz.key.id_key == 2
+
+    assert escenario.avl.raiz.izq.key.id_key == 1
+    assert escenario.avl.raiz.der.key.id_key == 3
+
+    print("Topología cargada correctamente.")
+    print("Raíz:", avl["raiz"])
+    print("Altura:", avl["altura"])
+test_cargar_topologia()
+print("test cargar_topologia: OK")
+
+def test_cargar_topologia_prioridad_incorrecta():
+    print("-------------------------- test_cargar_topologia_prioridad_incorrecta --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    datos["nodos"][0]["key"]["prioridad"] = 1
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+
+        assert False, "Se esperaba ValueError por prioridad incorrecta."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_prioridad_incorrecta()
+print("test cargar_topologia_prioridad_incorrecta: OK")
+
+
+def test_cargar_topologia_referencia_inexistente():
+    print("-------------------------- test_cargar_topologia_referencia_inexistente --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    datos["nodos"][0]["izquierda"] = 99
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+
+        assert False, "Se esperaba ValueError por referencia inexistente."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_referencia_inexistente()
+print("test cargar_topologia_referencia_inexistente: OK")
+
+def test_cargar_topologia_dos_padres():
+    print("-------------------------- test_cargar_topologia_dos_padres --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    datos["nodos"][2]["derecha"] = 1
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+        
+        assert False, "Se esperaba ValueError por nodo con dos padres."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_dos_padres()
+print("test cargar_topologia_dos_padres: OK")
+
+def test_cargar_topologia_nodo_desconectado():
+    print("-------------------------- test_cargar_topologia_nodo_desconectado --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    nodo = deepcopy(datos["nodos"][1])
+
+    nodo["id"] = 4
+    nodo["key"]["id_key"] = 4
+    nodo["evento"]["id"] = 4
+
+    datos["nodos"].append(nodo)
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+
+        assert False, "Se esperaba ValueError por nodo desconectado."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_nodo_desconectado()
+print("test cargar_topologia_nodo_desconectado: OK")
+
+def test_cargar_topologia_altura_incorrecta():
+    print("-------------------------- test_cargar_topologia_altura_incorrecta --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    datos["nodos"][0]["altura"] = 99
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+
+        assert False, "Se esperaba ValueError por altura incorrecta."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_altura_incorrecta()
+print("test cargar_topologia_altura_incorrecta: OK")
+
+def test_cargar_topologia_factor_incorrecto():
+    print("-------------------------- test_cargar_topologia_factor_incorrecto --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    datos["nodos"][0]["factor"] = 99
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+
+        assert False, "Se esperaba ValueError por factor incorrecto."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_factor_incorrecto()
+print("test cargar_topologia_factor_incorrecto: OK")
+
+def test_cargar_topologia_raiz_incorrecta():
+    print("-------------------------- test_cargar_topologia_raiz_incorrecta --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    escenario.crearEvento(1, 3.0, 100.0, 100.0, 304.6, datetime(2026, 9, 21, 11, 45, 32, tzinfo=timezone.utc), ["EST-4"])
+
+    datos["raiz"] = 1
+
+    try:
+        escenario.cargarTopologia(datos)
+        #verificar que el estado antes de la carga no cambió
+        assert escenario.avl.raiz.key == 1
+        assert escenario.avl.raiz.evento.zonax == 100.0
+        assert escenario.avl.raiz.evento.zonay == 304.6
+
+        assert False, "Se esperaba ValueError por raíz incorrecta."
+    except ValueError as e:
+        print("Error detectado correctamente:", e)
+test_cargar_topologia_raiz_incorrecta()
+print("test argar_topologia_raiz_incorrecta: OK")
+
+def test_cargar_topologia_invalida_conserva_escenario():
+    print("-------------------------- test_cargar_topologia_invalida_conserva_escenario --------------------------\n")
+
+    escenario = crear_escenario_con_zonas()
+
+    escenario.crearEvento(
+        99,
+        5.0,
+        20.0,
+        100.0,
+        300.0,
+        datetime(2026, 9, 23, 10, 0, 0, tzinfo=timezone.utc),
+        ["EST-1"]
+    )
+
+    raiz_antes = escenario.avl.raiz
+
+    datos = obtenerDict("data/prueba_topologia.json")
+    datos = deepcopy(datos)
+
+    datos["nodos"][0]["altura"] = 99
+
+    try:
+        escenario.cargarTopologia(datos)
+        assert False, "Se esperaba ValueError."
+    except ValueError:
+        pass
+
+    assert escenario.avl.raiz is raiz_antes
+    assert escenario.avl.raiz is not None
+test_cargar_topologia_invalida_conserva_escenario()
+print("test cargar_topologia_invalida_conserva_escenario: OK")

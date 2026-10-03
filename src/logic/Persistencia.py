@@ -115,13 +115,22 @@ class Persistencia:
     def _serializarArbol(self, arbol):
         arbol.altura()
         nodos = []
+        profundidad_maxima = -1
 
         def recorrer(nodo, profundidad):
             if nodo is None:
                 return
 
+            nonlocal profundidad_maxima
+            profundidad_maxima = max(profundidad_maxima, profundidad)
+
             datos = {
                 "id": nodo.key.id_key,
+                "key": {
+                    "prioridad": nodo.key.prioridad,
+                    "magnitud": float(nodo.evento.magnitud),
+                    "id_key": nodo.key.id_key
+                },
                 "evento": {
                     "id": nodo.evento.id,
                     "magnitud": float(nodo.evento.magnitud),
@@ -133,8 +142,6 @@ class Persistencia:
                     "estaciones": nodo.evento.estaciones,
                     "estado": nodo.evento.estado
                 },
-                "prioridad": nodo.key.prioridad,
-                "profundidad": profundidad,
                 "altura": nodo.altura,
                 "izquierda": (
                     nodo.izq.key.id_key
@@ -149,10 +156,7 @@ class Persistencia:
             }
 
             if type(arbol) is Avl:
-                datos["factor"] = (
-                    (nodo.izq.altura if nodo.izq is not None else -1)
-                    - (nodo.der.altura if nodo.der is not None else -1)
-                )
+                datos["factor"] = ((nodo.izq.altura if nodo.izq is not None else -1) - (nodo.der.altura if nodo.der is not None else -1))
 
             nodos.append(datos)
 
@@ -168,11 +172,7 @@ class Persistencia:
                 else None
             ),
             "altura": arbol.altura(),
-            "profundidad_maxima": (
-                max(nodo["profundidad"] for nodo in nodos)
-                if nodos
-                else -1
-            ),
+            "profundidad_maxima": profundidad_maxima,
             "hojas": arbol.hojas(),
             "nodos": nodos
         }
@@ -481,6 +481,7 @@ class Persistencia:
                     f"Guardada: {datos_nodo['altura']}, "
                     f"calculada: {altura_calculada}."
                 )
+            nodo.altura = altura_calculada
 
             if datos_nodo["factor"] != factor_calculado:
                 raise ValueError(
