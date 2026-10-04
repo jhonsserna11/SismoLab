@@ -48,6 +48,21 @@ class Bst:
         else:
             # Nodo encontrado
             return nodo
+
+    def buscarConConteo(self, dato: Key):
+        nodo = self.raiz
+        comparaciones = 0
+
+        while nodo is not None:
+            comparaciones += 1
+            if dato == nodo.key:
+                return nodo, comparaciones
+            if dato < nodo.key:
+                nodo = nodo.izq
+            else:
+                nodo = nodo.der
+
+        return None, comparaciones
     
     def eliminar(self, dato: Key) -> None:
         if self.raiz is None:
@@ -142,6 +157,16 @@ class Bst:
         else:
             altura_resultado = self._altura(self.raiz)
             return altura_resultado
+
+    def hojas(self) -> int:
+        return self._hojas(self.raiz)
+
+    def _hojas(self, nodo: Optional[Nodo]) -> int:
+        if nodo is None:
+            return 0
+        if nodo.esHoja():
+            return 1
+        return self._hojas(nodo.izq) + self._hojas(nodo.der)
     
     def _altura(self, nodo: Optional[Nodo]) -> int:
         
