@@ -1,34 +1,39 @@
 # SismoLab
 
-SismoLab es un proyecto de análisis y gestión de eventos sísmicos basado en árboles AVL y BST. El sistema permite crear eventos, procesar reportes, consultar asociaciones y comparar el rendimiento estructural de distintas operaciones.
+SismoLab is a Python application for managing and analyzing seismic events. It combines a Tkinter desktop interface, an in-memory AVL tree for active events, a BST for comparison, and JSON persistence for scenario data.
 
-## Índice de documentación
+## Documentation
 
-- [Documentación general](docs/README.md)
-- [Arquitectura del proyecto](docs/arquitectura.md)
-- [Dominio del problema](docs/dominio.md)
-- [Estructuras de datos](docs/estructuras.md)
-- [Lógica del escenario](docs/logica.md)
-- [Pruebas](docs/pruebas.md)
+- [Documentation index](docs/README.md)
+- [Architecture](docs/arquitectura.md)
+- [Domain model](docs/dominio.md)
+- [Data structures](docs/estructuras.md)
+- [Scenario logic and persistence](docs/logica.md)
+- [Desktop interface](docs/interfaz.md)
+- [Performance queries](docs/consultas_desempeno.md)
+- [Tests](docs/pruebas.md)
 
-## Componentes principales
+## Main components
 
-- `src/domain/`: entidades del dominio.
-- `src/structures/`: AVL, BST y nodos.
-- `src/logic/`: lógica del escenario y consultas.
-- `tests/`: suite de validación.
-- `docs/`: documentación técnica del proyecto.
+- `src/domain/`: seismic-event, zone, station, and report models.
+- `src/structures/`: AVL/BST implementations, keys, and tree nodes.
+- `src/logic/`: scenario orchestration and JSON persistence.
+- `src/gui/`: Tkinter screens for the operational workflows and metrics.
+- `data/`: initial scenario, sample inputs, and saved versions.
+- `tests/`: functional, structural, persistence, and performance-related checks.
 
-## Objetivo del proyecto
+## Run
 
-El sistema está diseñado para:
+Start the desktop application from the repository root:
 
-- mantener activos los eventos más relevantes,
-- validar reportes y actualizaciones,
-- analizar relaciones entre eventos,
-- medir rendimiento y complejidad de las estructuras,
-- comparar AVL y BST bajo distintas inserciones.
+```powershell
+python -m src.main
+```
 
-## Recomendación de lectura
+Run the test suite with:
 
-Para entender el proyecto de forma ordenada, empieza por [docs/README.md](docs/README.md) y luego revisa cada módulo por capas.
+```powershell
+python -m pytest
+```
+
+The application loads its initial scenario from `data/estado_inicial.json`.

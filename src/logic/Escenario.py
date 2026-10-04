@@ -24,10 +24,10 @@ class Escenario:
         self.historico: list[Evento] = []
         self.eliminados = set()
 
-        self.W = w #48 
-        self.R = r #40
-        self.L = l #3
-        self.T = t #72
+        self.W = w
+        self.R = r
+        self.L = l
+        self.T = t
 
         self.modo_estres = False
         self.reloj = reloj
@@ -213,7 +213,6 @@ class Escenario:
 
     def consultarColaReportes(self):
         return list(self.cola_reportes)
-# dhdhdhdhdhdh
     def _normalizar_decimal(self, valor):
         return Decimal(str(valor))
 
@@ -402,8 +401,6 @@ class Escenario:
         
         reporte = self.desencolarSiguienteReporte()
         return self.procesarReporte(reporte)
-
-# dhdhdhdhdh
 
     def verificarEstructura(self):
         reporte = self.avl.verificarEstructura(self.modo_estres)

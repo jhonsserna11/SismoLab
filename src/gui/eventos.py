@@ -9,7 +9,6 @@ class PantallaEventos:
         self.escenario = escenario
         self.mostrar_estado = mostrar_estado
 
-    # displays the active events table
     def mostrar(self):
         self.limpiar()
 
@@ -193,7 +192,7 @@ class PantallaEventos:
             font=("Arial", 11, "bold")
         ).pack(anchor="w", padx=25, pady=(0, 15))
 
-        # Evento archivado o eliminado
+        # Archived and deleted records have no active-event details.
         if estado != "activo":
             tk.Label(
                 ventana,
@@ -244,7 +243,6 @@ class PantallaEventos:
                 anchor="w"
             ).pack(side="left")
 
-        # Estaciones
         tk.Label(
             contenido,
             text="Estaciones:",
@@ -258,7 +256,6 @@ class PantallaEventos:
                 font=("Arial", 10)
             ).pack(anchor="w", padx=15)
 
-        # Asociaciones
         tk.Label(
             contenido,
             text="Asociaciones:",
@@ -381,10 +378,6 @@ class PantallaEventos:
             y_var
         )
 
-        # -------------------------
-        # Estación adicional
-        # -------------------------
-
         tk.Label(
             formulario_campos,
             text="Agregar estación",
@@ -413,10 +406,6 @@ class PantallaEventos:
                 formulario_campos,
                 text="No hay estaciones adicionales disponibles."
             ).pack(anchor="w")
-
-        # -------------------------
-        # Fecha y hora
-        # -------------------------
 
         tk.Label(
             formulario_campos,
@@ -494,10 +483,6 @@ class PantallaEventos:
             font=("Arial", 9)
         ).pack(anchor="w", pady=(8, 0))
 
-        # -------------------------
-        # Botones
-        # -------------------------
-        
         botones = tk.Frame(contenedor)
         botones.pack(fill="x", pady=(25, 0))
 
@@ -709,10 +694,6 @@ class PantallaEventos:
             *opciones_estaciones
         ).pack(anchor="w")
 
-        # -------------------------
-        # Fecha y hora
-        # -------------------------
-
         tk.Label(
             formulario,
             text="Fecha y hora de ocurrencia",
@@ -801,10 +782,6 @@ class PantallaEventos:
             ),
             font=("Arial", 9)
         ).pack(anchor="w", pady=(8, 0))
-
-        # -------------------------
-        # Botones
-        # -------------------------
 
         botones = tk.Frame(contenedor)
         botones.pack(fill="x", pady=(25, 0))

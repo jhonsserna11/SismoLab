@@ -1,64 +1,35 @@
-# Documentación de SismoLab
+# SismoLab Documentation
 
-Esta documentación describe qué hace cada parte del proyecto, para qué sirve y cómo funciona internamente la lógica principal.
+This documentation describes the project architecture, seismic-event rules, tree implementations, scenario workflows, desktop interface, persistence formats, and tests.
 
-## 1. Visión general
+## Project overview
 
-SismoLab es un sistema para gestionar y analizar eventos sísmicos en un escenario geográfico. El núcleo del problema no es solo guardar datos, sino decidir:
+SismoLab manages seismic events in a simulated geographic area. It validates incoming data, assigns event priorities, finds possible associations, processes corrections, archives eligible events, and exposes structural and query metrics. Active events are indexed in an AVL tree; a parallel BST provides a comparison structure.
 
-- qué eventos tienen mayor prioridad,
-- cuál es la relación entre un sismo y otros que ocurrieron cerca de él,
-- qué eventos deben ser revisados, corregidos o archivados,
-- cómo se comporta la estructura del árbol bajo distintos volúmenes de información.
+## Repository layout
 
-La solución combina tres capas bien diferenciadas:
+- `src/domain/`: `Evento`, `Zona`, `Estacion`, and `Reporte` domain models.
+- `src/structures/`: `Key`, `Nodo`, `Avl`, and `Bst` implementations.
+- `src/logic/`: the `Escenario` coordinator and `Persistencia` JSON operations.
+- `src/gui/`: Tkinter screens, including the event summary, seismic map, audit, history, and version list.
+- `data/`: initial state, sample insertion/topology files, and saved JSON versions.
+- `tests/`: tests for domain rules, data structures, persistence, scenario behavior, undo, stress mode, and metrics.
 
-- capa de dominio: entidades del problema real,
-- capa de estructuras: árboles y nodos que administran los eventos,
-- capa de lógica: validaciones, consultas, reportes y análisis de desempeño.
+## Documentation pages
 
-## 2. Estructura del repositorio
+1. [Architecture](arquitectura.md): layers, data flow, and component responsibilities.
+2. [Domain model](dominio.md): entities, validation, priorities, and event association rules.
+3. [Data structures](estructuras.md): composite keys, AVL balancing, and BST comparison.
+4. [Scenario logic and persistence](logica.md): event workflows, reports, history, undo, JSON loads, and saved versions.
+5. [Desktop interface](interfaz.md): navigation and the responsibilities and limits of each screen.
+6. [Performance queries](consultas_desempeno.md): query behavior, counters, and complexity.
+7. [Tests](pruebas.md): test coverage and commands.
 
-- `src/domain/`: modelos del dominio (`Evento`, `Zona`, `Estacion`, `Reporte`).
-- `src/structures/`: estructuras que guardan eventos en memoria (`Nodo`, `Key`, `AVL`, `BST`).
-- `src/logic/`: orquestación del sistema (`Escenario`, `Persistencia`).
-- `src/main.py`: entrada principal del programa.
-- `tests/`: pruebas de funcionamiento y validación.
-- `docs/`: documentación técnica del proyecto.
+## Key system rules
 
-## 3. Qué resuelve cada capa
-
-### 3.1 Capa de dominio
-
-Define la entidad del negocio. En este proyecto, la entidad principal es `Evento`, que valida los datos del sismo y decide su prioridad. Tambien existen `Zona`, `Estacion` y `Reporte`, que aportan contexto geográfico, estaciones de observación y actualizaciones del sistema.
-
-### 3.2 Capa de estructuras
-
-Se encarga de almacenar eventos de forma ordenada, rápida y balanceada. El `AVL` es la estructura principal porque equilibran los niveles para evitar árboles muy desbalanceados. El `BST` se usa como comparación y validación adicional.
-
-### 3.3 Capa de lógica
-
-`Escenario` es el coordinador del sistema. Aquí se crean eventos, se procesan reportes, se validan asociaciones, se consultan, se archivan y se calculan indicadores de rendimiento.
-
-## 4. Reglas clave del sistema
-
-- cada Evento tiene una clave ordenada por prioridad, magnitud e id,
-- la prioridad no depende solo de la magnitud, sino también de la profundidad y si el epicentro cae en una zona poblada,
-- el AVL es la estructura principal para consultas y mantenimiento balanceado,
-- el BST sirve como referencia para comparar el comportamiento frente a una estrategia no balanceada,
-- los reportes pueden actualizar, confirmar, rechazar o reactivar eventos,
-- cada operación relevante registra métricas para evaluar el costo de ejecución.
-
-## 5. Cómo se leen estas páginas
-
-Se recomienda seguir este orden:
-
-1. [arquitectura.md](arquitectura.md): visión general del sistema.
-2. [dominio.md](dominio.md): entidades y reglas del problema.
-3. [estructuras.md](estructuras.md): modelos de almacenamiento.
-4. [logica.md](logica.md): flujo operativo y lógica del negocio.
-5. [pruebas.md](pruebas.md): validación del sistema.
-
-## 6. Objetivo práctico
-
-La documentación tiene como fin explicar no sólo qué existe, sino también por qué se diseñó así. El sistema está construido para que cada evento pueda ser consultado, validado y comparado bajo reglas reales de riesgo sísmico, y además para permitir medir el costo de cada operación sobre los árboles.
+- The tree key is `(priority, magnitude, event_id)`.
+- Priority depends on magnitude, depth, and whether the epicenter lies in a populated zone.
+- Active events are kept in both the AVL and BST; the AVL is the operational tree.
+- Reports may confirm or correct an event, be rejected, conflict with current data, or reactivate an archived event.
+- Archived and deleted events are tracked separately from active tree entries.
+- JSON scenario loading validates structure and event data before restoring the state.

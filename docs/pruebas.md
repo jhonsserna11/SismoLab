@@ -1,62 +1,30 @@
-# Pruebas del proyecto
+# Project Tests
 
-Las pruebas del proyecto validan tanto la estructura de datos como la lógica de negocio y las consultas de desempeño.
+The test suite covers domain validation, tree behavior, scenario workflows, persistence, undo, stress mode, and query/structure metrics.
 
-## 1. Organización de pruebas
+## Test groups
 
-El proyecto tiene pruebas en la carpeta `tests/`, con varios grupos:
+- `test_Avl.py`, `test_Bst.py`, and `test_key.py`: tree operations, ordering, balance, rotations, and key behavior.
+- `test_Evento.py`, `test_Zonas.py`, and `test_reportes.py`: domain rules and report/zone behavior.
+- `test_persistencia.py` and `test_preparar_estado_inicial.py`: JSON loading and initial-state preparation.
+- `tests/tests_Escenario/`: scenario behavior, file loading, undo, stress-mode behavior, and metrics.
 
-- pruebas del AVL
-- pruebas del BST
-- pruebas del dominio `Evento`
-- pruebas de reportes y zonas
-- pruebas del escenario y sus métricas
+## Covered behavior
 
-## 2. Tipo de validaciones
+Functional checks exercise event creation, duplicate IDs, priority calculation, report processing, event association, archival/reactivation, and active/history synchronization. Structural checks validate tree ordering, AVL heights and balance, BST behavior under ordered insertions, and AVL/BST synchronization. Persistence checks include insertion and topology inputs, malformed or duplicate data, state restoration, and undo after loading. Metric tests check query outputs, visit counts, rotation counters, and insertion-order comparisons.
 
-### 2.1 Validación funcional
+## Run the tests
 
-Comprueba que:
+From the repository root:
 
-- los eventos se crean correctamente,
-- no se aceptan ids duplicados,
-- las prioridades se calculan bien,
-- los reportes alteran el estado correcto del evento,
-- las asociaciones son coherentes,
-- el histórico y el activo se mantienen sincronizados.
+```powershell
+python -m pytest
+```
 
-### 2.2 Validación estructural
+To run one test module, pass its path, for example:
 
-Las pruebas revisan:
+```powershell
+python -m pytest tests/test_Avl.py
+```
 
-- altura del árbol,
-- hojas,
-- rotaciones,
-- balance del AVL,
-- sincronización con el BST,
-- orden de inserción y búsquedas.
-
-### 2.3 Validación de desempeño
-
-Se verifican casos como:
-
-- primeros `k` pendientes,
-- rangos por magnitud,
-- rangos por profundidad y fechas,
-- eventos de prioridad alta y costosos,
-- nodos examinados por consulta,
-- comparación AVL vs BST bajo distintos órdenes de inserción.
-
-## 3. Ejemplo de flujo de prueba
-
-Un caso típico consiste en:
-
-1. crear un escenario,
-2. insertar eventos,
-3. consultar propiedades del árbol,
-4. comprobar que una operación devuelve el resultado esperado,
-5. verificar métricas como altura, nodos accesados o rotaciones.
-
-## 4. Importancia de las pruebas
-
-Las pruebas no solo validan que el código funciona, sino que garantizan que las decisiones de diseño no se rompan en cambios posteriores. Esto es especialmente importante en una solución donde la estructura de datos y la lógica de negocio están fuertemente acopladas.
+Some test modules also contain direct invocation code, so running a module directly may execute checks during import. Pytest is the recommended suite runner.

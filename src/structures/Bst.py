@@ -16,13 +16,11 @@ class Bst:
     
     def _insertar(self, nodo: Nodo, dato: Key, evento:Evento) -> None:
         if dato < nodo.key:
-            # Insertar en el subárbol izquierdo
             if nodo.izq is None:
                 nodo.izq = Nodo(key=dato, evento=evento)
             else:
                 self._insertar(nodo.izq, dato, evento)
         elif dato > nodo.key:
-            # Insertar en el subárbol derecho
             if nodo.der is None:
                 nodo.der = Nodo(key=dato, evento=evento)
             else:
@@ -40,13 +38,10 @@ class Bst:
             return None
         
         if dato < nodo.key:
-            # Buscar en el subárbol izquierdo
             return self._buscar(nodo.izq, dato)
         elif dato > nodo.key:
-            # Buscar en el subárbol derecho
             return self._buscar(nodo.der, dato)
         else:
-            # Nodo encontrado
             return nodo
 
     def buscarConConteo(self, dato: Key):
@@ -78,21 +73,16 @@ class Bst:
         elif dato > nodo.key:
             nodo.der = self._eliminar(nodo.der, dato)
         else:
-            # Nodo encontrado
-            # Caso 1: Nodo hoja
             if nodo.izq is None and nodo.der is None:
                 return None
             
-            # Caso 2: Nodo con solo hijo derecho
             if nodo.izq is None:
                 return nodo.der
             
-            # Caso 3: Nodo con solo hijo izquierdo
             if nodo.der is None:
                 return nodo.izq
             
-            # Caso 4: Nodo con dos hijos
-            # Buscar el mínimo en el subárbol derecho (sucesor inorden)
+            # Replace a node with two children by its in-order successor.
             nodo_minimo = self._encontrar_minimo(nodo.der)
             nodo.key = nodo_minimo.key
             nodo.evento = nodo_minimo.evento
@@ -173,16 +163,12 @@ class Bst:
         if nodo is None:
             return -1
         
-        # Calcular la altura del subárbol izquierdo
         altura_izq = self._altura(nodo.izq)
         
-        # Calcular la altura del subárbol derecho
         altura_der = self._altura(nodo.der)
         
-        # La altura del nodo es 1 + el máximo de las alturas de sus subárboles
         altura_nodo = 1 + max(altura_izq, altura_der)
         
-        # Actualizar la altura del nodo
         nodo.altura = altura_nodo
         
         return altura_nodo
@@ -200,7 +186,6 @@ class Bst:
         if nodo is None:
             return 0
         
-        # Contar el nodo actual + cantidad de nodos en subárbol izquierdo + cantidad de nodos en subárbol derecho
         cantidad_izq = self._cantidad_nodos(nodo.izq)
         cantidad_der = self._cantidad_nodos(nodo.der)
         
@@ -222,16 +207,13 @@ class Bst:
         if nodo is None:
             return -1
         
-        # Si encontramos el nodo, retornamos su profundidad
         if dato == nodo.key:
             return nivel
         
-        # Buscar en el subárbol izquierdo
         resultado_izq = self._profundidad(nodo.izq, dato, nivel + 1)
         if resultado_izq != -1:
             return resultado_izq
         
-        # Buscar en el subárbol derecho
         resultado_der = self._profundidad(nodo.der, dato, nivel + 1)
         return resultado_der
 

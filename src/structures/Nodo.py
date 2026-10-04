@@ -35,6 +35,5 @@ class Nodo:
     der: Optional["Nodo"] = None
     altura: int = 0
 
-    #Método esHoja: retorna el valor de verdad de la sentencia -> ambos hijos son None? (no hay hijos ni izq ni der)
     def esHoja(self)->bool:
         return self.izq is None and self.der is None

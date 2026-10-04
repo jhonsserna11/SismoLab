@@ -106,10 +106,10 @@ class Persistencia:
                 evento.id
             )
 
-            # La carga por inserciones exige AVL balanceado.
+            # Insertion loading always builds a balanced AVL.
             avl.insertar(key, evento, False)
 
-            # BST sin balanceo.
+            # The comparison BST intentionally remains unbalanced.
             bst.insertar(key, evento)
 
         return {
@@ -499,8 +499,7 @@ class Persistencia:
         def _calcular(nodo):
 
             if nodo is None:
-                # entrega -1 porque es hoja y sus hijos none le retornan -1, para que la altura calculada de la hoja sea 0 (-1 -(-1) = 0)
-                # entrega True porque si esta vacio esta balanceado y si es una hoja supone que desde la hoja es balanceado y se manda el True al escenario superior de la pila de recursion
+                # Empty subtrees have height -1 and are balanced, so leaves have height 0.
                 return -1, True
 
             altura_izquierda, balanceado_izquierda = _calcular(nodo.izq)
@@ -614,7 +613,6 @@ class Persistencia:
         }
 
     def cargarEscenario(self, datos):
-        # Validacion general JSON
         if not isinstance(datos, dict):
             raise ValueError("El archivo debe contener un objeto JSON.")
 
@@ -624,7 +622,6 @@ class Persistencia:
         return resultado
 
     def _cargarEscenario(self, datos):
-        # Validacion clave Configuracion
         configuracion = datos.get("configuracion")
 
         if not isinstance(configuracion, dict):
@@ -654,7 +651,6 @@ class Persistencia:
             raise ValueError("El parametro modo_estres no es válido - debe ser booleano ( True -> modo_estres activado - False -> modo_estres desactivado (modo normal) )")
         reloj = self._fechaDesdeJsonReloj(reloj)
 
-        # Validacion inicial arboles
         datos_avl = datos.get("avl")
         datos_bst = datos.get("bst")
 
@@ -670,7 +666,6 @@ class Persistencia:
         if set(datos_bst.keys()) != campos_arbol:
             raise ValueError("El arbol BST deben tener todos sus datos: id de la raiz, altura del arbol, profundidad maxima, cantidad de hojas y lista de nodos")
             
-        # Validacion de clave Zonas
         zonas_datos = datos.get("zonas")
         if not isinstance(zonas_datos, list):
             raise ValueError("El campo 'zonas' debe ser una lista.")
@@ -717,24 +712,17 @@ class Persistencia:
             raise ValueError("El campo 'nodos' del árbol AVL debe ser una lista de nodos.")
 
         for nodo_avl in nodos_datos_avl:
-            # Validar cada nodo
             self._validarNodo(nodo_avl, ids_avl, nodosAvl, zonas_temporales)
 
-        # realizar conexiones entre los nodos
         self._conectarNodos(nodos_datos_avl, nodosAvl)
-        # validar conexiones del arbol
         self._validarConectividad(nodosAvl, raiz_avl)
-        # validar topologia y orden del arbol
         self._validarOrdenGlobal(nodosAvl, raiz_avl)
-        # Valida alturas y factores - dice si el arbol está balanceado o no
         balanceado_avl = self._validarAlturasYFactores(nodosAvl, nodos_datos_avl, raiz_avl)
 
-        # crea objeto Avl y referencia la raiz
         nuevo_avl = Avl()
         if raiz_avl is not None:
             nuevo_avl.raiz = nodosAvl[raiz_avl]
 
-        # valida parametros generales calculados del AVL con los ingresados en JSON
         if datos_avl["altura"] != nuevo_avl.altura():
             raise ValueError("La altura del AVL no coincide con la altura calculada.")
 
@@ -750,25 +738,18 @@ class Persistencia:
             raise ValueError("El campo 'nodos' del árbol BST debe ser una lista de nodos.")
 
         for nodo_bst in nodos_datos_bst:
-            #valida cada nodo
             self._validarNodo(nodo_bst, ids_bst, nodosBst, zonas_temporales)
 
-        # realiza conexiones entre nodos
         self._conectarNodos(nodos_datos_bst, nodosBst)
-        # validar conexiones del arbol
         self._validarConectividad(nodosBst, raiz_bst)
-        # validar topologia y orden del arbol
         self._validarOrdenGlobal(nodosBst, raiz_bst)
 
-        #validar alturas de los nodos del arbol BST
         self._validarAlturasBST(nodosBst, nodos_datos_bst, raiz_bst)
 
-        #crea objeto Bst y añade la raiz
         nuevo_bst = Bst()
         if raiz_bst is not None:
             nuevo_bst.raiz = nodosBst[raiz_bst]
 
-        # valida parametros generales calculados del BST con los ingresados en JSON
         if datos_bst["altura"] != nuevo_bst.altura():
             raise ValueError(
                 "La altura del BST no coincide con la altura calculada."

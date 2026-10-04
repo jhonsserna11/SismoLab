@@ -17,7 +17,6 @@ class Avl:
             "giros_derecha": 0
         }
 
-    #Metodo insertar: agrega un nuevo nodo al árbol
     def insertar(self, key:Key, evento:Evento, modo_estres:bool)-> None:
         self.raiz = self._insertar(self.raiz, key, evento, modo_estres)
     def _insertar(self, nodo: Optional[Nodo], key: Key, evento:Evento, modo_estres:bool) -> Nodo:
@@ -64,7 +63,6 @@ class Avl:
         if nodo is None:
             return 0
         return (self._obtenerAltura(nodo.izq) - self._obtenerAltura(nodo.der))
-    #dfbl<sdfhdsbfjh
     def verificarEstructura(self, modo_estres: bool = False) -> dict:
         registros = []
         visitados = {}
@@ -183,7 +181,6 @@ class Avl:
             "nodos_visitados": len(visitados),
             "eventos_inconsistentes": inconsistentes
         }
-    #akfbkadhfkbhaj
     def obtenerDatosNodo(self, nodo:Nodo):
         altura = self._obtenerAltura(nodo)
         factor = self._factor_balance(nodo)
@@ -216,7 +213,6 @@ class Avl:
 
         return y
 
-     #Método inOrder: imprime el arbol de menor a mayor keys
     def inOrder(self):
        recorrido = []
        self._inOrder(self.raiz, recorrido)
@@ -324,17 +320,14 @@ class Avl:
 
             nodos_examinados += 1
 
-            # Si el nodo está por encima del límite inferior,
-            # su subárbol izquierdo todavía puede contener resultados.
+            # A node above the lower bound may have matching keys on its left.
             if nodo.key > limite_inferior:
                 recorrer(nodo.izq)
 
-            # Verifica si el nodo está dentro del intervalo.
             if not (nodo.key < limite_inferior) and not (nodo.key > limite_superior):
                 resultados.append(nodo)
 
-            # Si el nodo está por debajo del límite superior,
-            # su subárbol derecho todavía puede contener resultados.
+            # A node below the upper bound may have matching keys on its right.
             if nodo.key < limite_superior:
                 recorrer(nodo.der)
 
@@ -430,19 +423,15 @@ class Avl:
             raiz.der = self._eliminar(raiz.der, key, modo_estres)
 
         else:
-            # Nodo hoja
             if raiz.esHoja():
                 return None
 
-            # Solo tiene hijo derecho
             if raiz.izq is None:
                 return raiz.der
 
-            # Solo tiene hijo izquierdo
             if raiz.der is None:
                 return raiz.izq
 
-            # Tiene dos hijos
             sucesor = self._buscar_minimo(
                 raiz.der
             )
