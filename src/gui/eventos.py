@@ -9,20 +9,19 @@ class PantallaEventos:
         self.escenario = escenario
         self.mostrar_estado = mostrar_estado
 
-    # displays the active events table
     def mostrar(self):
         self.limpiar()
 
         titulo = tk.Label(
             self.padre,
-            text="Eventos activos",
+            text="Eventos",
             font=("Arial", 22, "bold")
         )
         titulo.pack(anchor="w", pady=(0, 5))
 
         subtitulo = tk.Label(
             self.padre,
-            text="Catálogo de eventos ordenado por clave AVL (P, M, I)",
+            text="Consulta y gestión de eventos activos, históricos y eliminados",
             font=("Arial", 11)
         )
         subtitulo.pack(anchor="w", pady=(0, 15))
@@ -57,8 +56,160 @@ class PantallaEventos:
             command=self.mostrar_formulario
         ).pack(side="right")
 
+
+        area_scroll = tk.Frame(self.padre)
+        area_scroll.pack(
+            fill="both",
+            expand=True
+        )
+
+        canvas = tk.Canvas(
+            area_scroll,
+            highlightthickness=0
+        )
+
+        scrollbar = tk.Scrollbar(
+            area_scroll,
+            orient="vertical",
+            command=canvas.yview
+        )
+
+        contenido = tk.Frame(canvas)
+
+        contenido.bind(
+            "<Configure>",
+            lambda event:
+                canvas.configure(
+                    scrollregion=canvas.bbox("all")
+                )
+        )
+
+        ventana_canvas = canvas.create_window(
+            (0, 0),
+            window=contenido,
+            anchor="nw"
+        )
+
+        canvas.configure(
+            yscrollcommand=scrollbar.set
+        )
+
+        canvas.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+        canvas.bind(
+            "<MouseWheel>",
+            lambda event:
+                canvas.yview_scroll(
+                    int(-event.delta / 120),
+                    "units"
+                )
+        )
+
+        scrollbar.pack(
+            side="right",
+            fill="y"
+        )
+
+        canvas.bind(
+            "<Configure>",
+            lambda event:
+                canvas.itemconfigure(
+                    ventana_canvas,
+                    width=event.width
+                )
+        )
+
+        # =========================================================
+        # ACTIVOS
+        # =========================================================
+
+        self.crear_seccion(
+            contenido,
+            "Eventos activos",
+            "Eventos actualmente almacenados en el catálogo AVL.",
+            self.obtener_eventos_activos(),
+            permitir_correccion=True,
+            permitir_eliminacion=True
+        )
+
+        # =========================================================
+        # HISTÓRICOS
+        # =========================================================
+
+        eventos_historicos = list(self.escenario.historico)
+
+        self.crear_seccion(
+            contenido,
+            "Eventos históricos",
+            "Eventos que fueron archivados del catálogo activo.",
+            eventos_historicos,
+            permitir_correccion=False,
+            permitir_eliminacion=False
+        )
+
+        # =========================================================
+        # ELIMINADOS
+        # =========================================================
+
+        eventos_eliminados = list(self.escenario.eliminados)
+
+        self.crear_seccion(
+            contenido,
+            "Eventos eliminados",
+            "Identificadores registrados como eliminados.",
+            eventos_eliminados,
+            permitir_correccion=False,
+            permitir_eliminacion=False,
+            eliminados=True
+        )
+
+        activos = len(self.obtener_eventos_activos())
+        historicos = len(eventos_historicos)
+        eliminados = len(eventos_eliminados)
+
+        self.mostrar_estado(
+            f"Activos: {activos} | Históricos: {historicos} | "
+            f"Eliminados: {eliminados}"
+        )
+
+    def obtener_eventos_activos(self):
+        eventos = []
+
+        for clave in self.escenario.avl.inOrder():
+            nodo = self.escenario.avl.encontrarNodo(clave.id_key)
+
+            if nodo is not None:
+                eventos.append(nodo.evento)
+
+        return eventos
+
+    def crear_seccion(
+        self,
+        padre,
+        titulo,
+        subtitulo,
+        eventos,
+        permitir_correccion=False,
+        permitir_eliminacion=False,
+        eliminados=False
+    ):
+        tk.Label(
+            padre,
+            text=titulo,
+            font=("Arial", 16, "bold")
+        ).pack(anchor="w", pady=(10, 3))
+
+        tk.Label(
+            padre,
+            text=subtitulo,
+            font=("Arial", 10)
+        ).pack(anchor="w", pady=(0, 8))
+
         encabezado = tk.Frame(
-            self.padre,
+            padre,
             bd=1,
             relief="solid"
         )
@@ -69,7 +220,7 @@ class PantallaEventos:
             ("Magnitud", 12),
             ("ID", 12),
             ("Estado", 25),
-            ("Corregir", 10)
+            ("Acciones", 20)
         ]
 
         for nombre, ancho in columnas:
@@ -80,41 +231,94 @@ class PantallaEventos:
                 width=ancho,
                 anchor="w",
                 padx=10,
-                pady=8
+                pady=7
             ).pack(side="left")
-
-        eventos = self.escenario.avl.inOrder()
 
         if not eventos:
             tk.Label(
-                self.padre,
-                text="No hay eventos activos.",
-                font=("Arial", 12)
-            ).pack(anchor="w", pady=15)
+                padre,
+                text="No hay registros.",
+                font=("Arial", 10)
+            ).pack(anchor="w", pady=(5, 12))
 
-            self.mostrar_estado("No hay eventos activos")
             return
 
-        for clave in eventos:
-            nodo = self.escenario.avl.encontrarNodo(clave.id_key)
+        for elemento in eventos:
 
-            if nodo is None:
+            # -----------------------------------------------------
+            # EVENTOS ELIMINADOS
+            # -----------------------------------------------------
+
+            if eliminados:
+                id_evento = elemento
+
+                fila = tk.Frame(
+                    padre,
+                    bd=1,
+                    relief="solid"
+                )
+                fila.pack(fill="x", pady=1)
+
+                datos = [
+                    "-",
+                    "-",
+                    str(id_evento),
+                    "Eliminado"
+                ]
+
+                for dato, (_, ancho) in zip(datos, columnas[:4]):
+                    boton = tk.Button(
+                        fila,
+                        text=dato,
+                        width=ancho,
+                        anchor="w",
+                        padx=10,
+                        relief="flat",
+                        command=lambda id_evento=id_evento:
+                            self.mostrar_consulta(id_evento)
+                    )
+                    boton.pack(side="left")
+
+                tk.Button(
+                    fila,
+                    text="👁 Consultar",
+                    width=columnas[4][1],
+                    command=lambda id_evento=id_evento:
+                        self.mostrar_consulta(id_evento)
+                ).pack(side="left")
+
                 continue
 
-            evento = nodo.evento
+            # -----------------------------------------------------
+            # EVENTOS ACTIVOS / HISTÓRICOS
+            # -----------------------------------------------------
+
+            evento = elemento
+
+            prioridad = getattr(evento, "prioridad", "-")
+            magnitud = getattr(evento, "magnitud", "-")
+            estado = getattr(evento, "estado", "-")
+
+            # Para eventos históricos, la prioridad puede no estar
+            # directamente en el objeto; se obtiene de su clave si existe.
+            clave = self.obtener_clave_evento(evento)
+
+            if clave is not None:
+                prioridad = clave.prioridad
+                magnitud = clave.magnitud
 
             fila = tk.Frame(
-                self.padre,
+                padre,
                 bd=1,
                 relief="solid"
             )
             fila.pack(fill="x", pady=1)
 
             datos = [
-                str(clave.prioridad),
-                str(clave.magnitud),
-                str(clave.id_key),
-                str(evento.estado)
+                str(prioridad),
+                str(magnitud),
+                str(evento.id),
+                str(estado)
             ]
 
             for dato, (_, ancho) in zip(datos, columnas[:4]):
@@ -130,18 +334,47 @@ class PantallaEventos:
                 )
                 boton.pack(side="left")
 
-            boton_corregir = tk.Button(
-                fila,
-                text="✎",
-                width=columnas[4][1],
-                command=lambda id_evento=evento.id:
-                    self.mostrar_formulario_correccion(id_evento)
-            )
-            boton_corregir.pack(side="left")
+            acciones = tk.Frame(fila)
 
-        self.mostrar_estado(
-            f"Eventos activos: {len(eventos)}"
-        )
+            tk.Button(
+                acciones,
+                text="👁",
+                width=6,
+                command=lambda id_evento=evento.id:
+                    self.mostrar_consulta(id_evento)
+            ).pack(side="left", padx=2)
+
+            if permitir_correccion:
+                tk.Button(
+                    acciones,
+                    text="✎",
+                    width=6,
+                    command=lambda id_evento=evento.id:
+                        self.mostrar_formulario_correccion(id_evento)
+                ).pack(side="left", padx=2)
+
+            if permitir_eliminacion:
+                tk.Button(
+                    acciones,
+                    text="🗑",
+                    width=6,
+                    command=lambda key_evento=clave:
+                        self.eliminarIndividual(key_evento)
+                ).pack(side="left", padx=2)
+
+            acciones.pack(side="left")
+
+        tk.Frame(
+            self.padre,
+            height=10
+        ).pack()
+
+    def obtener_clave_evento(self, evento):
+        for clave in self.escenario.avl.inOrder():
+            if clave.id_key == evento.id:
+                return clave
+
+        return None
 
     def buscar_evento(self):
         texto = self.id_busqueda.get().strip()
@@ -161,7 +394,6 @@ class PantallaEventos:
 
         self.mostrar_consulta(id_evento)
 
-
     def mostrar_consulta(self, id_evento):
         try:
             datos = self.escenario.consultarEvento(id_evento)
@@ -175,15 +407,14 @@ class PantallaEventos:
 
         ventana = tk.Toplevel(self.padre)
         ventana.title(f"Consulta del evento {id_evento}")
-        ventana.geometry("650x800")
+        ventana.geometry("650x620")
         ventana.minsize(600, 550)
 
-        titulo = tk.Label(
+        tk.Label(
             ventana,
             text=f"Evento {id_evento}",
             font=("Arial", 20, "bold")
-        )
-        titulo.pack(anchor="w", padx=25, pady=(20, 5))
+        ).pack(anchor="w", padx=25, pady=(20, 5))
 
         estado = datos["status"]
 
@@ -193,7 +424,6 @@ class PantallaEventos:
             font=("Arial", 11, "bold")
         ).pack(anchor="w", padx=25, pady=(0, 15))
 
-        # Evento archivado o eliminado
         if estado != "activo":
             tk.Label(
                 ventana,
@@ -203,6 +433,12 @@ class PantallaEventos:
                 ),
                 font=("Arial", 11)
             ).pack(anchor="w", padx=25, pady=10)
+
+            tk.Button(
+                ventana,
+                text="Cerrar",
+                command=ventana.destroy
+            ).pack(pady=15)
 
             return
 
@@ -217,7 +453,12 @@ class PantallaEventos:
             ("Fecha y hora", datos["fecha"]),
             ("Revisión", datos["revision"]),
             ("Prioridad", datos["prioridad"]),
-            ("Clave AVL", f'({datos["clave"][0]}, {datos["clave"][1]}, {datos["clave"][2]})'),
+            (
+                "Clave AVL",
+                f'({datos["clave"][0]}, '
+                f'{datos["clave"][1]}, '
+                f'{datos["clave"][2]})'
+            ),
             ("Estado de atención", datos["estado"]),
             ("Poblada", "Sí" if datos["poblada"] else "No"),
             ("Profundidad del nodo", datos["profundidadNodo"]),
@@ -244,7 +485,6 @@ class PantallaEventos:
                 anchor="w"
             ).pack(side="left")
 
-        # Estaciones
         tk.Label(
             contenido,
             text="Estaciones:",
@@ -258,7 +498,6 @@ class PantallaEventos:
                 font=("Arial", 10)
             ).pack(anchor="w", padx=15)
 
-        # Asociaciones
         tk.Label(
             contenido,
             text="Asociaciones:",
@@ -276,7 +515,10 @@ class PantallaEventos:
 
         tk.Label(
             contenido,
-            text=f"Asociado: {asociado if asociado is not None else 'Ninguno'}",
+            text=(
+                f"Asociado: "
+                f"{asociado if asociado is not None else 'Ninguno'}"
+            ),
             font=("Arial", 10)
         ).pack(anchor="w", padx=15)
 
@@ -288,6 +530,37 @@ class PantallaEventos:
             text="Cerrar",
             command=ventana.destroy
         ).pack(side="left", padx=5)
+
+    def eliminarIndividual(self, key_evento):
+        confirmar = messagebox.askyesno(
+            "Eliminar evento",
+            (
+                f"¿Estás seguro de que deseas eliminar "
+                f"el evento {key_evento.id_key}?\n\n"
+                "El evento saldrá del catálogo activo y "
+                "su identificador quedará registrado como eliminado."
+            ),
+            parent=self.padre
+        )
+
+        if not confirmar:
+            return
+
+        try:
+            self.escenario.eliminacionIndividual(key_evento)
+
+        except ValueError as error:
+            messagebox.showerror(
+                "No se pudo eliminar",
+                str(error),
+                parent=self.padre
+            )
+            return
+
+        self.mostrar()
+        self.mostrar_estado(
+            f"Evento {key_evento.id_key} eliminado correctamente"
+        )
 
     def mostrar_formulario_correccion(self, id_evento):
         try:
@@ -381,10 +654,6 @@ class PantallaEventos:
             y_var
         )
 
-        # -------------------------
-        # Estación adicional
-        # -------------------------
-
         tk.Label(
             formulario_campos,
             text="Agregar estación",
@@ -414,10 +683,6 @@ class PantallaEventos:
                 text="No hay estaciones adicionales disponibles."
             ).pack(anchor="w")
 
-        # -------------------------
-        # Fecha y hora
-        # -------------------------
-
         tk.Label(
             formulario_campos,
             text="Fecha y hora de ocurrencia",
@@ -435,54 +700,36 @@ class PantallaEventos:
         segundo_var = tk.IntVar(value=datos["fecha"].second)
 
         self.crear_spinbox(
-            fecha_frame,
-            "Año",
-            anio_var,
-            2000,
-            self.escenario.reloj.year
+            fecha_frame, "Año", anio_var,
+            2000, self.escenario.reloj.year
         )
 
         self.crear_spinbox(
-            fecha_frame,
-            "Mes",
-            mes_var,
-            1,
-            12
+            fecha_frame, "Mes", mes_var,
+            1, 12
         )
 
         self.crear_spinbox(
-            fecha_frame,
-            "Día",
-            dia_var,
-            1,
-            31
+            fecha_frame, "Día", dia_var,
+            1, 31
         )
 
         hora_frame = tk.Frame(formulario_campos)
         hora_frame.pack(fill="x", pady=(10, 0))
 
         self.crear_spinbox(
-            hora_frame,
-            "Hora",
-            hora_var,
-            0,
-            23
+            hora_frame, "Hora", hora_var,
+            0, 23
         )
 
         self.crear_spinbox(
-            hora_frame,
-            "Minuto",
-            minuto_var,
-            0,
-            59
+            hora_frame, "Minuto", minuto_var,
+            0, 59
         )
 
         self.crear_spinbox(
-            hora_frame,
-            "Segundo",
-            segundo_var,
-            0,
-            59
+            hora_frame, "Segundo", segundo_var,
+            0, 59
         )
 
         tk.Label(
@@ -494,10 +741,6 @@ class PantallaEventos:
             font=("Arial", 9)
         ).pack(anchor="w", pady=(8, 0))
 
-        # -------------------------
-        # Botones
-        # -------------------------
-        
         botones = tk.Frame(contenedor)
         botones.pack(fill="x", pady=(25, 0))
 
@@ -528,8 +771,6 @@ class PantallaEventos:
             )
         ).pack(side="right")
 
-        
-    
     def guardar_correccion(
         self,
         id_evento,
@@ -625,6 +866,7 @@ class PantallaEventos:
         self.mostrar_estado(
             f"Evento {id_evento} corregido correctamente"
         )
+
     def mostrar_formulario(self):
         ventana = tk.Toplevel(self.padre)
         ventana.title("Nuevo evento")
@@ -655,35 +897,11 @@ class PantallaEventos:
         x_var = tk.StringVar()
         y_var = tk.StringVar()
 
-        self.crear_campo(
-            formulario,
-            "ID del evento",
-            id_var
-        )
-
-        self.crear_campo(
-            formulario,
-            "Magnitud",
-            magnitud_var
-        )
-
-        self.crear_campo(
-            formulario,
-            "Profundidad (km)",
-            profundidad_var
-        )
-
-        self.crear_campo(
-            formulario,
-            "Coordenada X",
-            x_var
-        )
-
-        self.crear_campo(
-            formulario,
-            "Coordenada Y",
-            y_var
-        )
+        self.crear_campo(formulario, "ID del evento", id_var)
+        self.crear_campo(formulario, "Magnitud", magnitud_var)
+        self.crear_campo(formulario, "Profundidad (km)", profundidad_var)
+        self.crear_campo(formulario, "Coordenada X", x_var)
+        self.crear_campo(formulario, "Coordenada Y", y_var)
 
         tk.Label(
             formulario,
@@ -691,11 +909,9 @@ class PantallaEventos:
             font=("Arial", 10, "bold")
         ).pack(anchor="w", pady=(12, 5))
 
-        estaciones = self.escenario.estaciones
-
         opciones_estaciones = [
             estacion.id_estacion
-            for estacion in estaciones
+            for estacion in self.escenario.estaciones
         ]
 
         estacion_var = tk.StringVar()
@@ -709,10 +925,6 @@ class PantallaEventos:
             *opciones_estaciones
         ).pack(anchor="w")
 
-        # -------------------------
-        # Fecha y hora
-        # -------------------------
-
         tk.Label(
             formulario,
             text="Fecha y hora de ocurrencia",
@@ -722,75 +934,44 @@ class PantallaEventos:
         fecha_frame = tk.Frame(formulario)
         fecha_frame.pack(fill="x")
 
-        anio_var = tk.IntVar(
-            value=self.escenario.reloj.year
-        )
-        mes_var = tk.IntVar(
-            value=self.escenario.reloj.month
-        )
-        dia_var = tk.IntVar(
-            value=self.escenario.reloj.day
-        )
+        anio_var = tk.IntVar(value=self.escenario.reloj.year)
+        mes_var = tk.IntVar(value=self.escenario.reloj.month)
+        dia_var = tk.IntVar(value=self.escenario.reloj.day)
+        hora_var = tk.IntVar(value=self.escenario.reloj.hour)
+        minuto_var = tk.IntVar(value=self.escenario.reloj.minute)
+        segundo_var = tk.IntVar(value=self.escenario.reloj.second)
 
-        hora_var = tk.IntVar(
-            value=self.escenario.reloj.hour
-        )
-        minuto_var = tk.IntVar(
-            value=self.escenario.reloj.minute
-        )
-        segundo_var = tk.IntVar(
-            value=self.escenario.reloj.second
+        self.crear_spinbox(
+            fecha_frame, "Año", anio_var,
+            2000, self.escenario.reloj.year
         )
 
         self.crear_spinbox(
-            fecha_frame,
-            "Año",
-            anio_var,
-            2000,
-            self.escenario.reloj.year
+            fecha_frame, "Mes", mes_var,
+            1, 12
         )
 
         self.crear_spinbox(
-            fecha_frame,
-            "Mes",
-            mes_var,
-            1,
-            12
-        )
-
-        self.crear_spinbox(
-            fecha_frame,
-            "Día",
-            dia_var,
-            1,
-            31
+            fecha_frame, "Día", dia_var,
+            1, 31
         )
 
         hora_frame = tk.Frame(formulario)
         hora_frame.pack(fill="x", pady=(10, 0))
 
         self.crear_spinbox(
-            hora_frame,
-            "Hora",
-            hora_var,
-            0,
-            23
+            hora_frame, "Hora", hora_var,
+            0, 23
         )
 
         self.crear_spinbox(
-            hora_frame,
-            "Minuto",
-            minuto_var,
-            0,
-            59
+            hora_frame, "Minuto", minuto_var,
+            0, 59
         )
 
         self.crear_spinbox(
-            hora_frame,
-            "Segundo",
-            segundo_var,
-            0,
-            59
+            hora_frame, "Segundo", segundo_var,
+            0, 59
         )
 
         tk.Label(
@@ -801,10 +982,6 @@ class PantallaEventos:
             ),
             font=("Arial", 9)
         ).pack(anchor="w", pady=(8, 0))
-
-        # -------------------------
-        # Botones
-        # -------------------------
 
         botones = tk.Frame(contenedor)
         botones.pack(fill="x", pady=(25, 0))
@@ -946,6 +1123,7 @@ class PantallaEventos:
 
         try:
             estaciones = [estacion]
+
             self.escenario.crearEvento(
                 id_evento,
                 magnitud,
@@ -973,6 +1151,7 @@ class PantallaEventos:
         ventana.destroy()
 
         self.mostrar()
+
         self.mostrar_estado(
             f"Evento {id_evento} creado correctamente"
         )

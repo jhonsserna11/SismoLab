@@ -72,7 +72,7 @@ class PantallaZonas:
 
         tk.Label(
             tarjeta,
-            text=f"ID: {zona.id}",
+            text=f"ID: {zona.id_zona}",
             font=("Arial", 10)
         ).pack(anchor="w", pady=(5, 0))
 

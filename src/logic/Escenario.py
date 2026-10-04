@@ -4,6 +4,7 @@ from src.structures.Nodo import Nodo, Key
 
 from src.domain.Evento import Evento
 from src.domain.Zona import Zona
+from src.domain.Reporte import Reporte
 
 from src.logic.Persistencia import Persistencia
 
@@ -197,7 +198,33 @@ class Escenario:
             "candidatos": candidatos,
             "asociado": asociado
         }
+    def prepararReporte(
+        self,
+        id_evento,
+        nRevision,
+        magnitud,
+        profundidad,
+        zonax,
+        zonay,
+        fecha,
+        estacion
+    ):
+        reporte = Reporte(
+            id_evento,
+            nRevision,
+            magnitud,
+            profundidad,
+            zonax,
+            zonay,
+            fecha,
+            estacion
+        )
 
+        if not self._datos_validos_reporte(reporte): raise ValueError("Los datos del reporte no son válidos.")
+
+        self.encolarReporte(reporte)
+
+        return reporte
 
     def encolarReporte(self, reporte):
         self.cola_reportes.append(reporte)
@@ -397,7 +424,47 @@ class Escenario:
         self._guardar_estado()
         
         reporte = self.desencolarSiguienteReporte()
-        return self.procesarReporte(reporte)
+
+        metricas_antes = self.avl.metricas.copy()
+
+        resultado = self.procesarReporte(reporte)
+
+        metricas_despues = self.avl.metricas
+
+        rotaciones = {
+            "izquierda": (
+                metricas_despues["giros_izquierda"]
+                - metricas_antes["giros_izquierda"]
+            ),
+            "derecha": (
+                metricas_despues["giros_derecha"]
+                - metricas_antes["giros_derecha"]
+            ),
+            "LL": (
+                metricas_despues["casos_LL"]
+                - metricas_antes["casos_LL"]
+            ),
+            "RR": (
+                metricas_despues["casos_RR"]
+                - metricas_antes["casos_RR"]
+            ),
+            "LR": (
+                metricas_despues["casos_LR"]
+                - metricas_antes["casos_LR"]
+            ),
+            "RL": (
+                metricas_despues["casos_RL"]
+                - metricas_antes["casos_RL"]
+            )
+        }
+        return {
+            "estacion": reporte.estacion,
+            "evento": reporte.id_evento,
+            "revision": reporte.nRevision,
+            "estado": resultado["estado"],
+            "decision": resultado["accion"],
+            "rotaciones": rotaciones
+        }
 
 # dhdhdhdhdh
 
@@ -825,3 +892,56 @@ class Escenario:
     def guardarEscenario(self):
         persistencia = Persistencia()
         return persistencia.guardarEscenario(self)   
+
+    def obtenerDatosMapa(self):
+        datos = []
+        def recorrer(nodo):
+            if nodo is None:
+                return
+            recorrer(nodo.izq)
+            evento = nodo.evento
+            datos.append({
+                "id": evento.id,
+                "x": float(evento.zonax),
+                "y": float(evento.zonay),
+                "prioridad": nodo.key.prioridad
+            })
+            recorrer(nodo.der)
+        recorrer(self.avl.raiz)
+        return datos
+
+    def obtener_nodos(self, avl, bst):
+        return {
+            "avl": {
+                "raiz": avl.raiz.key.id_key if avl.raiz is not None else None,
+                "nodos": self._obtener_nodos(avl, True)
+            },
+            "bst": {
+                "raiz": bst.raiz.key.id_key if bst.raiz is not None else None,
+                "nodos": self._obtener_nodos(bst, False)
+            }
+    }
+
+    def _obtener_nodos(self, arbol, es_avl):
+        nodos = []
+
+        def recorrer(nodo, profundidad=0):
+            if nodo is None:
+                return
+
+            nodos.append({
+                "id": nodo.key.id_key,
+                "prioridad": nodo.key.prioridad,
+                "magnitud": nodo.key.magnitud,
+                "profundidad": profundidad,
+                "altura": nodo.altura,
+                "factor": self.avl._factor_balance(nodo) if es_avl else None,
+                "izq": nodo.izq.key.id_key if nodo.izq is not None else None,
+                "der": nodo.der.key.id_key if nodo.der is not None else None
+            })
+
+            recorrer(nodo.izq, profundidad + 1)
+            recorrer(nodo.der, profundidad + 1)
+
+        recorrer(arbol.raiz)
+        return nodos

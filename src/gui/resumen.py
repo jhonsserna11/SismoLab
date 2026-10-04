@@ -89,7 +89,7 @@ class PantallaResumen:
             contenedor_mapa,
             text="Mapa sísmico",
             font=("Arial", 12, "bold")
-        ).pack(anchor="w", pady=(0, 10))
+        ).pack(anchor="w" , pady=(0, 10))
 
         self.mapa = MapaSismologico(
             contenedor_mapa,

@@ -10,7 +10,6 @@ from src.gui.eventos import PantallaEventos
 from src.gui.estaciones import PantallaEstaciones
 from src.gui.zonas import PantallaZonas
 from src.gui.reportes import PantallaReportes
-from src.gui.historico import PantallaHistorico
 from src.gui.arboles import PantallaArboles
 from src.gui.metricas import PantallaMetricas
 from src.gui.versiones import PantallaVersiones
@@ -59,12 +58,6 @@ class SismoLabApp:
         )
 
         self.pantalla_reportes = PantallaReportes(
-            self.contenido,
-            self.escenario,
-            self.actualizar_estado
-        )
-
-        self.pantalla_historico = PantallaHistorico(
             self.contenido,
             self.escenario,
             self.actualizar_estado
@@ -346,7 +339,6 @@ class SismoLabApp:
             "Reportes",
             "Estaciones",
             "Zonas",
-            "Histórico",
             "Árboles",
             "Métricas",
             "Versiones",
@@ -405,8 +397,6 @@ class SismoLabApp:
             self.pantalla_zonas.mostrar()
         elif nombre == "Reportes":
             self.pantalla_reportes.mostrar()
-        elif nombre == "Histórico":
-            self.pantalla_historico.mostrar()
         elif nombre == "Árboles":
             self.pantalla_arboles.mostrar()
         elif nombre == "Métricas":
@@ -509,7 +499,7 @@ class SismoLabApp:
 def cargar_escenario_inicial():
 
     with open(
-        "data/estado_inicial.json",
+        "data/escenario_pruebas.json",
         "r",
         encoding="utf-8"
     ) as archivo:
