@@ -10,6 +10,7 @@ from src.logic.Persistencia import Persistencia
 from collections import deque
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from copy import deepcopy
 
 class Escenario:
@@ -128,12 +129,14 @@ class Escenario:
         candidatos = []
 
         if self.avl.raiz is None:
-            return candidatos
+            return candidatos, 0
 
         cola = deque([self.avl.raiz])
+        nodos_examinados = 0
 
         while cola:
             nodo = cola.popleft()
+            nodos_examinados += 1
 
             eventoA = nodo.evento
 
@@ -146,7 +149,7 @@ class Escenario:
             if nodo.der is not None:
                 cola.append(nodo.der)
 
-        return candidatos
+        return candidatos, nodos_examinados
     def _agregarCandidatosArchivados(self, eventoB, candidatos):
         for eventoA in self.historico:
             if eventoA.esCandidato(eventoB, self.W, self.R):
@@ -180,8 +183,8 @@ class Escenario:
 
         return mejor
 
-    def _obtenerAsociaciones(self, eventoB):
-        candidatos = self._buscarCandidatos(eventoB)
+    def _obtenerAsociaciones(self, eventoB, nodos_examinados_previos=0):
+        candidatos, nodos_examinados = self._buscarCandidatos(eventoB)
 
         self._agregarCandidatosArchivados(
             eventoB,
@@ -195,7 +198,8 @@ class Escenario:
 
         return {
             "candidatos": candidatos,
-            "asociado": asociado
+            "asociado": asociado,
+            "nodos_avl_examinados": nodos_examinados_previos + nodos_examinados
         }
 
 
@@ -401,6 +405,41 @@ class Escenario:
 
 # dhdhdhdhdh
 
+    def verificarEstructura(self):
+        reporte = self.avl.verificarEstructura(self.modo_estres)
+
+        inconsistentes = list(reporte.get("eventos_inconsistentes", []))
+        ids_activos = {nodo.evento.id for nodo in self.avl.nodosConConteo()[0]}
+
+        for evento in self.historico:
+            if evento.id in ids_activos:
+                inconsistentes.append({
+                    "id": evento.id,
+                    "errores": [f"Identificador duplicado entre activos e histórico: {evento.id}"],
+                    "advertencias": []
+                })
+
+        for nodo in self.avl.nodosConConteo()[0]:
+            evento = nodo.evento
+            prioridad_esperada = evento.calcularPrioridad(
+                self._esPoblada(evento.zonax, evento.zonay)
+            )
+            if nodo.key.prioridad != prioridad_esperada:
+                inconsistentes.append({
+                    "id": evento.id,
+                    "errores": [
+                        "prioridad de la clave no coincide: "
+                        f"clave={nodo.key.prioridad}, esperado={prioridad_esperada}"
+                    ],
+                    "advertencias": []
+                })
+
+        reporte["eventos_inconsistentes"] = inconsistentes
+        reporte["valido"] = not any(
+            registro.get("errores") for registro in inconsistentes
+        )
+        return reporte
+
     def consultarEvento(self, idEvento:int):
         for evento in self.historico:
             if evento.id == idEvento:
@@ -408,19 +447,22 @@ class Escenario:
         if idEvento in self.eliminados:
             return {"status": "eliminado"}
 
-        nodo = self.avl.encontrarNodo(idEvento)
+        nodo, nodos_examinados = self.avl.encontrarNodoConConteo(idEvento)
         if nodo is None:
             raise ValueError("el id ingresado no existe")
-        return self._consultarEvento(nodo)
+        return self._consultarEvento(nodo, nodos_examinados)
 
-    def _consultarEvento(self, nodo:Nodo):
+    def _consultarEvento(self, nodo:Nodo, nodos_examinados=0):
         evento = nodo.evento
         prioridad = nodo.key.prioridad
-        profundidad = self.avl.nivel_de_un_nodo(nodo.key)
+        profundidad, nodos_profundidad = self.avl.nivel_de_un_nodoConConteo(nodo.key)
         datos = self.avl.obtenerDatosNodo(nodo)
 
         poblada = self._esPoblada(evento.zonax, evento.zonay)
-        asociaciones = self._obtenerAsociaciones(evento)
+        asociaciones = self._obtenerAsociaciones(
+            evento,
+            nodos_examinados + nodos_profundidad
+        )
         return {
             "status": "activo",
             "magnitud": evento.magnitud,
@@ -437,11 +479,254 @@ class Escenario:
             "profundidadNodo": profundidad,
             "altura": datos["altura"],
             "factor_balance": datos["factor"],
+            "nodos_avl_examinados": asociaciones["nodos_avl_examinados"],
             "asociaciones": {
                 "candidatos": [candidato.id for candidato in asociaciones["candidatos"]],
                 "asociado": asociaciones["asociado"].id if asociaciones["asociado"] is not None else None
             }
         }
+
+    def _datosConsultaEvento(self, nodo:Nodo, estado_registro="activo"):
+        evento = nodo.evento
+        return {
+            "id": evento.id,
+            "magnitud": evento.magnitud,
+            "profundidad": evento.profundidad,
+            "fecha": evento.fechaHora,
+            "prioridad": nodo.key.prioridad,
+            "clave": nodo.key.mostrarValores(),
+            "estado": estado_registro,
+            "estado_revision": evento.estado
+        }
+
+    def consultarPrimerosPendientes(self, k: int):
+        if type(k) is not int or k <= 0:
+            raise ValueError("k debe ser un entero positivo")
+
+        nodos, examinados = self.avl.primerosPendientesDescendente(k)
+        return {
+            "eventos": [self._datosConsultaEvento(nodo) for nodo in nodos],
+            "nodos_avl_examinados": examinados
+        }
+
+    def consultarPorMagnitud(self, minimo, maximo):
+        minimo = Decimal(str(minimo))
+        maximo = Decimal(str(maximo))
+
+        if minimo > maximo:
+            raise ValueError("El mínimo no puede ser mayor que el máximo")
+
+        eventos = []
+        nodos_examinados = 0
+
+        for prioridad in (1, 2, 3):
+            limite_inferior = Key(prioridad, minimo, 0)
+            limite_superior = Key(prioridad, maximo, 999999)
+
+            nodos, examinados = self.avl.buscarRangoConConteo(
+                limite_inferior,
+                limite_superior
+            )
+
+            nodos_examinados += examinados
+
+            for nodo in nodos:
+                eventos.append(self._datosConsultaEvento(nodo))
+
+        return {
+            "intervalo": (minimo, maximo),
+            "eventos": eventos,
+            "nodos_avl_examinados": nodos_examinados
+        }
+
+    def consultarPorProfundidadYFechas(
+        self,
+        profundidad_maxima,
+        fecha_inicio: datetime,
+        fecha_fin: datetime
+    ):
+        try:
+            profundidad_maxima = Decimal(str(profundidad_maxima))
+        except (InvalidOperation, TypeError, ValueError):
+            raise ValueError("El límite de profundidad debe ser numérico")
+        if not profundidad_maxima.is_finite() or profundidad_maxima < 0:
+            raise ValueError("El límite de profundidad no es válido")
+        if (
+            not isinstance(fecha_inicio, datetime)
+            or not isinstance(fecha_fin, datetime)
+            or fecha_inicio.tzinfo is not timezone.utc
+            or fecha_fin.tzinfo is not timezone.utc
+            or fecha_inicio > fecha_fin
+        ):
+            raise ValueError("El intervalo de fechas UTC no es válido")
+
+        nodos, examinados = self.avl.nodosConConteo()
+        eventos = [
+            self._datosConsultaEvento(nodo)
+            for nodo in nodos
+            if (
+                nodo.evento.profundidad <= profundidad_maxima
+                and fecha_inicio <= nodo.evento.fechaHora <= fecha_fin
+            )
+        ]
+        return {
+            "profundidad_maxima": profundidad_maxima,
+            "intervalo_fechas": (fecha_inicio, fecha_fin),
+            "eventos": eventos,
+            "nodos_avl_examinados": examinados
+        }
+
+    def _estadoAsociacion(self, evento, ids_activos):
+        return "activo" if evento.id in ids_activos else "archivado"
+
+    def consultarAsociaciones(self, idEvento: int):
+        nodos_activos, examinados = self.avl.nodosConConteo()
+        eventos_activos = [nodo.evento for nodo in nodos_activos]
+
+        ids_activos = {evento.id for evento in eventos_activos}
+
+        evento = next(
+            (evento_activo for evento_activo in eventos_activos
+            if evento_activo.id == idEvento),
+            None
+        )
+
+        if evento is None:
+            evento = next(
+                (historico for historico in self.historico
+                if historico.id == idEvento),
+                None
+            )
+
+        if evento is None:
+            raise ValueError(
+                "El id ingresado no existe en activos ni en el histórico"
+            )
+
+        eventos = eventos_activos + self.historico
+
+        candidatos_por_id = {}
+        referencia_por_id = {}
+
+        for eventoB in eventos:
+            candidatos = []
+
+            for eventoA in eventos:
+                if eventoA.id == eventoB.id:
+                    continue
+
+                if eventoA.esCandidato(eventoB, self.W, self.R):
+                    candidatos.append(eventoA)
+
+            candidatos_por_id[eventoB.id] = candidatos
+            referencia_por_id[eventoB.id] = (
+                self._seleccionarCandidato(candidatos, eventoB)
+            )
+
+        candidatos = candidatos_por_id[evento.id]
+        referencia = referencia_por_id[evento.id]
+
+        referenciado_por = []
+
+        for evento_consultado in eventos:
+            if evento_consultado.id == evento.id:
+                continue
+
+            if referencia_por_id[evento_consultado.id] is evento:
+                referenciado_por.append({
+                    "id": evento_consultado.id,
+                    "estado": self._estadoAsociacion(
+                        evento_consultado,
+                        ids_activos
+                    )
+                })
+
+        estado_evento = self._estadoAsociacion(
+            evento,
+            ids_activos
+        )
+
+        return {
+            "evento": {
+                "id": evento.id,
+                "estado": estado_evento
+            },
+            "candidatos": [
+                {
+                    "id": candidato.id,
+                    "estado": self._estadoAsociacion(
+                        candidato,
+                        ids_activos
+                    )
+                }
+                for candidato in candidatos
+            ],
+            "referencia_elegida": (
+                {
+                    "id": referencia.id,
+                    "estado": self._estadoAsociacion(
+                        referencia,
+                        ids_activos
+                    )
+                }
+                if referencia is not None else None
+            ),
+            "referenciado_por": referenciado_por,
+            "nodos_avl_examinados": examinados
+        }
+
+    def consultarEventosCostosos(self):
+        return self._indicadorEventosCostosos()
+
+    def compararOrdenesInsercion(self, ordenes=None):
+        nodos, _ = self.avl.nodosConConteo()
+        nodos_por_id = {nodo.evento.id: nodo for nodo in nodos}
+        ids_ascendentes = [
+            nodo.evento.id for nodo in sorted(nodos, key=lambda nodo: nodo.key)
+        ]
+        if ordenes is None:
+            ordenes = {
+                "ascendente": ids_ascendentes,
+                "descendente": list(reversed(ids_ascendentes))
+            }
+
+        resultados = {}
+        for nombre, ids_orden in ordenes.items():
+            if len(ids_orden) != len(ids_ascendentes) or set(ids_orden) != set(ids_ascendentes):
+                raise ValueError("Cada orden debe incluir una vez todos los eventos activos")
+
+            avl = Avl()
+            bst = Bst()
+            for id_evento in ids_orden:
+                nodo_original = nodos_por_id[id_evento]
+                avl.insertar(nodo_original.key, nodo_original.evento, False)
+                bst.insertar(nodo_original.key, nodo_original.evento)
+
+            comparaciones_por_clave = []
+            comparaciones_avl = 0
+            comparaciones_bst = 0
+            for nodo_original in nodos:
+                _, visitas_avl = avl.buscarConConteo(nodo_original.key)
+                _, visitas_bst = bst.buscarConConteo(nodo_original.key)
+                comparaciones_avl += visitas_avl
+                comparaciones_bst += visitas_bst
+                comparaciones_por_clave.append({
+                    "id": nodo_original.evento.id,
+                    "avl": visitas_avl,
+                    "bst": visitas_bst
+                })
+
+            resultados[nombre] = {
+                "altura_avl": avl.altura(),
+                "hojas_avl": avl.hojas(),
+                "altura_bst": bst.altura(),
+                "hojas_bst": bst.hojas(),
+                "comparaciones_avl": comparaciones_avl,
+                "comparaciones_bst": comparaciones_bst,
+                "comparaciones_por_clave": comparaciones_por_clave
+            }
+
+        return resultados
 
 
     def corregirEvento(self, idEvento:int, magnitud=None, profundidad=None, zonax=None, zonay=None, fecha=None, estaciones=None):
@@ -716,15 +1001,24 @@ class Escenario:
     def _indicadorEventosCostosos(self):
         eventos = []
 
-        for nodo, profundidad in self.avl.nodos_con_profundidad():
+        nodos_con_profundidad, examinados = self.avl.nodosConProfundidadYConteo()
+        for nodo, profundidad in nodos_con_profundidad:
             if nodo.key.prioridad == 3 and profundidad > self.L:
-                eventos.append((nodo, profundidad))
+                encontrado, visitas = self.avl.buscarConConteo(nodo.key)
+                if encontrado is not None:
+                    eventos.append((nodo, profundidad, visitas))
 
         return {
             "cantidad": len(eventos),
+            "limite": self.L,
+            "nodos_avl_examinados": examinados,
             "eventos": [
-                self._datosIndicadorEvento(nodo, profundidad)
-                for nodo, profundidad in eventos
+                {
+                    **self._datosIndicadorEvento(nodo, profundidad),
+                    "limite": self.L,
+                    "nodos_visitados_busqueda": visitas
+                }
+                for nodo, profundidad, visitas in eventos
             ]
         }
 

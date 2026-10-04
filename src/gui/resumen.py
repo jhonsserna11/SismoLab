@@ -1,4 +1,5 @@
 import tkinter as tk
+from src.gui.mapa import MapaSismologico
 
 
 class PantallaResumen:
@@ -13,145 +14,132 @@ class PantallaResumen:
 
         self.limpiar()
 
-        indicadores = self.escenario.obtenerIndicadores()
+        indicadores_datos  = self.escenario.obtenerIndicadores()
 
         titulo = tk.Label(
             self.padre,
             text="Resumen del escenario",
-            font=("Arial", 20, "bold")
+            font=("Arial", 15, "bold")
         )
         titulo.pack(
             anchor="w",
             pady=(0, 20)
         )
 
-        info = tk.Frame(self.padre)
-        info.pack(fill="x")
-
-        self.crear_indicador(
-            info,
-            "Eventos activos",
-            indicadores["eventos_activos"],
-            0,
-            0
+        barra_indicadores = tk.Frame(self.padre)
+        barra_indicadores.pack(
+            fill="x",
+            pady=(0, 15)
         )
 
         self.crear_indicador(
-            info,
-            "Eventos históricos",
-            indicadores["eventos_historicos"],
-            0,
-            1
+            barra_indicadores,
+            "📍",
+            "Activos",
+            indicadores_datos["eventos_activos"]
         )
 
         self.crear_indicador(
-            info,
+            barra_indicadores,
+            "📖",
+            "Históricos",
+            indicadores_datos["eventos_historicos"]
+        )
+
+        self.crear_indicador(
+            barra_indicadores,
+            "🌳",
             "Altura AVL",
-            indicadores["altura_avl"],
-            0,
-            2
+            indicadores_datos["altura_avl"]
         )
 
         self.crear_indicador(
-            info,
+            barra_indicadores,
+            "🍃",
             "Hojas",
-            indicadores["hojas"],
-            1,
-            0
+            indicadores_datos["hojas"]
         )
 
         self.crear_indicador(
-            info,
+            barra_indicadores,
+            "📋",
             "Pendientes",
-            indicadores["eventos_pendientes"]["cantidad"],
-            1,
-            1
+            indicadores_datos["eventos_pendientes"]["cantidad"]
         )
 
         self.crear_indicador(
-            info,
-            "Acceso costoso",
-            indicadores["eventos_costosos"]["cantidad"],
-            1,
-            2
+            barra_indicadores,
+            "⚠️",
+            "Costoso",
+            indicadores_datos["eventos_costosos"]["cantidad"]
         )
-
-        estado = (
-            "Activado"
-            if self.escenario.modo_estres
-            else "Normal"
-        )
-
-        modo = tk.Label(
-            self.padre,
-            text=f"Modo de ejecución: {estado}",
-            font=("Arial", 13)
-        )
-        modo.pack(
-            anchor="w",
-            pady=25
-        )
-
-        parametros = tk.Label(
-            self.padre,
-            text=(
-                f"W = {self.escenario.W} h    |    "
-                f"R = {self.escenario.R} km    |    "
-                f"L = {self.escenario.L}    |    "
-                f"T = {self.escenario.T} h"
-            ),
-            font=("Arial", 12)
-        )
-        parametros.pack(anchor="w")
 
         self.mostrar_estado("Resumen actualizado")
+
+        contenedor_mapa = tk.Frame(self.padre)
+        
+        contenedor_mapa.pack(
+            fill="both",
+            expand=True,
+            padx=10,
+            pady=(10, 20)
+        )
+
+        tk.Label(
+            contenedor_mapa,
+            text="Mapa sísmico",
+            font=("Arial", 12, "bold")
+        ).pack(anchor="w", pady=(0, 10))
+
+        self.mapa = MapaSismologico(
+            contenedor_mapa,
+            self.escenario
+        )
+
+        self.mapa.mostrar()
 
     def crear_indicador(
         self,
         padre,
+        icono,
         nombre,
         valor,
-        fila,
-        columna
     ):
-
         marco = tk.Frame(
             padre,
             bd=1,
             relief="solid",
-            padx=20,
-            pady=15
+            padx=7,
+            pady=5
         )
 
-        marco.grid(
-            row=fila,
-            column=columna,
-            padx=8,
-            pady=8,
-            sticky="nsew"
+        marco.pack(
+            side="left",
+            fill="x",
+            expand=True,
+            padx=3
         )
 
-        padre.grid_columnconfigure(
-            columna,
-            weight=1
+        icono_label = tk.Label(
+            marco,
+            text=icono,
+            font=("Arial", 11)
         )
+        icono_label.pack(side="left")
 
         nombre_label = tk.Label(
             marco,
             text=nombre,
-            font=("Arial", 11)
+            font=("Arial", 9)
         )
-        nombre_label.pack()
+        nombre_label.pack(side="left", padx=4)
 
         valor_label = tk.Label(
             marco,
             text=str(valor),
-            font=("Arial", 20, "bold")
+            font=("Arial", 11, "bold")
         )
-        valor_label.pack(
-            pady=(5, 0)
-        )
-
+        valor_label.pack(side="right")
     def limpiar(self):
 
         for widget in self.padre.winfo_children():
