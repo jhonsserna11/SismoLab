@@ -278,6 +278,124 @@ class Avl:
             return None
         else:
             return self._encontrarNodo(self.raiz, id)
+
+    def encontrarNodoConConteo(self, id: int):
+        if self.raiz is None:
+            return None, 0
+
+        cola = deque([self.raiz])
+        nodos_examinados = 0
+        while cola:
+            nodo = cola.popleft()
+            nodos_examinados += 1
+            if nodo.key.id_key == id:
+                return nodo, nodos_examinados
+            if nodo.izq is not None:
+                cola.append(nodo.izq)
+            if nodo.der is not None:
+                cola.append(nodo.der)
+
+        return None, nodos_examinados
+
+    def buscarConConteo(self, key: Key):
+        nodo = self.raiz
+        nodos_examinados = 0
+
+        while nodo is not None:
+            nodos_examinados += 1
+            if key == nodo.key:
+                return nodo, nodos_examinados
+            if key < nodo.key:
+                nodo = nodo.izq
+            else:
+                nodo = nodo.der
+
+        return None, nodos_examinados
+
+    def buscarRangoConConteo(self, limite_inferior: Key, limite_superior: Key):
+        resultados = []
+        nodos_examinados = 0
+
+        def recorrer(nodo):
+            nonlocal nodos_examinados
+
+            if nodo is None:
+                return
+
+            nodos_examinados += 1
+
+            # Si el nodo está por encima del límite inferior,
+            # su subárbol izquierdo todavía puede contener resultados.
+            if nodo.key > limite_inferior:
+                recorrer(nodo.izq)
+
+            # Verifica si el nodo está dentro del intervalo.
+            if not (nodo.key < limite_inferior) and not (nodo.key > limite_superior):
+                resultados.append(nodo)
+
+            # Si el nodo está por debajo del límite superior,
+            # su subárbol derecho todavía puede contener resultados.
+            if nodo.key < limite_superior:
+                recorrer(nodo.der)
+
+        recorrer(self.raiz)
+
+        return resultados, nodos_examinados
+
+    def nodosConConteo(self):
+        nodos = []
+        if self.raiz is None:
+            return nodos, 0
+
+        pila = [self.raiz]
+        while pila:
+            nodo = pila.pop()
+            nodos.append(nodo)
+            if nodo.der is not None:
+                pila.append(nodo.der)
+            if nodo.izq is not None:
+                pila.append(nodo.izq)
+
+        return nodos, len(nodos)
+
+    def primerosPendientesDescendente(self, k: int):
+        pendientes = []
+        if self.raiz is None:
+            return pendientes, 0
+
+        pila = []
+        nodo = self.raiz
+        nodos_examinados = 0
+
+        while (nodo is not None or pila) and len(pendientes) < k:
+            while nodo is not None:
+                pila.append(nodo)
+                nodo = nodo.der
+
+            nodo = pila.pop()
+            nodos_examinados += 1
+            if nodo.evento.estado == "Pendiente":
+                pendientes.append(nodo)
+            nodo = nodo.izq
+
+        return pendientes, nodos_examinados
+
+    def nodosConProfundidadYConteo(self):
+        nodos = []
+        if self.raiz is None:
+            return nodos, 0
+
+        pila = [(self.raiz, 0)]
+        while pila:
+            nodo, profundidad = pila.pop()
+            nodos.append((nodo, profundidad))
+            if nodo.der is not None:
+                pila.append((nodo.der, profundidad + 1))
+            if nodo.izq is not None:
+                pila.append((nodo.izq, profundidad + 1))
+
+        return nodos, len(nodos)
+
     def _encontrarNodo(self, raiz:Nodo, id:int):
         cola = deque([raiz])
         while cola:
@@ -438,6 +556,24 @@ class Avl:
             return -1
 
         return self._nivel_de_un_nodo(self.raiz,key,0)
+
+    def nivel_de_un_nodoConConteo(self, key: Key):
+        nodo = self.raiz
+        nivel = 0
+        nodos_examinados = 0
+
+        while nodo is not None:
+            nodos_examinados += 1
+            if nodo.key == key:
+                return nivel, nodos_examinados
+            if key < nodo.key:
+                nodo = nodo.izq
+            else:
+                nodo = nodo.der
+            nivel += 1
+
+        return -1, nodos_examinados
+
     def _nivel_de_un_nodo(self, nodo: Optional[Nodo], key: Key, nivel_actual: int) -> int:
         if nodo is None:
             return -1
