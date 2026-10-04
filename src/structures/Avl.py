@@ -312,6 +312,36 @@ class Avl:
 
         return None, nodos_examinados
 
+    def buscarRangoConConteo(self, limite_inferior: Key, limite_superior: Key):
+        resultados = []
+        nodos_examinados = 0
+
+        def recorrer(nodo):
+            nonlocal nodos_examinados
+
+            if nodo is None:
+                return
+
+            nodos_examinados += 1
+
+            # Si el nodo está por encima del límite inferior,
+            # su subárbol izquierdo todavía puede contener resultados.
+            if nodo.key > limite_inferior:
+                recorrer(nodo.izq)
+
+            # Verifica si el nodo está dentro del intervalo.
+            if not (nodo.key < limite_inferior) and not (nodo.key > limite_superior):
+                resultados.append(nodo)
+
+            # Si el nodo está por debajo del límite superior,
+            # su subárbol derecho todavía puede contener resultados.
+            if nodo.key < limite_superior:
+                recorrer(nodo.der)
+
+        recorrer(self.raiz)
+
+        return resultados, nodos_examinados
+
     def nodosConConteo(self):
         nodos = []
         if self.raiz is None:

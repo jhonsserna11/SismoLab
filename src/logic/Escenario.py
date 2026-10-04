@@ -520,24 +520,33 @@ class Escenario:
         }
 
     def consultarPorMagnitud(self, minimo, maximo):
-        try:
-            minimo = Decimal(str(minimo))
-            maximo = Decimal(str(maximo))
-        except (InvalidOperation, TypeError, ValueError):
-            raise ValueError("El intervalo de magnitud debe ser numérico")
-        if not minimo.is_finite() or not maximo.is_finite() or minimo > maximo:
-            raise ValueError("El intervalo de magnitud no es válido")
+        minimo = Decimal(str(minimo))
+        maximo = Decimal(str(maximo))
 
-        nodos, examinados = self.avl.nodosConConteo()
-        eventos = [
-            self._datosConsultaEvento(nodo)
-            for nodo in nodos
-            if minimo <= nodo.evento.magnitud <= maximo
-        ]
+        if minimo > maximo:
+            raise ValueError("El mínimo no puede ser mayor que el máximo")
+
+        eventos = []
+        nodos_examinados = 0
+
+        for prioridad in (1, 2, 3):
+            limite_inferior = Key(prioridad, minimo, 0)
+            limite_superior = Key(prioridad, maximo, 999999)
+
+            nodos, examinados = self.avl.buscarRangoConConteo(
+                limite_inferior,
+                limite_superior
+            )
+
+            nodos_examinados += examinados
+
+            for nodo in nodos:
+                eventos.append(self._datosConsultaEvento(nodo))
+
         return {
             "intervalo": (minimo, maximo),
             "eventos": eventos,
-            "nodos_avl_examinados": examinados
+            "nodos_avl_examinados": nodos_examinados
         }
 
     def consultarPorProfundidadYFechas(
@@ -581,53 +590,95 @@ class Escenario:
         return "activo" if evento.id in ids_activos else "archivado"
 
     def consultarAsociaciones(self, idEvento: int):
-        nodo, examinados = self.avl.encontrarNodoConConteo(idEvento)
-        evento = nodo.evento if nodo is not None else next(
-            (historico for historico in self.historico if historico.id == idEvento),
+        nodos_activos, examinados = self.avl.nodosConConteo()
+        eventos_activos = [nodo.evento for nodo in nodos_activos]
+
+        ids_activos = {evento.id for evento in eventos_activos}
+
+        evento = next(
+            (evento_activo for evento_activo in eventos_activos
+            if evento_activo.id == idEvento),
             None
         )
+
         if evento is None:
-            raise ValueError("El id ingresado no existe en activos ni en el histórico")
+            evento = next(
+                (historico for historico in self.historico
+                if historico.id == idEvento),
+                None
+            )
 
-        nodos_activos, recorrido = self.avl.nodosConConteo()
-        examinados += recorrido
-        eventos_activos = [nodo_activo.evento for nodo_activo in nodos_activos]
+        if evento is None:
+            raise ValueError(
+                "El id ingresado no existe en activos ni en el histórico"
+            )
+
         eventos = eventos_activos + self.historico
-        ids_activos = {evento_activo.id for evento_activo in eventos_activos}
 
-        candidatos, visitas = self._buscarCandidatos(evento)
-        examinados += visitas
-        self._agregarCandidatosArchivados(evento, candidatos)
-        referencia = self._seleccionarCandidato(candidatos, evento)
+        candidatos_por_id = {}
+        referencia_por_id = {}
+
+        for eventoB in eventos:
+            candidatos = []
+
+            for eventoA in eventos:
+                if eventoA.id == eventoB.id:
+                    continue
+
+                if eventoA.esCandidato(eventoB, self.W, self.R):
+                    candidatos.append(eventoA)
+
+            candidatos_por_id[eventoB.id] = candidatos
+            referencia_por_id[eventoB.id] = (
+                self._seleccionarCandidato(candidatos, eventoB)
+            )
+
+        candidatos = candidatos_por_id[evento.id]
+        referencia = referencia_por_id[evento.id]
 
         referenciado_por = []
+
         for evento_consultado in eventos:
             if evento_consultado.id == evento.id:
                 continue
-            candidatos_evento, visitas = self._buscarCandidatos(evento_consultado)
-            examinados += visitas
-            self._agregarCandidatosArchivados(evento_consultado, candidatos_evento)
-            if self._seleccionarCandidato(candidatos_evento, evento_consultado) is evento:
+
+            if referencia_por_id[evento_consultado.id] is evento:
                 referenciado_por.append({
                     "id": evento_consultado.id,
-                    "estado": self._estadoAsociacion(evento_consultado, ids_activos)
+                    "estado": self._estadoAsociacion(
+                        evento_consultado,
+                        ids_activos
+                    )
                 })
 
-        if not referenciado_por:
-            referenciado_por = [{
-                "id": evento.id,
-                "estado": self._estadoAsociacion(evento, ids_activos)
-            }]
+        estado_evento = self._estadoAsociacion(
+            evento,
+            ids_activos
+        )
 
-        estado_evento = self._estadoAsociacion(evento, ids_activos)
         return {
-            "evento": {"id": evento.id, "estado": estado_evento},
+            "evento": {
+                "id": evento.id,
+                "estado": estado_evento
+            },
             "candidatos": [
-                {"id": candidato.id, "estado": self._estadoAsociacion(candidato, ids_activos)}
+                {
+                    "id": candidato.id,
+                    "estado": self._estadoAsociacion(
+                        candidato,
+                        ids_activos
+                    )
+                }
                 for candidato in candidatos
             ],
             "referencia_elegida": (
-                {"id": referencia.id, "estado": self._estadoAsociacion(referencia, ids_activos)}
+                {
+                    "id": referencia.id,
+                    "estado": self._estadoAsociacion(
+                        referencia,
+                        ids_activos
+                    )
+                }
                 if referencia is not None else None
             ),
             "referenciado_por": referenciado_por,
@@ -965,7 +1016,6 @@ class Escenario:
         for nodo, profundidad in nodos_con_profundidad:
             if nodo.key.prioridad == 3 and profundidad > self.L:
                 encontrado, visitas = self.avl.buscarConConteo(nodo.key)
-                examinados += visitas
                 if encontrado is not None:
                     eventos.append((nodo, profundidad, visitas))
 
