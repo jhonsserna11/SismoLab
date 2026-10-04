@@ -8,7 +8,7 @@ from src.domain.Reporte import Reporte
 from datetime import datetime, timezone
 
 def test_metricas_rotaciones_avl():
-    # LL
+    # LL rotation.
     avl = Avl()
     avl.insertar(Key(1, 5, 1), None, False)
     avl.insertar(Key(1, 4, 2), None, False)
@@ -21,7 +21,7 @@ def test_metricas_rotaciones_avl():
     assert avl.metricas["giros_derecha"] == 1
     assert avl.metricas["giros_izquierda"] == 0
 
-    # RR
+    # RR rotation.
     avl = Avl()
     avl.insertar(Key(1, 3, 1), None, False)
     avl.insertar(Key(1, 4, 2), None, False)
@@ -30,7 +30,7 @@ def test_metricas_rotaciones_avl():
     assert avl.metricas["casos_RR"] == 1
     assert avl.metricas["giros_izquierda"] == 1
 
-    # LR
+    # LR rotation.
     avl = Avl()
     avl.insertar(Key(1, 5, 1), None, False)
     avl.insertar(Key(1, 3, 2), None, False)
@@ -40,7 +40,7 @@ def test_metricas_rotaciones_avl():
     assert avl.metricas["giros_izquierda"] == 1
     assert avl.metricas["giros_derecha"] == 1
 
-    # RL
+    # RL rotation.
     avl = Avl()
     avl.insertar(Key(1, 3, 1), None, False)
     avl.insertar(Key(1, 5, 2), None, False)
@@ -120,10 +120,7 @@ def test_metricas_acumulativas():
         1, 4.0, 100.0, 0.0, 0.0, fecha, ["EST-01"]
     )
 
-    # --------------------------------
-    # Corrección manual
-    # --------------------------------
-
+    # Manual correction.
     escenario.corregirEvento(
         1,
         magnitud=4.2
@@ -131,10 +128,7 @@ def test_metricas_acumulativas():
 
     assert escenario.metricas["correcciones_aceptadas"] == 1
 
-    # --------------------------------
-    # Reporte con revisión mayor
-    # --------------------------------
-
+    # A report with a newer revision is accepted.
     reporte = Reporte(
         id_evento=1,
         magnitud=4.3,
@@ -151,10 +145,7 @@ def test_metricas_acumulativas():
     assert resultado["estado"] == "actualizado"
     assert escenario.metricas["correcciones_aceptadas"] == 2
 
-    # --------------------------------
-    # Reporte antiguo
-    # --------------------------------
-
+    # A report with an older revision is discarded.
     reporte_antiguo = Reporte(
         id_evento=1,
         magnitud=4.3,
@@ -170,10 +161,7 @@ def test_metricas_acumulativas():
 
     assert escenario.metricas["reportes_descartados"] == 1
 
-    # --------------------------------
-    # Conflicto
-    # misma revisión, datos diferentes
-    # --------------------------------
+    # A conflicting report has the same revision but different data.
 
     reporte_conflicto = Reporte(
         id_evento=1,
@@ -235,7 +223,6 @@ def test_limite_L_acceso_costoso():
 
     nodos_profundidad = escenario.avl.nodos_con_profundidad()
 
-    # El árbol debe alcanzar profundidad 3.
     profundidades = {
         nodo.key.id_key: profundidad
         for nodo, profundidad in nodos_profundidad
@@ -251,12 +238,12 @@ def test_limite_L_acceso_costoso():
         for evento in costosos["eventos"]
     }
 
-    # Profundidad 2 == L -> NO es costoso.
+    # The threshold is exclusive: depth equal to L is not costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 2:
             assert nodo.key.id_key not in ids_costosos
 
-    # Profundidad 3 > L -> SÍ es costoso.
+    # Nodes deeper than L are costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 3:
             assert nodo.key.id_key in ids_costosos
@@ -443,10 +430,9 @@ def test_metrica_correccion_al_reactivar_archivado():
         ["EST-01"]
     )
 
-    # Obtener el evento activo
     nodo = escenario.avl.encontrarNodo(1)
 
-    # Simular que el evento fue archivado
+    # Move the event from both active trees into history.
     escenario.historico.append(nodo.evento)
     escenario.avl.eliminar(nodo.key, escenario.modo_estres)
     escenario.bst.eliminar(nodo.key)
@@ -473,7 +459,7 @@ print("test metrica correccion al reactivar archivado: OK")
 
 def test_metricas_rotaciones_avl():
 
-    # LL
+    # LL rotation.
     avl = Avl()
 
     avl.insertar(Key(1, 5, 1), None, False)
@@ -487,7 +473,7 @@ def test_metricas_rotaciones_avl():
     assert avl.metricas["giros_derecha"] == 1
     assert avl.metricas["giros_izquierda"] == 0
 
-    # RR
+    # RR rotation.
     avl = Avl()
 
     avl.insertar(Key(1, 3, 1), None, False)
@@ -497,7 +483,7 @@ def test_metricas_rotaciones_avl():
     assert avl.metricas["casos_RR"] == 1
     assert avl.metricas["giros_izquierda"] == 1
 
-    # LR
+    # LR rotation.
     avl = Avl()
 
     avl.insertar(Key(1, 5, 1), None, False)
@@ -508,7 +494,7 @@ def test_metricas_rotaciones_avl():
     assert avl.metricas["giros_izquierda"] == 1
     assert avl.metricas["giros_derecha"] == 1
 
-    # RL
+    # RL rotation.
     avl = Avl()
 
     avl.insertar(Key(1, 3, 1), None, False)
@@ -609,7 +595,7 @@ def test_metricas_acumulativas():
         ["EST-01"]
     )
 
-    # Corrección manual
+    # Manual correction.
     escenario.corregirEvento(
         1,
         magnitud=4.2
@@ -617,7 +603,7 @@ def test_metricas_acumulativas():
 
     assert escenario.metricas["correcciones_aceptadas"] == 1
 
-    # Reporte con revisión mayor
+    # A report with a newer revision is accepted.
     reporte = Reporte(
         id_evento=1,
         magnitud=4.3,
@@ -634,7 +620,7 @@ def test_metricas_acumulativas():
     assert resultado["estado"] == "actualizado"
     assert escenario.metricas["correcciones_aceptadas"] == 2
 
-    # Reporte antiguo
+    # A report with an older revision is discarded.
     reporte_antiguo = Reporte(
         id_evento=1,
         magnitud=4.3,
@@ -650,8 +636,7 @@ def test_metricas_acumulativas():
 
     assert escenario.metricas["reportes_descartados"] == 1
 
-    # Conflicto
-    # Misma revisión, pero datos diferentes
+    # A conflicting report has the same revision but different data.
     reporte_conflicto = Reporte(
         id_evento=1,
         magnitud=5.9,
@@ -719,7 +704,6 @@ def test_limite_L_acceso_costoso():
 
     nodos_profundidad = escenario.avl.nodos_con_profundidad()
 
-    # El árbol debe alcanzar profundidad 3.
     profundidades = {
         nodo.key.id_key: profundidad
         for nodo, profundidad in nodos_profundidad
@@ -735,12 +719,12 @@ def test_limite_L_acceso_costoso():
         for evento in costosos["eventos"]
     }
 
-    # Profundidad 2 == L -> NO es costoso.
+    # The threshold is exclusive: depth equal to L is not costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 2:
             assert nodo.key.id_key not in ids_costosos
 
-    # Profundidad 3 > L -> SÍ es costoso.
+    # Nodes deeper than L are costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 3:
             assert nodo.key.id_key in ids_costosos

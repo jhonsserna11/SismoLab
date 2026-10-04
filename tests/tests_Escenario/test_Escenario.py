@@ -54,10 +54,6 @@ def crear_evento(id_evento=1):
     )
 
 
-# ================================================================
-# CREAR Y CONSULTAR
-# ================================================================
-
 def test_crear_y_consultar_evento():
     escenario = crear_escenario_con_zona_poblada()
 
@@ -130,10 +126,6 @@ def test_auditoria_escenario_valida_asociacion_y_detecta_prioridad():
 test_auditoria_escenario_valida_asociacion_y_detecta_prioridad()
 print("test auditoria escenario: OK")
 
-
-# ================================================================
-# ID TESTS
-# ================================================================
 
 def test_id_duplicado():
     escenario = crear_escenario()
@@ -280,10 +272,6 @@ test_id_limites_validos()
 print("test id limites validos: OK")
 
 
-# ================================================================
-# MAGNITUD TESTS
-# ================================================================
-
 def test_magnitud_minima():
     escenario = crear_escenario()
 
@@ -407,10 +395,6 @@ test_magnitud_mas_de_un_decimal()
 print("test magnitud mas de un decimal: OK")
 
 
-# ================================================================
-# PROFUNDIDAD TESTS
-# ================================================================
-
 def test_profundidad_minima():
     escenario = crear_escenario()
 
@@ -531,10 +515,6 @@ def test_profundidad_mas_de_un_decimal():
 test_profundidad_mas_de_un_decimal()
 print("test profundidad mas de un decimal: OK")
 
-
-# ================================================================
-# EPICENTRO
-# ================================================================
 
 def test_coordenadas_minimas():
     escenario = crear_escenario()
@@ -658,10 +638,6 @@ def test_coordenada_mas_de_un_decimal():
 test_coordenada_mas_de_un_decimal()
 print("test coordenada mas de un decimal: OK")
 
-
-# ================================================================
-# PRIORIDADES
-# ================================================================
 
 def test_prioridad_menor_a_4_5():
     escenario = crear_escenario()
@@ -823,10 +799,6 @@ def test_prioridad_magnitud_mayor_a_6():
 test_prioridad_magnitud_mayor_a_6()
 print("test prioridad_magnitud_mayor_a_6: OK")
 
-
-# ================================================================
-# ESTADO DE ATENCION
-# ================================================================
 
 def test_creacion_deja_evento_pendiente():
     escenario = crear_escenario()
@@ -1029,10 +1001,6 @@ def test_eventos_pendientes():
     assert [evento["id"] for evento in resultado["eventos"]] == [1, 3, 4]
 test_eventos_pendientes()
 print("test eventos_pendientes: OK")
-
-# ================================================================
-# SINCRONIZACION AVL - BST
-# ================================================================
 
 def test_bst_se_sincroniza_con_creacion():
 

@@ -294,19 +294,17 @@ def test_varios_deshacer():
     assert escenario.avl.peso() == 2
     assert escenario.reloj.hour == 17
 
-    # Deshace el avance del reloj
+    # Undo the operations in reverse order.
     escenario.deshacer()
 
     assert escenario.avl.peso() == 2
     assert escenario.reloj.hour == 12
 
-    # Deshace la creación del evento 2
     escenario.deshacer()
 
     assert escenario.avl.peso() == 1
     assert escenario.avl.encontrarNodo(2) is None
 
-    # Deshace la creación del evento 1
     escenario.deshacer()
 
     assert escenario.avl.raiz is None

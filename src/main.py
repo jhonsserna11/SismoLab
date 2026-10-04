@@ -105,8 +105,6 @@ class SismoLabApp:
 
     def crear_interfaz(self):
 
-        # ===== TOP BAR =====
-
         self.header = tk.Frame(
             self.ventana,
             height=70,
@@ -128,8 +126,6 @@ class SismoLabApp:
             side="left",
             padx=25
         )
-
-        # ===== SCENARIO INFORMATION AND CONTROLS =====
 
         controles = tk.Frame(self.header)
         controles.pack(
@@ -182,16 +178,12 @@ class SismoLabApp:
             side="left"
         )
 
-        # ===== BODY =====
-
         self.cuerpo = tk.Frame(self.ventana)
         self.cuerpo.pack(
             side="top",
             fill="both",
             expand=True
         )
-
-        # ===== SIDE MENU =====
 
         self.menu = tk.Frame(
             self.cuerpo,
@@ -207,8 +199,6 @@ class SismoLabApp:
 
         self.crear_menu()
 
-        # ===== CONTENT =====
-
         self.contenido = tk.Frame(
             self.cuerpo,
             padx=25,
@@ -219,8 +209,6 @@ class SismoLabApp:
             fill="both",
             expand=True
         )
-
-        # ===== STATUS BAR =====
 
         self.estado_barra = tk.Label(
             self.ventana,
