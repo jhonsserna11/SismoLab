@@ -721,12 +721,12 @@ class PantallaEventos:
         fecha_frame = tk.Frame(formulario_campos)
         fecha_frame.pack(fill="x")
 
-        anio_var = tk.IntVar(value=datos["fecha"].year)
-        mes_var = tk.IntVar(value=datos["fecha"].month)
-        dia_var = tk.IntVar(value=datos["fecha"].day)
-        hora_var = tk.IntVar(value=datos["fecha"].hour)
-        minuto_var = tk.IntVar(value=datos["fecha"].minute)
-        segundo_var = tk.IntVar(value=datos["fecha"].second)
+        anio_var = tk.StringVar(value=datos["fecha"].year)
+        mes_var = tk.StringVar(value=datos["fecha"].month)
+        dia_var = tk.StringVar(value=datos["fecha"].day)
+        hora_var = tk.StringVar(value=datos["fecha"].hour)
+        minuto_var = tk.StringVar(value=datos["fecha"].minute)
+        segundo_var = tk.StringVar(value=datos["fecha"].second)
 
         self.crear_spinbox(
             fecha_frame, "Año", anio_var,
@@ -833,12 +833,12 @@ class PantallaEventos:
 
         try:
             fecha = datetime(
-                anio_var.get(),
-                mes_var.get(),
-                dia_var.get(),
-                hora_var.get(),
-                minuto_var.get(),
-                segundo_var.get(),
+                int(anio_var.get()),
+                int(mes_var.get()),
+                int(dia_var.get()),
+                int(hora_var.get()),
+                int(minuto_var.get()),
+                int(segundo_var.get()),
                 tzinfo=timezone.utc
             )
 
@@ -963,12 +963,12 @@ class PantallaEventos:
         fecha_frame = tk.Frame(formulario)
         fecha_frame.pack(fill="x")
 
-        anio_var = tk.IntVar(value=self.escenario.reloj.year)
-        mes_var = tk.IntVar(value=self.escenario.reloj.month)
-        dia_var = tk.IntVar(value=self.escenario.reloj.day)
-        hora_var = tk.IntVar(value=self.escenario.reloj.hour)
-        minuto_var = tk.IntVar(value=self.escenario.reloj.minute)
-        segundo_var = tk.IntVar(value=self.escenario.reloj.second)
+        anio_var = tk.StringVar(value=self.escenario.reloj.year)
+        mes_var = tk.StringVar(value=self.escenario.reloj.month)
+        dia_var = tk.StringVar(value=self.escenario.reloj.day)
+        hora_var = tk.StringVar(value=self.escenario.reloj.hour)
+        minuto_var = tk.StringVar(value=self.escenario.reloj.minute)
+        segundo_var = tk.StringVar(value=self.escenario.reloj.second)
 
         self.crear_spinbox(
             fecha_frame, "Año", anio_var,
@@ -1114,12 +1114,12 @@ class PantallaEventos:
 
         try:
             fecha = datetime(
-                anio_var.get(),
-                mes_var.get(),
-                dia_var.get(),
-                hora_var.get(),
-                minuto_var.get(),
-                segundo_var.get(),
+                int(anio_var.get()),
+                int(mes_var.get()),
+                int(dia_var.get()),
+                int(hora_var.get()),
+                int(minuto_var.get()),
+                int(segundo_var.get()),
                 tzinfo=timezone.utc
             )
 
