@@ -45,22 +45,22 @@ class Escenario:
         }
 
     def actualizarW(self, valor):
-        if not isinstance(valor, (int)) or valor <= 0:
+        if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("W debe ser un número positivo")
         self._guardar_estado()
         self.W = float(valor)
     def actualizarR(self, valor):
-        if not isinstance(valor, (int)) or valor <= 0:
+        if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("R debe ser un número positivo")
         self._guardar_estado()
         self.R = float(valor)
     def actualizarL(self, valor):
-        if not isinstance(valor, (int)) or valor <= 0:
-            raise ValueError("L debe ser un número positivo")
+        if not isinstance(valor, (int)) or valor < 0:
+            raise ValueError("L debe ser un entero no negativo")
         self._guardar_estado()
-        self.L = float(valor)
+        self.L = valor
     def actualizarT(self, valor):
-        if not isinstance(valor, (int)) or valor <= 0:
+        if not isinstance(valor, (int, float)) or valor <= 0:
             raise ValueError("T debe ser un número positivo")
         self._guardar_estado()
         self.T = float(valor)
@@ -322,7 +322,7 @@ class Escenario:
 
             if nodo.key != nueva_key:
                 self.avl.eliminar(nodo.key, self.modo_estres)
-                self.bst.eliminar(nodo.key)
+                self.bst.eliminar(nodo_bst.key)
 
                 self.avl.insertar(nueva_key, evento_nuevo, self.modo_estres)
                 self.bst.insertar(nueva_key, evento_nuevo)
@@ -526,10 +526,7 @@ class Escenario:
         datos = self.avl.obtenerDatosNodo(nodo)
 
         poblada = self._esPoblada(evento.zonax, evento.zonay)
-        asociaciones = self._obtenerAsociaciones(
-            evento,
-            nodos_examinados + nodos_profundidad
-        )
+        asociaciones = self._obtenerAsociaciones(evento)
         return {
             "status": "activo",
             "magnitud": evento.magnitud,
@@ -546,7 +543,7 @@ class Escenario:
             "profundidadNodo": profundidad,
             "altura": datos["altura"],
             "factor_balance": datos["factor"],
-            "nodos_avl_examinados": asociaciones["nodos_avl_examinados"],
+            "nodos_avl_examinados": nodos_examinados,
             "asociaciones": {
                 "candidatos": [candidato.id for candidato in asociaciones["candidatos"]],
                 "asociado": asociaciones["asociado"].id if asociaciones["asociado"] is not None else None
@@ -865,7 +862,8 @@ class Escenario:
             self.avl.insertar(nueva_key, nuevo_evento, self.modo_estres)
             self.bst.insertar(nueva_key, nuevo_evento)
         self.metricas["correcciones_aceptadas"] += 1
-    """  """
+
+
     def marcarRevisado(self, idEvento):
         nodo = self.avl.encontrarNodo(idEvento)
 
@@ -968,15 +966,12 @@ class Escenario:
         diferencia = self.reloj - fechaEvento
         return diferencia.total_seconds()/3600
 
-    def _obtenerNodosSubarbol(self, subraiz:Nodo):
-        if subraiz.esHoja():
-            return [subraiz]
-        nodos = []
-        nodos.append(subraiz)
-        izq = self._obtenerNodosSubarbol(subraiz.izq)
-        der = self._obtenerNodosSubarbol(subraiz.der)
-        for nodo in izq: nodos.append(nodo)
-        for nodo in der: nodos.append(nodo)
+    def _obtenerNodosSubarbol(self, subraiz: Nodo):
+        if subraiz is None:
+            return []
+        nodos = [subraiz]
+        nodos.extend(self._obtenerNodosSubarbol(subraiz.izq))
+        nodos.extend(self._obtenerNodosSubarbol(subraiz.der))
         return nodos
 
     def archivarRama(self, subraiz:Nodo):
@@ -1004,7 +999,6 @@ class Escenario:
             raise ValueError("La recuperación del AVL no logró restablecer una estructura válida y equilibrada.")
 
         self.modo_estres = False
-        self._registrar_accion("recuperacion", {})
 
     def obtenerIndicadores(self):
         return {
@@ -1027,6 +1021,7 @@ class Escenario:
         evento = nodo.evento
 
         datos = {
+            "key": nodo.key,
             "id": evento.id,
             "magnitud": evento.magnitud,
             "profundidad": evento.profundidad,
@@ -1186,6 +1181,19 @@ class Escenario:
     def guardarEscenario(self):
         persistencia = Persistencia()
         return persistencia.guardarEscenario(self)   
+
+    def guardarVersion(self, nombre):
+        persistencia = Persistencia()
+        return persistencia.guardarVersion(self, nombre)
+
+    def listarVersiones(self):
+        persistencia = Persistencia()
+        return persistencia.listarVersiones()
+
+    def cargarVersion(self, nombre):
+        persistencia = Persistencia()
+        datos = persistencia.cargarVersion(nombre)
+        self.cargarEscenario(datos)
 
     def obtenerDatosMapa(self):
         datos = []

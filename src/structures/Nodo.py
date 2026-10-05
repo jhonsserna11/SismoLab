@@ -24,7 +24,7 @@ class Key:
         return (self.prioridad, self.magnitud, self.id_key) == (other.prioridad, other.magnitud, other.id_key)
     
     def mostrarValores(self):
-        return (self.prioridad, self.magnitud, self.id_key)
+        return (self.prioridad, float(self.magnitud), self.id_key)
 
 @dataclass
 class Nodo:

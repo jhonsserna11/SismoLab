@@ -15,6 +15,8 @@ from src.gui.metricas import PantallaMetricas
 from src.gui.versiones import PantallaVersiones
 from src.gui.auditoria import PantallaAuditoria
 from src.gui.configuracion import PantallaConfiguracion
+from src.gui.historico import PantallaHistorico
+from src.gui.cargas import PantallaCargas
 
 
 class SismoLabApp:
@@ -63,6 +65,12 @@ class SismoLabApp:
             self.actualizar_estado
         )
 
+        self.pantalla_historico = PantallaHistorico(
+            self.contenido,
+            self.escenario,
+            self.actualizar_estado
+        )
+
         self.pantalla_arboles = PantallaArboles(
             self.contenido,
             self.escenario,
@@ -78,7 +86,8 @@ class SismoLabApp:
         self.pantalla_versiones = PantallaVersiones(
             self.contenido,
             self.escenario,
-            self.actualizar_estado
+            self.actualizar_estado,
+            self.actualizar_boton_estres
         )
 
         self.pantalla_auditoria = PantallaAuditoria(
@@ -90,7 +99,14 @@ class SismoLabApp:
         self.pantalla_configuracion = PantallaConfiguracion(
             self.contenido,
             self.escenario,
-            self.actualizar_estado
+            self.actualizar_estado,
+            self.actualizar_parametros
+        )
+        self.pantalla_cargas = PantallaCargas(
+            self.contenido,
+            self.escenario,
+            self.actualizar_estado,
+            self.actualizar_boton_estres
         )
 
         self.mostrar_resumen()
@@ -154,6 +170,19 @@ class SismoLabApp:
             command=self.cambiar_modo_estres
         )
         self.boton_estres.pack(
+            side="left",
+            padx=(0, 10)
+        )
+
+        self.boton_recuperar = tk.Button(
+            controles,
+            text="↻ Recuperar AVL",
+            font=("Arial", 9),
+            command=self.recuperar_arbol,
+            state="disabled"
+        )
+
+        self.boton_recuperar.pack(
             side="left",
             padx=(0, 10)
         )
@@ -302,9 +331,6 @@ class SismoLabApp:
 
             self.actualizar_reloj()
 
-            self.mostrar_estado(
-                "Reloj de simulación actualizado"
-            )
 
         tk.Button(
             contenedor,
@@ -315,20 +341,98 @@ class SismoLabApp:
             side="right"
         )
     def cambiar_modo_estres(self):
-        self.escenario.modo_estres = not self.escenario.modo_estres
 
-        estado = (
-            "ON"
-            if self.escenario.modo_estres
-            else "OFF"
-        )
+        if self.escenario.modo_estres:
+            return
+
+        self.escenario.modo_estres = True
 
         self.boton_estres.config(
-            text=f"⚡ Estrés: {estado}"
+            text="⚡ Estrés: ON",
+            state="disabled"
         )
 
         self.actualizar_estado(
-            f"Modo estrés {'activado' if self.escenario.modo_estres else 'desactivado'}"
+            "Modo estrés activado"
+        )
+        self.actualizar_boton_estres()
+        self.cambiar_seccion(self.seccion_actual)
+    def actualizar_boton_estres(self):
+        estado = self.escenario.modo_estres
+
+        self.boton_estres.config(
+            text=f"⚡ Estrés: {'ON' if estado else 'OFF'}",
+            state="disabled" if estado else "normal"
+        )
+
+        self.boton_recuperar.config(
+            state="normal" if estado else "disabled"
+        )
+
+    def recuperar_arbol(self):
+        confirmar = messagebox.askyesno(
+            "Recuperar AVL",
+            "Se realizará la recuperación global del árbol AVL.\n\n"
+            "Se corregirán los desbalances mediante rotaciones "
+            "y se verificará la estructura al finalizar.\n\n"
+            "¿Desea continuar?"
+        )
+
+        if not confirmar:
+            return
+
+        metricas = self.escenario.avl.metricas
+
+        izquierdas_antes = metricas["giros_izquierda"]
+        derechas_antes = metricas["giros_derecha"]
+
+        try:
+            rafaga_activa = self.pantalla_reportes.rafaga_activa
+            rafaga_pausada = self.pantalla_reportes.rafaga_pausada
+            if rafaga_activa and not rafaga_pausada:
+                self.pantalla_reportes.pausar_rafaga()
+            self.escenario.recuperarArbol()
+
+        except ValueError as error:
+            messagebox.showerror(
+                "Recuperación fallida",
+                str(error)
+            )
+
+            self.actualizar_boton_estres()
+            self.cambiar_seccion(self.seccion_actual)
+            return
+
+        izquierdas_despues = metricas["giros_izquierda"]
+        derechas_despues = metricas["giros_derecha"]
+
+        giros_izquierda = (
+            izquierdas_despues - izquierdas_antes
+        )
+
+        giros_derecha = (
+            derechas_despues - derechas_antes
+        )
+
+        total_giros = (
+            giros_izquierda + giros_derecha
+        )
+
+        self.actualizar_boton_estres()
+
+        self.cambiar_seccion(
+            self.seccion_actual
+        )
+
+        messagebox.showinfo(
+            "Recuperación completada",
+            "El árbol AVL fue recuperado correctamente.\n\n"
+            f"Rotaciones a la izquierda: {giros_izquierda}\n"
+            f"Rotaciones a la derecha: {giros_derecha}\n"
+            f"Total de rotaciones: {total_giros}\n\n"
+            "La auditoría confirmó que el árbol está "
+            "válido y equilibrado.\n\n"
+            "El sistema volvió a modo normal."
         )
 
     def crear_menu(self):
@@ -339,13 +443,16 @@ class SismoLabApp:
             "Reportes",
             "Estaciones",
             "Zonas",
+            "Historico",
             "Árboles",
             "Métricas",
             "Versiones",
+            "Cargas",
             "Auditoría",
             "Configuración"
         ]
 
+        self.botones_menu = {}
         for opcion in opciones:
 
             boton = tk.Button(
@@ -358,7 +465,7 @@ class SismoLabApp:
                 command=lambda nombre=opcion:
                     self.cambiar_seccion(nombre)
             )
-
+            self.botones_menu[opcion] = boton
             boton.pack(
                 fill="x"
             )
@@ -386,6 +493,9 @@ class SismoLabApp:
     def cambiar_seccion(self, nombre):
 
         self.seccion_actual = nombre
+        for boton in self.botones_menu.values():
+            boton.config(bg=self.menu.cget("bg"))
+        self.botones_menu[nombre].config(bg="#CDCDCD")
 
         if nombre == "Resumen":
             self.pantalla_resumen.mostrar()
@@ -399,10 +509,14 @@ class SismoLabApp:
             self.pantalla_reportes.mostrar()
         elif nombre == "Árboles":
             self.pantalla_arboles.mostrar()
+        elif nombre == "Historico":
+            self.pantalla_historico.mostrar()
         elif nombre == "Métricas":
             self.pantalla_metricas.mostrar()
         elif nombre == "Versiones":
             self.pantalla_versiones.mostrar()
+        elif nombre == "Cargas":
+            self.pantalla_cargas.mostrar()
         elif nombre == "Auditoría":
             self.pantalla_auditoria.mostrar()
         elif nombre == "Configuración":
@@ -418,8 +532,6 @@ class SismoLabApp:
     def mostrar_resumen(self):
         self.pantalla_resumen.mostrar()
 
-    def mostrar_eventos(self):
-        self.pantalla_eventos.mostrar()
 
     def mostrar_pantalla_provisional(self, nombre):
 
@@ -454,6 +566,16 @@ class SismoLabApp:
             text=mensaje
         )
 
+    def actualizar_parametros(self):
+        self.parametros_label.config(
+            text=(
+                f"W: {self.escenario.W} h   |   "
+                f"R: {self.escenario.R} km   |   "
+                f"L: {self.escenario.L}   |   "
+                f"T: {self.escenario.T} h"
+            )
+        )
+
     def actualizar_reloj(self):
 
         self.reloj_label.config(
@@ -468,10 +590,7 @@ class SismoLabApp:
             if self.escenario.modo_estres
             else "OFF"
         )
-
-        self.boton_estres.config(
-            text=f"⚡ Estrés: {estado}"
-        )
+        self.actualizar_boton_estres()
 
     def deshacer(self):
 

@@ -619,7 +619,7 @@ class Persistencia:
             raise ValueError("El archivo debe contener un objeto JSON.")
 
         if datos.get("tipo_carga") != "escenario":
-            raise ValueError("El archivo no corresponde a una carga por topología.")
+            raise ValueError("El archivo no corresponde a una carga de escenario.")
         resultado = self._cargarEscenario(datos)
         return resultado
 

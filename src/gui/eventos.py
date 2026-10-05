@@ -132,7 +132,8 @@ class PantallaEventos:
             "Eventos actualmente almacenados en el catálogo AVL.",
             self.obtener_eventos_activos(),
             permitir_correccion=True,
-            permitir_eliminacion=True
+            permitir_eliminacion=True,
+            permitir_revisado=True
         )
 
         # =========================================================
@@ -147,7 +148,8 @@ class PantallaEventos:
             "Eventos que fueron archivados del catálogo activo.",
             eventos_historicos,
             permitir_correccion=False,
-            permitir_eliminacion=False
+            permitir_eliminacion=False,
+            permitir_revisado=False
         )
 
         # =========================================================
@@ -163,6 +165,7 @@ class PantallaEventos:
             eventos_eliminados,
             permitir_correccion=False,
             permitir_eliminacion=False,
+            permitir_revisado=False,
             eliminados=True
         )
 
@@ -194,6 +197,7 @@ class PantallaEventos:
         eventos,
         permitir_correccion=False,
         permitir_eliminacion=False,
+        permitir_revisado=False,
         eliminados=False
     ):
         tk.Label(
@@ -362,6 +366,14 @@ class PantallaEventos:
                         self.eliminarIndividual(key_evento)
                 ).pack(side="left", padx=2)
 
+            if permitir_revisado:
+                tk.Button(
+                    acciones,
+                    text="✓",
+                    command=lambda id_evento=evento.id: self.marcar_revisado(id_evento)
+                ).pack(side="left", padx=2)
+            
+
             acciones.pack(side="left")
 
         tk.Frame(
@@ -407,7 +419,7 @@ class PantallaEventos:
 
         ventana = tk.Toplevel(self.padre)
         ventana.title(f"Consulta del evento {id_evento}")
-        ventana.geometry("650x620")
+        ventana.geometry("650x650")
         ventana.minsize(600, 550)
 
         tk.Label(
@@ -530,6 +542,23 @@ class PantallaEventos:
             text="Cerrar",
             command=ventana.destroy
         ).pack(side="left", padx=5)
+
+    def marcar_revisado(self, id_evento):
+        try:
+            self.escenario.marcarRevisado(id_evento)
+            self.mostrar()
+            self.mostrar_estado(f"Evento {id_evento} marcado como revisado")
+
+            messagebox.showinfo(
+                "Evento revisado", 
+                f"El evento {id_evento} fue marcado como revisado."
+            )
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error",
+                str(error)
+            )
 
     def eliminarIndividual(self, key_evento):
         confirmar = messagebox.askyesno(

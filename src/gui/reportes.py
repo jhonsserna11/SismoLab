@@ -50,10 +50,7 @@ class PantallaReportes:
                 self.padre,
                 text="No hay reportes pendientes.",
                 font=("Arial", 12)
-            ).pack(anchor="w")
-
-            self.mostrar_estado("No hay reportes pendientes")
-            return
+            ).pack(anchor="w", pady=(0, 15))
 
         contenedor_cola = tk.Frame(self.padre)
         contenedor_cola.pack(
@@ -208,7 +205,7 @@ class PantallaReportes:
             self.padre.after_cancel(self.rafaga_id)
             self.rafaga_id = None
 
-        if self.label_contador_rafaga is not None:
+        if (self.label_contador_rafaga is not None and self.label_contador_rafaga.winfo_exists()):
             self.label_contador_rafaga.config(
                 text=f"Ráfaga pausada — {self.segundos_restantes} s restantes"
             )

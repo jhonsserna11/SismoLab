@@ -1,0 +1,1017 @@
+{
+    "tipo_carga": "escenario",
+    "configuracion": {
+        "W": 48,
+        "R": 40,
+        "L": 3,
+        "T": 72,
+        "modo_estres": true,
+        "reloj": "2026-10-01T10:00:00+00:00"
+    },
+    "avl": {
+        "raiz": 100,
+        "altura": 5,
+        "profundidad_maxima": 5,
+        "hojas": 6,
+        "nodos": [
+            {
+                "id": 100,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.0,
+                    "id_key": 100
+                },
+                "evento": {
+                    "id": 100,
+                    "magnitud": 5.0,
+                    "profundidad": 20.0,
+                    "zonax": 100.0,
+                    "zonay": 100.0,
+                    "fechaHora": "2026-10-01T09:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 5,
+                "izquierda": 800,
+                "derecha": 200,
+                "factor": 2
+            },
+            {
+                "id": 800,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 3.5,
+                    "id_key": 800
+                },
+                "evento": {
+                    "id": 800,
+                    "magnitud": 3.5,
+                    "profundidad": 70.0,
+                    "zonax": 300.0,
+                    "zonay": 700.0,
+                    "fechaHora": "2026-10-01T10:10:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 4,
+                "izquierda": 1,
+                "derecha": 700,
+                "factor": 1
+            },
+            {
+                "id": 1,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 1.0,
+                    "id_key": 1
+                },
+                "evento": {
+                    "id": 1,
+                    "magnitud": 1.0,
+                    "profundidad": 1.0,
+                    "zonax": 1.0,
+                    "zonay": 1.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 3,
+                "izquierda": null,
+                "derecha": 2,
+                "factor": -3
+            },
+            {
+                "id": 2,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 2.0,
+                    "id_key": 2
+                },
+                "evento": {
+                    "id": 2,
+                    "magnitud": 2.0,
+                    "profundidad": 2.0,
+                    "zonax": 2.0,
+                    "zonay": 2.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 2,
+                "izquierda": 10,
+                "derecha": 3,
+                "factor": 1
+            },
+            {
+                "id": 10,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 1.1,
+                    "id_key": 10
+                },
+                "evento": {
+                    "id": 10,
+                    "magnitud": 1.1,
+                    "profundidad": 1.0,
+                    "zonax": 1.0,
+                    "zonay": 1.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 12,
+                "factor": -1
+            },
+            {
+                "id": 12,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 1.2,
+                    "id_key": 12
+                },
+                "evento": {
+                    "id": 12,
+                    "magnitud": 1.2,
+                    "profundidad": 1.0,
+                    "zonax": 1.0,
+                    "zonay": 1.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            },
+            {
+                "id": 3,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 3.0,
+                    "id_key": 3
+                },
+                "evento": {
+                    "id": 3,
+                    "magnitud": 3.0,
+                    "profundidad": 3.0,
+                    "zonax": 3.0,
+                    "zonay": 3.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            },
+            {
+                "id": 700,
+                "key": {
+                    "prioridad": 2,
+                    "magnitud": 4.8,
+                    "id_key": 700
+                },
+                "evento": {
+                    "id": 700,
+                    "magnitud": 4.8,
+                    "profundidad": 60.0,
+                    "zonax": 700.0,
+                    "zonay": 200.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-4"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 2,
+                "izquierda": 300,
+                "derecha": 500,
+                "factor": 0
+            },
+            {
+                "id": 300,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 4.0,
+                    "id_key": 300
+                },
+                "evento": {
+                    "id": 300,
+                    "magnitud": 4.0,
+                    "profundidad": 50.0,
+                    "zonax": 200.0,
+                    "zonay": 700.0,
+                    "fechaHora": "2026-10-01T09:20:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": 4,
+                "derecha": null,
+                "factor": 1
+            },
+            {
+                "id": 4,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 4.0,
+                    "id_key": 4
+                },
+                "evento": {
+                    "id": 4,
+                    "magnitud": 4.0,
+                    "profundidad": 4.0,
+                    "zonax": 4.0,
+                    "zonay": 4.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            },
+            {
+                "id": 500,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 4.5,
+                    "id_key": 500
+                },
+                "evento": {
+                    "id": 500,
+                    "magnitud": 4.5,
+                    "profundidad": 20.0,
+                    "zonax": 600.0,
+                    "zonay": 600.0,
+                    "fechaHora": "2026-10-01T09:40:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-2"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 5,
+                "factor": -1
+            },
+            {
+                "id": 5,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.0,
+                    "id_key": 5
+                },
+                "evento": {
+                    "id": 5,
+                    "magnitud": 5.0,
+                    "profundidad": 5.0,
+                    "zonax": 5.0,
+                    "zonay": 5.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            },
+            {
+                "id": 200,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.0,
+                    "id_key": 200
+                },
+                "evento": {
+                    "id": 200,
+                    "magnitud": 6.0,
+                    "profundidad": 30.0,
+                    "zonax": 600.0,
+                    "zonay": 600.0,
+                    "fechaHora": "2026-10-01T09:10:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-2"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 2,
+                "izquierda": 400,
+                "derecha": 600,
+                "factor": 0
+            },
+            {
+                "id": 400,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.5,
+                    "id_key": 400
+                },
+                "evento": {
+                    "id": 400,
+                    "magnitud": 5.5,
+                    "profundidad": 25.0,
+                    "zonax": 150.0,
+                    "zonay": 150.0,
+                    "fechaHora": "2026-10-01T09:30:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 6,
+                "factor": -1
+            },
+            {
+                "id": 6,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.0,
+                    "id_key": 6
+                },
+                "evento": {
+                    "id": 6,
+                    "magnitud": 6.0,
+                    "profundidad": 6.0,
+                    "zonax": 6.0,
+                    "zonay": 6.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            },
+            {
+                "id": 600,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.2,
+                    "id_key": 600
+                },
+                "evento": {
+                    "id": 600,
+                    "magnitud": 6.2,
+                    "profundidad": 35.0,
+                    "zonax": 100.0,
+                    "zonay": 100.0,
+                    "fechaHora": "2026-10-01T09:50:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 7,
+                "factor": -1
+            },
+            {
+                "id": 7,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 7.0,
+                    "id_key": 7
+                },
+                "evento": {
+                    "id": 7,
+                    "magnitud": 7.0,
+                    "profundidad": 7.0,
+                    "zonax": 7.0,
+                    "zonay": 7.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
+                "factor": 0
+            }
+        ]
+    },
+    "bst": {
+        "raiz": 100,
+        "altura": 6,
+        "profundidad_maxima": 6,
+        "hojas": 7,
+        "nodos": [
+            {
+                "id": 100,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.0,
+                    "id_key": 100
+                },
+                "evento": {
+                    "id": 100,
+                    "magnitud": 5.0,
+                    "profundidad": 20.0,
+                    "zonax": 100.0,
+                    "zonay": 100.0,
+                    "fechaHora": "2026-10-01T09:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 6,
+                "izquierda": 300,
+                "derecha": 200
+            },
+            {
+                "id": 300,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 4.0,
+                    "id_key": 300
+                },
+                "evento": {
+                    "id": 300,
+                    "magnitud": 4.0,
+                    "profundidad": 50.0,
+                    "zonax": 200.0,
+                    "zonay": 700.0,
+                    "fechaHora": "2026-10-01T09:20:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 5,
+                "izquierda": 800,
+                "derecha": 500
+            },
+            {
+                "id": 800,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 3.5,
+                    "id_key": 800
+                },
+                "evento": {
+                    "id": 800,
+                    "magnitud": 3.5,
+                    "profundidad": 70.0,
+                    "zonax": 300.0,
+                    "zonay": 700.0,
+                    "fechaHora": "2026-10-01T10:10:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 4,
+                "izquierda": 1,
+                "derecha": 4
+            },
+            {
+                "id": 1,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 1.0,
+                    "id_key": 1
+                },
+                "evento": {
+                    "id": 1,
+                    "magnitud": 1.0,
+                    "profundidad": 1.0,
+                    "zonax": 1.0,
+                    "zonay": 1.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 3,
+                "izquierda": null,
+                "derecha": 2
+            },
+            {
+                "id": 2,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 2.0,
+                    "id_key": 2
+                },
+                "evento": {
+                    "id": 2,
+                    "magnitud": 2.0,
+                    "profundidad": 2.0,
+                    "zonax": 2.0,
+                    "zonay": 2.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 2,
+                "izquierda": 10,
+                "derecha": 3
+            },
+            {
+                "id": 10,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 1.1,
+                    "id_key": 10
+                },
+                "evento": {
+                    "id": 10,
+                    "magnitud": 1.1,
+                    "profundidad": 1.0,
+                    "zonax": 1.0,
+                    "zonay": 1.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 12
+            },
+            {
+                "id": 12,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 1.2,
+                    "id_key": 12
+                },
+                "evento": {
+                    "id": 12,
+                    "magnitud": 1.2,
+                    "profundidad": 1.0,
+                    "zonax": 1.0,
+                    "zonay": 1.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 3,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 3.0,
+                    "id_key": 3
+                },
+                "evento": {
+                    "id": 3,
+                    "magnitud": 3.0,
+                    "profundidad": 3.0,
+                    "zonax": 3.0,
+                    "zonay": 3.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 4,
+                "key": {
+                    "prioridad": 1,
+                    "magnitud": 4.0,
+                    "id_key": 4
+                },
+                "evento": {
+                    "id": 4,
+                    "magnitud": 4.0,
+                    "profundidad": 4.0,
+                    "zonax": 4.0,
+                    "zonay": 4.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 500,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 4.5,
+                    "id_key": 500
+                },
+                "evento": {
+                    "id": 500,
+                    "magnitud": 4.5,
+                    "profundidad": 20.0,
+                    "zonax": 600.0,
+                    "zonay": 600.0,
+                    "fechaHora": "2026-10-01T09:40:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-2"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": 700,
+                "derecha": 5
+            },
+            {
+                "id": 700,
+                "key": {
+                    "prioridad": 2,
+                    "magnitud": 4.8,
+                    "id_key": 700
+                },
+                "evento": {
+                    "id": 700,
+                    "magnitud": 4.8,
+                    "profundidad": 60.0,
+                    "zonax": 700.0,
+                    "zonay": 200.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-4"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 5,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.0,
+                    "id_key": 5
+                },
+                "evento": {
+                    "id": 5,
+                    "magnitud": 5.0,
+                    "profundidad": 5.0,
+                    "zonax": 5.0,
+                    "zonay": 5.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 200,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.0,
+                    "id_key": 200
+                },
+                "evento": {
+                    "id": 200,
+                    "magnitud": 6.0,
+                    "profundidad": 30.0,
+                    "zonax": 600.0,
+                    "zonay": 600.0,
+                    "fechaHora": "2026-10-01T09:10:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-2"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 2,
+                "izquierda": 400,
+                "derecha": 600
+            },
+            {
+                "id": 400,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 5.5,
+                    "id_key": 400
+                },
+                "evento": {
+                    "id": 400,
+                    "magnitud": 5.5,
+                    "profundidad": 25.0,
+                    "zonax": 150.0,
+                    "zonay": 150.0,
+                    "fechaHora": "2026-10-01T09:30:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 6
+            },
+            {
+                "id": 6,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.0,
+                    "id_key": 6
+                },
+                "evento": {
+                    "id": 6,
+                    "magnitud": 6.0,
+                    "profundidad": 6.0,
+                    "zonax": 6.0,
+                    "zonay": 6.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            },
+            {
+                "id": 600,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 6.2,
+                    "id_key": 600
+                },
+                "evento": {
+                    "id": 600,
+                    "magnitud": 6.2,
+                    "profundidad": 35.0,
+                    "zonax": 100.0,
+                    "zonay": 100.0,
+                    "fechaHora": "2026-10-01T09:50:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-3"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 1,
+                "izquierda": null,
+                "derecha": 7
+            },
+            {
+                "id": 7,
+                "key": {
+                    "prioridad": 3,
+                    "magnitud": 7.0,
+                    "id_key": 7
+                },
+                "evento": {
+                    "id": 7,
+                    "magnitud": 7.0,
+                    "profundidad": 7.0,
+                    "zonax": 7.0,
+                    "zonay": 7.0,
+                    "fechaHora": "2026-10-01T10:00:00+00:00",
+                    "revision": 1,
+                    "estaciones": [
+                        "EST-1"
+                    ],
+                    "estado": "Pendiente"
+                },
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null
+            }
+        ]
+    },
+    "historico": [],
+    "eliminados": [],
+    "estaciones": [
+        {
+            "id_estacion": "EST-1",
+            "nombre": "Manizales"
+        },
+        {
+            "id_estacion": "EST-2",
+            "nombre": "Medellín"
+        },
+        {
+            "id_estacion": "EST-3",
+            "nombre": "Bogotá"
+        },
+        {
+            "id_estacion": "EST-4",
+            "nombre": "Armenia"
+        }
+    ],
+    "zonas": [
+        {
+            "id_zona": 1,
+            "nombre": "Zona 1",
+            "x_min": 0.0,
+            "x_max": 500.0,
+            "y_min": 0.0,
+            "y_max": 500.0,
+            "poblada": true
+        },
+        {
+            "id_zona": 2,
+            "nombre": "Zona 2",
+            "x_min": 501.0,
+            "x_max": 1000.0,
+            "y_min": 501.0,
+            "y_max": 1000.0,
+            "poblada": true
+        },
+        {
+            "id_zona": 3,
+            "nombre": "Zona 3",
+            "x_min": 0.0,
+            "x_max": 500.0,
+            "y_min": 501.0,
+            "y_max": 1000.0,
+            "poblada": false
+        },
+        {
+            "id_zona": 4,
+            "nombre": "Zona 4",
+            "x_min": 501.0,
+            "x_max": 1000.0,
+            "y_min": 0.0,
+            "y_max": 500.0,
+            "poblada": false
+        }
+    ],
+    "cola_reportes": [
+        {
+            "id_evento": 100,
+            "nRevision": 2,
+            "magnitud": 9.0,
+            "profundidad": 100.0,
+            "zonax": 100.0,
+            "zonay": 100.0,
+            "fecha": "2026-10-01T09:10:00+00:00",
+            "estacion": "EST-2"
+        },
+        {
+            "id_evento": 200,
+            "nRevision": 1,
+            "magnitud": 6.0,
+            "profundidad": 30.0,
+            "zonax": 600.0,
+            "zonay": 600.0,
+            "fecha": "2026-10-01T09:10:00+00:00",
+            "estacion": "EST-2"
+        },
+        {
+            "id_evento": 100,
+            "nRevision": 1,
+            "magnitud": 5.0,
+            "profundidad": 20.0,
+            "zonax": 100.0,
+            "zonay": 100.0,
+            "fecha": "2026-10-01T09:00:00+00:00",
+            "estacion": "EST-1"
+        },
+        {
+            "id_evento": 300,
+            "nRevision": 2,
+            "magnitud": 4.2,
+            "profundidad": 50.0,
+            "zonax": 200.0,
+            "zonay": 700.0,
+            "fecha": "2026-10-01T09:20:00+00:00",
+            "estacion": "EST-3"
+        },
+        {
+            "id_evento": 400,
+            "nRevision": 1,
+            "magnitud": 5.5,
+            "profundidad": 25.0,
+            "zonax": 150.0,
+            "zonay": 150.0,
+            "fecha": "2026-10-01T09:30:00+00:00",
+            "estacion": "EST-1"
+        },
+        {
+            "id_evento": 800,
+            "nRevision": 1,
+            "magnitud": 3.5,
+            "profundidad": 70.0,
+            "zonax": 300.0,
+            "zonay": 700.0,
+            "fecha": "2026-10-01T10:10:00+00:00",
+            "estacion": "EST-3"
+        },
+        {
+            "id_evento": 500,
+            "nRevision": 1,
+            "magnitud": 4.9,
+            "profundidad": 20.0,
+            "zonax": 600.0,
+            "zonay": 600.0,
+            "fecha": "2026-10-01T09:40:00+00:00",
+            "estacion": "EST-2"
+        },
+        {
+            "id_evento": 600,
+            "nRevision": 1,
+            "magnitud": 6.2,
+            "profundidad": 35.0,
+            "zonax": 100.0,
+            "zonay": 100.0,
+            "fecha": "2026-10-01T09:50:00+00:00",
+            "estacion": "EST-3"
+        }
+    ],
+    "metricas": {
+        "escenario": {
+            "correcciones_aceptadas": 0,
+            "reportes_descartados": 0,
+            "conflictos": 0,
+            "archivos_masivos": 0,
+            "eventos_archivados": 0
+        },
+        "avl": {
+            "casos_LL": 2,
+            "casos_RR": 0,
+            "casos_LR": 0,
+            "casos_RL": 1,
+            "giros_izquierda": 1,
+            "giros_derecha": 3
+        }
+    }
+}

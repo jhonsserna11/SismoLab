@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from tkinter import messagebox
 
 class PantallaArboles:
 
@@ -157,7 +157,10 @@ class PantallaArboles:
         ).pack(anchor="w", pady=(3, 5))
 
         area = tk.Frame(panel)
-        area.pack(fill="both", expand=True)
+        area.pack(
+            fill="both",
+            expand=True
+        )
 
         canvas = tk.Canvas(
             area,
@@ -180,6 +183,22 @@ class PantallaArboles:
             )
             return panel
 
+        # Desplazamiento tipo Google Maps
+        canvas.bind(
+            "<ButtonPress-1>",
+            self.iniciar_desplazamiento
+        )
+
+        canvas.bind(
+            "<B1-Motion>",
+            self.desplazar
+        )
+
+        canvas.bind(
+            "<ButtonRelease-1>",
+            self.terminar_desplazamiento
+        )
+
         canvas.bind(
             "<Configure>",
             lambda event,
@@ -196,6 +215,7 @@ class PantallaArboles:
         )
 
         return panel
+
 
     def crear_dato(self, padre, etiqueta, valor):
         bloque = tk.Frame(
@@ -250,6 +270,25 @@ class PantallaArboles:
             + metricas.get("giros_derecha", 0)
         )
 
+    def iniciar_desplazamiento(self, evento):
+        self.canvas_arrastre = evento.widget
+        self.canvas_arrastre.scan_mark(
+            evento.x,
+            evento.y
+        )
+
+
+    def desplazar(self, evento):
+        self.canvas_arrastre.scan_dragto(
+            evento.x,
+            evento.y,
+            gain=1
+        )
+
+
+    def terminar_desplazamiento(self, evento):
+        self.canvas_arrastre = None
+
     def dibujar_arbol(self, canvas, datos_arbol, es_avl):
         canvas.delete("all")
 
@@ -266,36 +305,49 @@ class PantallaArboles:
             for nodo in nodos
         }
 
-        niveles = {}
-
-        for nodo in nodos:
-            nivel = nodo["profundidad"]
-
-            niveles.setdefault(nivel, []).append(nodo)
-
         posiciones = {}
+        orden_inorden = []
 
-        max_nivel = max(niveles.keys(), default=0)
+        def recorrer_inorden(nodo_id):
+            if nodo_id is None:
+                return
+
+            nodo = nodos_por_id[nodo_id]
+
+            recorrer_inorden(nodo["izq"])
+
+            orden_inorden.append(nodo_id)
+
+            recorrer_inorden(nodo["der"])
+
+        recorrer_inorden(raiz_id)
+
+        cantidad_nodos = len(orden_inorden)
+
+        if cantidad_nodos == 0:
+            return
 
         separacion_vertical = 75
 
-        for nivel, nodos_nivel in niveles.items():
-            cantidad = len(nodos_nivel)
+        ancho_arbol = max(
+            ancho,
+            cantidad_nodos * 90
+        )
 
-            if cantidad == 1:
-                posiciones[nodos_nivel[0]["id"]] = (
-                    ancho / 2,
-                    45 + nivel * separacion_vertical
-                )
-                continue
+        if cantidad_nodos == 1:
+            separacion_horizontal = ancho_arbol / 2
+        else:
+            separacion_horizontal = ancho_arbol / (cantidad_nodos + 1)
 
-            separacion_horizontal = ancho / (cantidad + 1)
+        for indice, nodo_id in enumerate(orden_inorden):
+            nodo = nodos_por_id[nodo_id]
 
-            for indice, nodo in enumerate(nodos_nivel):
-                x = separacion_horizontal * (indice + 1)
-                y = 45 + nivel * separacion_vertical
+            nivel = nodo["profundidad"]
 
-                posiciones[nodo["id"]] = (x, y)
+            x = separacion_horizontal * (indice + 1)
+            y = 45 + nivel * separacion_vertical
+
+            posiciones[nodo_id] = (x, y)
 
         self.dibujar_conexiones(
             canvas,
@@ -314,6 +366,25 @@ class PantallaArboles:
                 y,
                 es_avl
             )
+        altura_maxima = max(
+            nodo["profundidad"]
+            for nodo in nodos
+        )
+
+        alto_arbol = (
+            45
+            + (altura_maxima + 1) * separacion_vertical
+            + 45
+        )
+
+        canvas.configure(
+            scrollregion=(
+                0,
+                0,
+                ancho_arbol,
+                alto_arbol
+            )
+        )
 
     def dibujar_conexiones(
         self,
@@ -441,12 +512,159 @@ class PantallaArboles:
         )
 
     def mostrar_evento(self, id_evento):
-        resultado = self.escenario.consultarEvento(id_evento)
+        try:
+            datos = self.escenario.consultarEvento(id_evento)
 
-        self.mostrar_estado(
-            f"Evento {id_evento} seleccionado"
-        )
+            ventana = tk.Toplevel(self.padre)
+            ventana.title(f"Evento {id_evento}")
+            ventana.geometry("480x650")
+            ventana.resizable(False, False)
 
+            tk.Label(
+                ventana,
+                text=f"Evento {id_evento}",
+                font=("Arial", 18, "bold")
+            ).pack(
+                anchor="w",
+                padx=20,
+                pady=(20, 5)
+            )
+
+            tk.Label(
+                ventana,
+                text="Información del evento y del nodo AVL",
+                font=("Arial", 10)
+            ).pack(
+                anchor="w",
+                padx=20,
+                pady=(0, 15)
+            )
+
+            contenido = tk.Frame(ventana)
+            contenido.pack(
+                fill="both",
+                expand=True,
+                padx=20
+            )
+
+            informacion = [
+                ("ID", id_evento),
+                ("Prioridad", datos["prioridad"]),
+                ("Magnitud", datos["magnitud"]),
+                ("Profundidad", datos["profundidad"]),
+                ("Zona X", datos["zonax"]),
+                ("Zona Y", datos["zonay"]),
+                ("Fecha", datos["fecha"]),
+                ("Revisión", datos["revision"]),
+                ("Estado", datos["estado"]),
+                ("Zona poblada", datos["poblada"]),
+                ("Clave AVL", datos["clave"]),
+                ("Profundidad nodo", datos["profundidadNodo"]),
+                ("Altura nodo", datos["altura"]),
+                ("Factor de balance", datos["factor_balance"]),
+                (
+                    "Asociado",
+                    datos["asociaciones"]["asociado"]
+                ),
+            ]
+
+            for nombre, valor in informacion:
+                fila = tk.Frame(contenido)
+                fila.pack(
+                    fill="x",
+                    pady=3
+                )
+
+                tk.Label(
+                    fila,
+                    text=f"{nombre}:",
+                    font=("Arial", 9, "bold"),
+                    width=22,
+                    anchor="w"
+                ).pack(side="left")
+
+                tk.Label(
+                    fila,
+                    text=str(valor),
+                    font=("Arial", 9),
+                    anchor="w"
+                ).pack(
+                    side="left",
+                    fill="x",
+                    expand=True
+                )
+
+            tk.Label(
+                contenido,
+                text="Estaciones",
+                font=("Arial", 11, "bold")
+            ).pack(
+                anchor="w",
+                pady=(12, 5)
+            )
+
+            estaciones = datos["estaciones"]
+
+            texto_estaciones = (
+                ", ".join(str(estacion) for estacion in estaciones)
+                if estaciones
+                else "Ninguna"
+            )
+
+            tk.Label(
+                contenido,
+                text=texto_estaciones,
+                font=("Arial", 9),
+                justify="left",
+                wraplength=420
+            ).pack(
+                anchor="w"
+            )
+
+            tk.Label(
+                contenido,
+                text="Candidatos de asociación",
+                font=("Arial", 11, "bold")
+            ).pack(
+                anchor="w",
+                pady=(12, 5)
+            )
+
+            candidatos = datos["asociaciones"]["candidatos"]
+
+            texto_candidatos = (
+                ", ".join(str(candidato) for candidato in candidatos)
+                if candidatos
+                else "Ninguno"
+            )
+
+            tk.Label(
+                contenido,
+                text=texto_candidatos,
+                font=("Arial", 9),
+                justify="left",
+                wraplength=420
+            ).pack(
+                anchor="w"
+            )
+
+            tk.Button(
+                ventana,
+                text="Cerrar",
+                command=ventana.destroy
+            ).pack(
+                pady=15
+            )
+
+            self.mostrar_estado(
+                f"Evento {id_evento} seleccionado"
+            )
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error al consultar evento",
+                str(error)
+            )
     def limpiar(self):
         for widget in self.padre.winfo_children():
             widget.destroy()

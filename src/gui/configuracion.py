@@ -1,12 +1,13 @@
 import tkinter as tk
-
+from tkinter import messagebox
 
 class PantallaConfiguracion:
 
-    def __init__(self, padre, escenario, mostrar_estado):
+    def __init__(self, padre, escenario, mostrar_estado, actualizar_parametros):
         self.padre = padre
         self.escenario = escenario
         self.mostrar_estado = mostrar_estado
+        self.actualizar_parametros = actualizar_parametros
 
     def mostrar(self):
         self.limpiar()
@@ -28,35 +29,22 @@ class PantallaConfiguracion:
         contenedor = tk.Frame(self.padre)
         contenedor.pack(fill="x")
 
-        self.crear_parametro(
-            contenedor,
-            "Ventana W",
-            f"{self.escenario.W} horas"
-        )
-
-        self.crear_parametro(
-            contenedor,
-            "Radio R",
-            f"{self.escenario.R} km"
-        )
-
-        self.crear_parametro(
-            contenedor,
-            "Profundidad L",
-            str(self.escenario.L)
-        )
-
-        self.crear_parametro(
-            contenedor,
-            "Antigüedad T",
-            f"{self.escenario.T} horas"
-        )
+        self.crear_parametro(contenedor, "Ventana W", self.escenario.W)
+        self.crear_parametro(contenedor, "Radio R", self.escenario.R)
+        self.crear_parametro(contenedor, "Profundidad L", self.escenario.L)
+        self.crear_parametro(contenedor, "Antigüedad T", self.escenario.T)
 
         tk.Label(
             self.padre,
             text="Modo de operación",
             font=("Arial", 14, "bold")
         ).pack(anchor="w", pady=(30, 10))
+
+        tk.Button(
+            self.padre,
+            text="Aplicar cambios",
+            command=self.aplicar_cambios
+        ).pack(anchor="w", pady=(15, 0))
 
         modo = (
             "Modo estrés ACTIVADO"
@@ -102,11 +90,51 @@ class PantallaConfiguracion:
             font=("Arial", 10)
         ).pack()
 
-        tk.Label(
+        entrada = tk.Entry(
             tarjeta,
-            text=valor,
-            font=("Arial", 16, "bold")
-        ).pack(pady=(5, 0))
+            justify="center",
+            font=("Arial", 14)
+        )
+        entrada.insert(0, str(valor))
+        entrada.pack(pady=(5, 0))
+
+        if nombre == "Ventana W":
+            self.entrada_W = entrada
+        elif nombre == "Radio R":
+            self.entrada_R = entrada
+        elif nombre == "Profundidad L":
+            self.entrada_L = entrada
+        elif nombre == "Antigüedad T":
+            self.entrada_T = entrada
+
+  
+    def aplicar_cambios(self):
+        try:
+            nuevo_W = float(self.entrada_W.get())
+            nuevo_R = float(self.entrada_R.get())
+            nuevo_T = float(self.entrada_T.get())
+
+            try:
+                nuevo_L = int(self.entrada_L.get())
+            except ValueError:
+                raise ValueError("L debe ser un entero no negativo.")
+
+            self.escenario.actualizarW(nuevo_W)
+            self.escenario.actualizarR(nuevo_R)
+            self.escenario.actualizarL(nuevo_L)
+            self.escenario.actualizarT(nuevo_T)
+
+            self.actualizar_parametros()
+
+            self.mostrar_estado("Parámetros actualizados correctamente")
+            self.mostrar()
+
+        except ValueError as error:
+            messagebox.showerror(
+                "Error de configuración",
+                str(error)
+            )
+
 
     def limpiar(self):
         for widget in self.padre.winfo_children():
