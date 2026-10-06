@@ -1,0 +1,47 @@
+{
+    "tipo_carga": "escenario",
+    "configuracion": {
+        "W": 48,
+        "R": 40,
+        "L": 3,
+        "T": 72,
+        "modo_estres": false,
+        "reloj": "2026-10-01T10:00:00+00:00"
+    },
+    "avl": {
+        "raiz": null,
+        "altura": -1,
+        "profundidad_maxima": -1,
+        "hojas": 0,
+        "nodos": []
+    },
+    "bst": {
+        "raiz": null,
+        "altura": -1,
+        "profundidad_maxima": -1,
+        "hojas": 0,
+        "nodos": []
+    },
+    "historico": [],
+    "eliminados": [],
+    "estaciones": [],
+    "zonas": [],
+    "cola_reportes": [],
+    "metricas": {
+        "escenario": {
+            "correcciones_aceptadas": 0,
+            "reportes_descartados": 0,
+            "conflictos": 0,
+            "archivos_masivos": 0,
+            "eventos_archivados": 0
+        },
+        "avl": {
+            "casos_LL": 0,
+            "casos_RR": 0,
+            "casos_LR": 0,
+            "casos_RL": 0,
+            "giros_izquierda": 0,
+            "giros_derecha": 0
+        }
+    }
+}
