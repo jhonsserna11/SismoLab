@@ -8,3 +8,15 @@ class Reporte:
         self.zonay = zonay
         self.fecha = fecha
         self.estacion = estacion
+
+    def consultarReporte(self):
+        return {
+            "id_evento": self.id_evento,
+            "nRevision": self.nRevision,
+            "magnitud": self.magnitud,
+            "profundidad": self.profundidad,
+            "zonax": self.zonax,
+            "zonay": self.zonay,
+            "fecha": self.fecha,
+            "estacion": self.estacion
+        }

@@ -392,7 +392,11 @@ class PantallaReportes:
             self.actualizar_contador_rafaga
         )
 
+    def hacer_clickeable(self, widget, comando):
+        widget.bind("<Button-1>", comando)
 
+        for hijo in widget.winfo_children():
+            self.hacer_clickeable(hijo, comando)
     def crear_tarjeta(self, padre, reporte, posicion, siguiente):
 
         if siguiente:
@@ -455,6 +459,80 @@ class PantallaReportes:
             bg=fondo,
             font=("Arial", 10)
         ).pack(anchor="w")
+
+        def consultar_reporte(_tkinterEvent):
+            try:
+                datos = self.escenario.consultarReporte(
+                    reporte.id_evento,
+                    reporte.nRevision
+                )
+                self.mostrar_detalle_reporte(datos)
+
+            except ValueError as error:
+                messagebox.showerror(
+                    "Reporte",
+                    str(error)
+                )
+
+        self.hacer_clickeable(
+            tarjeta,
+            consultar_reporte
+        )
+
+    def mostrar_detalle_reporte(self, reporte):
+        ventana = tk.Toplevel(self.padre)
+        ventana.title("Detalle del reporte")
+        ventana.geometry("450x450")
+        ventana.resizable(False, False)
+
+        tk.Label(
+            ventana,
+            text="Detalle del reporte",
+            font=("Arial", 18, "bold")
+        ).pack(
+            anchor="w",
+            padx=20,
+            pady=(20, 15)
+        )
+
+        datos = [
+            ("ID del evento", reporte["id_evento"]),
+            ("Revisión", reporte["nRevision"]),
+            ("Magnitud", reporte["magnitud"]),
+            ("Profundidad", reporte["profundidad"]),
+            ("Zona X", reporte["zonax"]),
+            ("Zona Y", reporte["zonay"]),
+            ("Fecha", reporte["fecha"]),
+            ("Estación", reporte["estacion"])
+        ]
+
+        contenido = tk.Frame(ventana)
+        contenido.pack(
+            fill="x",
+            padx=20
+        )
+
+        for nombre, valor in datos:
+            fila = tk.Frame(contenido)
+            fila.pack(
+                fill="x",
+                pady=4
+            )
+
+            tk.Label(
+                fila,
+                text=f"{nombre}:",
+                font=("Arial", 10, "bold"),
+                width=18,
+                anchor="w"
+            ).pack(side="left")
+
+            tk.Label(
+                fila,
+                text=str(valor),
+                font=("Arial", 10),
+                anchor="w"
+            ).pack(side="left")    
 
     def preparar_reporte(self):
         ventana = tk.Toplevel(self.padre)

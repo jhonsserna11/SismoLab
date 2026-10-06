@@ -240,7 +240,18 @@ class Escenario:
 
     def consultarColaReportes(self):
         return list(self.cola_reportes)
-# dhdhdhdhdhdh
+    def consultarReporte(self, id_evento, nRevision):
+        for reporte in self.cola_reportes:
+            if (
+                reporte.id_evento == id_evento
+                and reporte.nRevision == nRevision
+            ):
+                return reporte.consultarReporte()
+
+        raise ValueError(
+            "El reporte no se encuentra en la cola"
+        )
+
     def _normalizar_decimal(self, valor):
         return Decimal(str(valor))
 

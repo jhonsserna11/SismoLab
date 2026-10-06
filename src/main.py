@@ -17,6 +17,7 @@ from src.gui.auditoria import PantallaAuditoria
 from src.gui.configuracion import PantallaConfiguracion
 from src.gui.historico import PantallaHistorico
 from src.gui.cargas import PantallaCargas
+from src.gui.consultas import PantallaConsultas
 
 
 class SismoLabApp:
@@ -78,6 +79,11 @@ class SismoLabApp:
         )
 
         self.pantalla_metricas = PantallaMetricas(
+            self.contenido,
+            self.escenario,
+            self.actualizar_estado
+        )
+        self.pantalla_consultas = PantallaConsultas(
             self.contenido,
             self.escenario,
             self.actualizar_estado
@@ -446,6 +452,7 @@ class SismoLabApp:
             "Historico",
             "Árboles",
             "Métricas",
+            "Consultas",
             "Versiones",
             "Cargas",
             "Auditoría",
@@ -513,6 +520,8 @@ class SismoLabApp:
             self.pantalla_historico.mostrar()
         elif nombre == "Métricas":
             self.pantalla_metricas.mostrar()
+        elif nombre == "Consultas":
+            self.pantalla_consultas.mostrar()
         elif nombre == "Versiones":
             self.pantalla_versiones.mostrar()
         elif nombre == "Cargas":
