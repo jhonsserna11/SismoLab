@@ -35,7 +35,7 @@ class SismoLabApp:
 
         self.crear_interfaz()
 
-        # Las pantallas se crean después de crear self.contenido.
+        # Screens are created after self.contenido is initialized.
         self.pantalla_resumen = PantallaResumen(
             self.contenido,
             self.escenario,
@@ -120,7 +120,7 @@ class SismoLabApp:
 
     def crear_interfaz(self):
 
-        # ===== BARRA SUPERIOR =====
+        # ===== TOP BAR =====
 
         self.header = tk.Frame(
             self.ventana,
@@ -144,7 +144,7 @@ class SismoLabApp:
             padx=25
         )
 
-        # ===== INFORMACIÓN Y CONTROLES =====
+        # ===== INFORMATION AND CONTROLS =====
 
         controles = tk.Frame(self.header)
         controles.pack(
@@ -152,7 +152,7 @@ class SismoLabApp:
             padx=20
         )
 
-        # Parámetros del escenario
+        # Scenario parameters
         self.parametros_label = tk.Label(
             controles,
             text=(
@@ -168,7 +168,7 @@ class SismoLabApp:
             padx=(0, 15)
         )
 
-        # Modo estrés
+        # Stress mode
         self.boton_estres = tk.Button(
             controles,
             text="⚡ Estrés: OFF",
@@ -193,7 +193,7 @@ class SismoLabApp:
             padx=(0, 10)
         )
 
-        # Avanzar reloj
+        # Advance clock
         tk.Button(
             controles,
             text="⏩ Avanzar",
@@ -204,7 +204,7 @@ class SismoLabApp:
             padx=(0, 10)
         )
 
-        # Reloj
+        # Clock
         self.reloj_label = tk.Label(
             controles,
             text="",
@@ -214,7 +214,7 @@ class SismoLabApp:
             side="left"
         )
 
-        # ===== CUERPO =====
+        # ===== BODY =====
 
         self.cuerpo = tk.Frame(self.ventana)
         self.cuerpo.pack(
@@ -223,7 +223,7 @@ class SismoLabApp:
             expand=True
         )
 
-        # ===== MENÚ LATERAL =====
+        # ===== SIDE MENU =====
 
         self.menu = tk.Frame(
             self.cuerpo,
@@ -239,7 +239,7 @@ class SismoLabApp:
 
         self.crear_menu()
 
-        # ===== CONTENIDO =====
+        # ===== CONTENT =====
 
         self.contenido = tk.Frame(
             self.cuerpo,
@@ -252,7 +252,7 @@ class SismoLabApp:
             expand=True
         )
 
-        # ===== BARRA DE ESTADO =====
+        # ===== STATUS BAR =====
 
         self.estado_barra = tk.Label(
             self.ventana,
@@ -650,7 +650,7 @@ def cargar_escenario_inicial():
 
     escenario.cargarEscenario(datos)
 
-    # El estado inicial no debe ser una acción de deshacer.
+    # The initial state must not be an undoable action.
     escenario.pila_deshacer.clear()
 
     return escenario

@@ -55,7 +55,7 @@ def crear_evento(id_evento=1):
 
 
 # ================================================================
-# CREAR Y CONSULTAR
+# CREATE AND QUERY
 # ================================================================
 
 def test_crear_y_consultar_evento():
@@ -132,7 +132,7 @@ print("test auditoria escenario: OK")
 
 
 # ================================================================
-# ID TESTS
+# IDENTIFIER TESTS
 # ================================================================
 
 def test_id_duplicado():
@@ -281,7 +281,7 @@ print("test id limites validos: OK")
 
 
 # ================================================================
-# MAGNITUD TESTS
+# MAGNITUDE TESTS
 # ================================================================
 
 def test_magnitud_minima():
@@ -408,7 +408,7 @@ print("test magnitud mas de un decimal: OK")
 
 
 # ================================================================
-# PROFUNDIDAD TESTS
+# DEPTH TESTS
 # ================================================================
 
 def test_profundidad_minima():
@@ -533,7 +533,7 @@ print("test profundidad mas de un decimal: OK")
 
 
 # ================================================================
-# EPICENTRO
+# EPICENTER
 # ================================================================
 
 def test_coordenadas_minimas():
@@ -660,7 +660,7 @@ print("test coordenada mas de un decimal: OK")
 
 
 # ================================================================
-# PRIORIDADES
+# PRIORITIES
 # ================================================================
 
 def test_prioridad_menor_a_4_5():
@@ -825,7 +825,7 @@ print("test prioridad_magnitud_mayor_a_6: OK")
 
 
 # ================================================================
-# ESTADO DE ATENCION
+# REVIEW STATUS
 # ================================================================
 
 def test_creacion_deja_evento_pendiente():
@@ -1031,7 +1031,7 @@ test_eventos_pendientes()
 print("test eventos_pendientes: OK")
 
 # ================================================================
-# SINCRONIZACION AVL - BST
+# AVL - BST SYNCHRONIZATION
 # ================================================================
 
 def test_bst_se_sincroniza_con_creacion():

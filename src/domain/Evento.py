@@ -2,8 +2,10 @@ from datetime import datetime, timezone
 from math import sqrt
 from decimal import Decimal, InvalidOperation
 
+# Models a seismic event and its validation, prioritization, and association rules.
 class Evento:
 
+    # Validates and stores the event identifier, measurements, coordinates, timestamp, revision, and stations.
     def __init__(self, id_evento:int, magnitud:float, profundidad:float, zonax:float, zonay:float, 
                 fecha:datetime, revision:int, estaciones:list[str]):
 
@@ -51,6 +53,7 @@ class Evento:
         
         self.estado = "Pendiente"
 
+    # Converts a measurement to Decimal and requires exactly one fractional digit.
     def _validar_undecimal(self, decimal):
         try:
             d = Decimal(str(decimal))
@@ -65,6 +68,7 @@ class Evento:
             raise TypeError(f"el valor {decimal} no es válido")
 
         
+    # Assigns priority based on magnitude, depth, and whether the epicenter is in a populated zone.
     def calcularPrioridad(self, poblada:bool)->int:
         if self.magnitud >= 6.0 or (self.magnitud >= 4.5 and self.profundidad <= 30.0 and poblada):
             return 3
@@ -73,6 +77,7 @@ class Evento:
         else:
             return 1
 
+    # Checks whether this event precedes another within the allowed time window and distance.
     def esCandidato(self, eventoB:"Evento", w, r):
         if self.magnitud > eventoB.magnitud:
             diferencia = (eventoB.fechaHora - self.fechaHora).total_seconds() / 3600

@@ -181,7 +181,7 @@ def test_arbol_desbalanceado_modo_estres_estructura_compleja():
             True
         )
 
-    # Verificar estructura
+    # Verify the structure.
 
     assert escenario.avl.raiz.key.id_key == 10
 
@@ -203,12 +203,12 @@ def test_arbol_desbalanceado_modo_estres_estructura_compleja():
     assert nodo40.izq is None
     assert nodo40.der.key.id_key == 50
 
-    # Verificar cantidad y altura
+    # Verify the node count and height.
 
     assert escenario.avl.peso() == 9
     assert escenario.avl.altura() == 4
 
-    # Verificar que realmente está desbalanceado
+    # Verify that the tree is actually unbalanced.
 
     assert escenario.avl.obtenerDatosNodo(escenario.avl.raiz)["factor"] == -4
 

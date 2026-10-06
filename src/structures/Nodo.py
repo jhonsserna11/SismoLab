@@ -5,6 +5,7 @@ from decimal import Decimal
 from src.domain.Evento import Evento
 
 @dataclass
+# Defines the ordering key used to prioritize and distinguish events in the trees.
 class Key:
     prioridad: int
     magnitud: Decimal
@@ -27,6 +28,7 @@ class Key:
         return (self.prioridad, float(self.magnitud), self.id_key)
 
 @dataclass
+# Stores a key and its event, along with child links and the node height.
 class Nodo:
     key: Key
     evento: Evento
@@ -35,6 +37,5 @@ class Nodo:
     der: Optional["Nodo"] = None
     altura: int = 0
 
-    #Método esHoja: retorna el valor de verdad de la sentencia -> ambos hijos son None? (no hay hijos ni izq ni der)
     def esHoja(self)->bool:
         return self.izq is None and self.der is None

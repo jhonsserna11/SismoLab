@@ -99,7 +99,7 @@ class PantallaMetricas:
 
         indicadores = self.escenario.obtenerIndicadores()
 
-        # Indicadores generales
+        # General indicators
 
         contenedor = tk.Frame(contenido)
         contenedor.pack(
@@ -130,7 +130,7 @@ class PantallaMetricas:
                 columna
             )
 
-        # Recorridos del AVL
+        # AVL traversals
 
         tk.Label(
             contenido,
@@ -178,7 +178,7 @@ class PantallaMetricas:
                 padx=5
             )
 
-        # Métricas acumulativas
+        # Cumulative metrics
 
         metricas_acumulativas = indicadores["metricasAcumulativas"]
 
@@ -216,9 +216,9 @@ class PantallaMetricas:
                 pady=2
             )
 
-        # Indicadores de eventos
+        # Event indicators
 
-        # Indicadores de eventos
+        # Event indicators
 
         tk.Label(
             contenido,
@@ -245,7 +245,7 @@ class PantallaMetricas:
                 pady=2
             )
 
-        # Métricas AVL
+        # AVL metrics
 
         metricas_avl = indicadores["metricasAVL"]
 

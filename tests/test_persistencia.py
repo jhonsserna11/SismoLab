@@ -125,7 +125,7 @@ def test_cargar_inserciones():
     assert nodo2["key"]["prioridad"] == 1
     assert nodo3["key"]["prioridad"] == 3
 
-    # La carga por inserciones reemplaza el catálogo activo.
+    # Insertion-based loading replaces the active catalog.
     assert escenario.avl.raiz is not None
     assert escenario.bst.raiz is not None
 
@@ -155,11 +155,11 @@ def test_cargar_inserciones_balancea_avl():
     assert len(avl["nodos"]) == 4
     assert len(bst["nodos"]) == 4
 
-    # El AVL debe permanecer balanceado.
+    # The AVL tree must remain balanced.
     for nodo in avl["nodos"]:
         assert abs(nodo["factor"]) <= 1
 
-    # El BST recibe el mismo orden pero no se balancea.
+    # The BST receives the same order but is not balanced.
     nodo1 = next(nodo for nodo in bst["nodos"] if nodo["id"] == 1)
     nodo2 = next(nodo for nodo in bst["nodos"] if nodo["id"] == 2)
     nodo3 = next(nodo for nodo in bst["nodos"] if nodo["id"] == 3)
@@ -217,7 +217,7 @@ def test_cargar_inserciones_id_duplicado():
         assert "identificador" in str(e).lower()
         print("Error detectado correctamente:", e)
 
-    # La carga inválida no modifica el escenario.
+    # Invalid loading must not change the scenario.
     assert escenario.avl.raiz is raiz_antes
     assert escenario.avl.raiz is not None
 test_cargar_inserciones_id_duplicado()
@@ -234,15 +234,15 @@ def test_indicadores_carga_inserciones():
     avl = resultado["avl"]
     bst = resultado["bst"]
 
-    # Ambos tienen los mismos eventos.
+    # Both trees contain the same events.
     assert len(avl["nodos"]) == 4
     assert len(bst["nodos"]) == 4
 
-    # Ambos tienen raíz.
+    # Both trees have a root.
     assert avl["raiz"] is not None
     assert bst["raiz"] is not None
 
-    # El BST recibe 1 -> 2 -> 3 -> 4 sin balancear.
+    # The BST receives 1 -> 2 -> 3 -> 4 without balancing.
     nodo_raiz_bst = next(
         nodo for nodo in bst["nodos"]
         if nodo["id"] == bst["raiz"]
@@ -250,13 +250,13 @@ def test_indicadores_carga_inserciones():
 
     assert nodo_raiz_bst["evento"]["magnitud"] == 1.0
 
-    # Indicadores del AVL.
+    # AVL indicators.
     assert avl["altura"] >= 0
     assert avl["hojas"] >= 1
 
     profundidad_maxima_avl = avl["profundidad_maxima"]
 
-    # Indicadores del BST.
+    # BST indicators.
     assert bst["altura"] == 3
     assert bst["hojas"] == 1
 
@@ -264,8 +264,8 @@ def test_indicadores_carga_inserciones():
 
     assert profundidad_maxima_bst == 3
 
-    # El AVL, al estar balanceado, debe tener menor profundidad máxima
-    # que este BST degenerado.
+    # Because it is balanced, the AVL tree should have a lower maximum depth
+    # than this degenerate BST.
     assert profundidad_maxima_avl < profundidad_maxima_bst
 
     assert escenario.avl.raiz is not None
@@ -324,11 +324,11 @@ def test_deshacer_carga_inserciones():
 
     raiz_antes = escenario.avl.raiz.key.id_key
 
-    # Eliminar un evento: su ID queda en eliminados.
+    # Delete one event: its ID is added to the deleted set.
     nodo = escenario.avl.encontrarNodo(100)
     escenario.eliminacionIndividual(nodo.key)
 
-    # Archivar el otro evento: pasa a historico.
+    # Archive the other event: it moves to history.
     nodo = escenario.avl.encontrarNodo(90)
     escenario.archivarRama(nodo)
 
@@ -422,7 +422,7 @@ def test_cargar_topologia_prioridad_incorrecta():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -448,7 +448,7 @@ def test_cargar_topologia_referencia_inexistente():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -473,7 +473,7 @@ def test_cargar_topologia_dos_padres():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -504,7 +504,7 @@ def test_cargar_topologia_nodo_desconectado():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -529,7 +529,7 @@ def test_cargar_topologia_altura_incorrecta():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -554,7 +554,7 @@ def test_cargar_topologia_factor_incorrecto():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -579,7 +579,7 @@ def test_cargar_topologia_raiz_incorrecta():
 
     try:
         escenario.cargarTopologia(datos)
-        #verificar que el estado antes de la carga no cambió
+        # verify that the state before loading has not changed
         assert escenario.avl.raiz.key == 1
         assert escenario.avl.raiz.evento.zonax == 100.0
         assert escenario.avl.raiz.evento.zonay == 304.6
@@ -693,7 +693,7 @@ test_guardar_escenario()
 print("test guardar_escenario: OK")
 
 def test_cargar_escenario():
-    # Estado que vamos a guardar
+    # State to save
     escenario_origen = Escenario(
         24,
         80,
@@ -706,7 +706,7 @@ def test_cargar_escenario():
 
     datos = escenario_origen.guardarEscenario()
 
-    # Escenario diferente al que vamos a cargar
+    # A different scenario to load
     escenario_destino = Escenario(
         48,
         40,
@@ -754,7 +754,7 @@ print("test cargar_escenario_invalido_conserva_escenario: OK")
 
 
 def test_cargar_escenario_se_puede_deshacer():
-    # Escenario A: estado actual
+    # Scenario A: current state
     escenario = Escenario(
         24,
         80,
@@ -767,7 +767,7 @@ def test_cargar_escenario_se_puede_deshacer():
 
     estado_original = escenario.guardarEscenario()
 
-    # Escenario B: estado que vamos a cargar
+    # Scenario B: state to load
     otro = Escenario(
         48,
         40,
@@ -782,15 +782,15 @@ def test_cargar_escenario_se_puede_deshacer():
 
     print(datos_nuevo_estado)
 
-    # Cargamos B sobre A
+    # Load B over A
     escenario.cargarEscenario(datos_nuevo_estado)
 
     assert escenario.guardarEscenario() == datos_nuevo_estado
 
-    # Deshacemos la carga
+    # Undo the load
     assert escenario.deshacer() is True
 
-    # Debe volver exactamente a A
+    # The scenario must return exactly to A.
     assert escenario.guardarEscenario() == estado_original
 test_cargar_escenario_se_puede_deshacer()
 print("test cargar_escenario_se_puede_deshacer: OK")

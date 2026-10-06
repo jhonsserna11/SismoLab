@@ -3,10 +3,12 @@ from .Nodo import Key
 from src.domain.Evento import Evento
 from typing import Optional
 
+# Implements an unbalanced binary search tree for organizing events.
 class Bst:
     def __init__(self):
         self.raiz = None
         
+    # Inserts an event using its key to preserve binary search tree ordering.
     def insertar(self, dato: Key, evento:Evento) -> None:
         
         if self.raiz is None:
@@ -16,18 +18,19 @@ class Bst:
     
     def _insertar(self, nodo: Nodo, dato: Key, evento:Evento) -> None:
         if dato < nodo.key:
-            # Insertar en el subárbol izquierdo
+            # Insert into the left subtree.
             if nodo.izq is None:
                 nodo.izq = Nodo(key=dato, evento=evento)
             else:
                 self._insertar(nodo.izq, dato, evento)
         elif dato > nodo.key:
-            # Insertar en el subárbol derecho
+            # Insert into the right subtree.
             if nodo.der is None:
                 nodo.der = Nodo(key=dato, evento=evento)
             else:
                 self._insertar(nodo.der, dato, evento)
         
+    # Looks up a key and returns its node, or None if it is absent.
     def buscar(self, dato: Key) -> Optional[Nodo]:
     
         if self.raiz is None:
@@ -40,15 +43,16 @@ class Bst:
             return None
         
         if dato < nodo.key:
-            # Buscar en el subárbol izquierdo
+            # Search the left subtree.
             return self._buscar(nodo.izq, dato)
         elif dato > nodo.key:
-            # Buscar en el subárbol derecho
+            # Search the right subtree.
             return self._buscar(nodo.der, dato)
         else:
-            # Nodo encontrado
+            # Node found.
             return nodo
 
+    # Looks up a key and reports how many nodes were examined.
     def buscarConConteo(self, dato: Key):
         nodo = self.raiz
         comparaciones = 0
@@ -64,6 +68,7 @@ class Bst:
 
         return None, comparaciones
     
+    # Removes a key while preserving the binary search tree ordering.
     def eliminar(self, dato: Key) -> None:
         if self.raiz is None:
             return
@@ -78,21 +83,21 @@ class Bst:
         elif dato > nodo.key:
             nodo.der = self._eliminar(nodo.der, dato)
         else:
-            # Nodo encontrado
-            # Caso 1: Nodo hoja
+            # Node found.
+            # Case 1: The node is a leaf.
             if nodo.izq is None and nodo.der is None:
                 return None
             
-            # Caso 2: Nodo con solo hijo derecho
+            # Case 2: The node has only a right child.
             if nodo.izq is None:
                 return nodo.der
             
-            # Caso 3: Nodo con solo hijo izquierdo
+            # Case 3: The node has only a left child.
             if nodo.der is None:
                 return nodo.izq
             
-            # Caso 4: Nodo con dos hijos
-            # Buscar el mínimo en el subárbol derecho (sucesor inorden)
+            # Case 4: The node has two children.
+            # Find the in-order successor: the minimum node in the right subtree.
             nodo_minimo = self._encontrar_minimo(nodo.der)
             nodo.key = nodo_minimo.key
             nodo.evento = nodo_minimo.evento
@@ -100,6 +105,7 @@ class Bst:
         
         return nodo
     
+    # Finds the in-order successor by following left-child links.
     def _encontrar_minimo(self, nodo: Nodo) -> Nodo:
         actual = nodo
         while actual.izq is not None:
@@ -173,16 +179,12 @@ class Bst:
         if nodo is None:
             return -1
         
-        # Calcular la altura del subárbol izquierdo
         altura_izq = self._altura(nodo.izq)
         
-        # Calcular la altura del subárbol derecho
         altura_der = self._altura(nodo.der)
         
-        # La altura del nodo es 1 + el máximo de las alturas de sus subárboles
         altura_nodo = 1 + max(altura_izq, altura_der)
         
-        # Actualizar la altura del nodo
         nodo.altura = altura_nodo
         
         return altura_nodo
@@ -200,7 +202,6 @@ class Bst:
         if nodo is None:
             return 0
         
-        # Contar el nodo actual + cantidad de nodos en subárbol izquierdo + cantidad de nodos en subárbol derecho
         cantidad_izq = self._cantidad_nodos(nodo.izq)
         cantidad_der = self._cantidad_nodos(nodo.der)
         
@@ -222,16 +223,13 @@ class Bst:
         if nodo is None:
             return -1
         
-        # Si encontramos el nodo, retornamos su profundidad
         if dato == nodo.key:
             return nivel
         
-        # Buscar en el subárbol izquierdo
         resultado_izq = self._profundidad(nodo.izq, dato, nivel + 1)
         if resultado_izq != -1:
             return resultado_izq
         
-        # Buscar en el subárbol derecho
         resultado_der = self._profundidad(nodo.der, dato, nivel + 1)
         return resultado_der
 

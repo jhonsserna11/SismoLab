@@ -16,8 +16,10 @@ from collections import deque
 import json
 from pathlib import Path
 
+# Validates, serializes, and restores scenarios and tree structures from JSON data.
 class Persistencia:
 
+    # Validates event records and inserts them to rebuild the AVL and BST.
     def cargarInserciones(self, datos, zonas, estaciones):
         if not isinstance(datos, dict):
             raise ValueError("El archivo debe contener un objeto JSON.")
@@ -106,10 +108,8 @@ class Persistencia:
                 evento.id
             )
 
-            # La carga por inserciones exige AVL balanceado.
             avl.insertar(key, evento, False)
 
-            # BST sin balanceo.
             bst.insertar(key, evento)
 
         return {
@@ -125,6 +125,7 @@ class Persistencia:
 
         return False
 
+    # Serializes the root, structural metrics, node data, and child links of a tree.
     def _serializarArbol(self, arbol):
         arbol.altura()
         nodos = []
@@ -190,6 +191,7 @@ class Persistencia:
             "nodos": nodos
         }
     
+    # Parses a timezone-aware ISO 8601 timestamp and normalizes it to UTC.
     def _fechaDesdeJson(self, valor):
         if not isinstance(valor, str):
             raise ValueError("La fecha debe ser una cadena.")
@@ -208,6 +210,7 @@ class Persistencia:
 
         return fecha.astimezone(timezone.utc)
 
+    # Parses the saved scenario clock and normalizes it to UTC.
     def _fechaDesdeJsonReloj(self, valor):
         if not isinstance(valor, str):
             raise ValueError("El parametro reloj no es valido.")
@@ -228,6 +231,7 @@ class Persistencia:
 
 
 
+    # Validates serialized nodes and links before rebuilding the requested tree topology.
     def cargarTopologia(self, datos, zonas, estaciones):
         if not isinstance(datos, dict):
             raise ValueError("El archivo debe contener un objeto JSON.")
@@ -268,6 +272,7 @@ class Persistencia:
         }
 
 
+    # Validates a serialized node and constructs its key, event, and node objects.
     def _validarNodo(self, datos_nodo, ids: set, nodos: dict, zonas, ids_estaciones=None):
         if not isinstance(datos_nodo, dict):
             raise ValueError("Cada elemento de 'nodos' debe ser un objeto.")
@@ -370,6 +375,7 @@ class Persistencia:
         nodo = Nodo(key, evento)
         nodos[id_nodo] = nodo
 
+    # Links the nodes and rejects missing references or nodes with multiple parents.
     def _conectarNodos(self, nodos_datos: list, nodos: dict):
         nodos_con_padre = set()
 
@@ -403,6 +409,7 @@ class Persistencia:
                 nodos_con_padre.add(id_derecha)
                 nodo.der = nodos[id_derecha]
 
+    # Checks for one root, cycles, and nodes disconnected from the root.
     def _validarConectividad(self, nodos: dict, raiz_id):
 
         if not nodos:
@@ -457,6 +464,7 @@ class Persistencia:
             desconectados = set(nodos.keys()) - visitados
             raise ValueError(f"Existen nodos desconectados de la raíz: {sorted(desconectados)}.")
 
+    # Checks that every key respects the tree's global search-order bounds.
     def _validarOrdenGlobal(self, nodos: dict, raiz_id):
         def _validar(nodo, limite_inferior, limite_superior):
 
@@ -478,6 +486,7 @@ class Persistencia:
         if raiz_id is not None:
             _validar(nodos[raiz_id], None, None)
 
+    # Recomputes saved heights and balance factors and determines whether the tree is balanced.
     def _validarAlturasYFactores( self, nodos: dict, nodos_datos: list, raiz_id):
         datos_por_id = {}
 
@@ -499,8 +508,8 @@ class Persistencia:
         def _calcular(nodo):
 
             if nodo is None:
-                # entrega -1 porque es hoja y sus hijos none le retornan -1, para que la altura calculada de la hoja sea 0 (-1 -(-1) = 0)
-                # entrega True porque si esta vacio esta balanceado y si es una hoja supone que desde la hoja es balanceado y se manda el True al escenario superior de la pila de recursion
+                # Returns -1 for a missing child, so a leaf has a calculated height of 0.
+                # An empty subtree is balanced; this result propagates upward until an unbalanced subtree is found.
                 return -1, True
 
             altura_izquierda, balanceado_izquierda = _calcular(nodo.izq)
@@ -578,6 +587,7 @@ class Persistencia:
             for reporte in cola
         ]
     
+    # Serializes scenario configuration, trees, history, stations, zones, reports, and metrics.
     def guardarEscenario(self, escenario):
         return {
             "tipo_carga": "escenario",
@@ -613,8 +623,8 @@ class Persistencia:
             }
         }
 
+    # Checks the input type and delegates validation and scenario reconstruction.
     def cargarEscenario(self, datos):
-        # Validacion general JSON
         if not isinstance(datos, dict):
             raise ValueError("El archivo debe contener un objeto JSON.")
 
@@ -623,8 +633,8 @@ class Persistencia:
         resultado = self._cargarEscenario(datos)
         return resultado
 
+    # Validates and reconstructs all data and structures that make up a scenario.
     def _cargarEscenario(self, datos):
-        # Validacion clave Configuracion
         configuracion = datos.get("configuracion")
 
         if not isinstance(configuracion, dict):
@@ -654,7 +664,6 @@ class Persistencia:
             raise ValueError("El parametro modo_estres no es válido - debe ser booleano ( True -> modo_estres activado - False -> modo_estres desactivado (modo normal) )")
         reloj = self._fechaDesdeJsonReloj(reloj)
 
-        # Validacion inicial arboles
         datos_avl = datos.get("avl")
         datos_bst = datos.get("bst")
 
@@ -670,7 +679,6 @@ class Persistencia:
         if set(datos_bst.keys()) != campos_arbol:
             raise ValueError("El arbol BST deben tener todos sus datos: id de la raiz, altura del arbol, profundidad maxima, cantidad de hojas y lista de nodos")
             
-        # Validacion de clave Zonas
         zonas_datos = datos.get("zonas")
         if not isinstance(zonas_datos, list):
             raise ValueError("El campo 'zonas' debe ser una lista.")
@@ -717,24 +725,17 @@ class Persistencia:
             raise ValueError("El campo 'nodos' del árbol AVL debe ser una lista de nodos.")
 
         for nodo_avl in nodos_datos_avl:
-            # Validar cada nodo
             self._validarNodo(nodo_avl, ids_avl, nodosAvl, zonas_temporales)
 
-        # realizar conexiones entre los nodos
         self._conectarNodos(nodos_datos_avl, nodosAvl)
-        # validar conexiones del arbol
         self._validarConectividad(nodosAvl, raiz_avl)
-        # validar topologia y orden del arbol
         self._validarOrdenGlobal(nodosAvl, raiz_avl)
-        # Valida alturas y factores - dice si el arbol está balanceado o no
         balanceado_avl = self._validarAlturasYFactores(nodosAvl, nodos_datos_avl, raiz_avl)
 
-        # crea objeto Avl y referencia la raiz
         nuevo_avl = Avl()
         if raiz_avl is not None:
             nuevo_avl.raiz = nodosAvl[raiz_avl]
 
-        # valida parametros generales calculados del AVL con los ingresados en JSON
         if datos_avl["altura"] != nuevo_avl.altura():
             raise ValueError("La altura del AVL no coincide con la altura calculada.")
 
@@ -750,25 +751,18 @@ class Persistencia:
             raise ValueError("El campo 'nodos' del árbol BST debe ser una lista de nodos.")
 
         for nodo_bst in nodos_datos_bst:
-            #valida cada nodo
             self._validarNodo(nodo_bst, ids_bst, nodosBst, zonas_temporales)
 
-        # realiza conexiones entre nodos
         self._conectarNodos(nodos_datos_bst, nodosBst)
-        # validar conexiones del arbol
         self._validarConectividad(nodosBst, raiz_bst)
-        # validar topologia y orden del arbol
         self._validarOrdenGlobal(nodosBst, raiz_bst)
 
-        #validar alturas de los nodos del arbol BST
         self._validarAlturasBST(nodosBst, nodos_datos_bst, raiz_bst)
 
-        #crea objeto Bst y añade la raiz
         nuevo_bst = Bst()
         if raiz_bst is not None:
             nuevo_bst.raiz = nodosBst[raiz_bst]
 
-        # valida parametros generales calculados del BST con los ingresados en JSON
         if datos_bst["altura"] != nuevo_bst.altura():
             raise ValueError(
                 "La altura del BST no coincide con la altura calculada."
@@ -867,6 +861,7 @@ class Persistencia:
         
 
 
+    # Validates and reconstructs archived events while rejecting invalid or duplicate identifiers.
     def _validarHistorico(self, historico_datos, historico, ids_historico):
         for datos_evento in historico_datos:
             if not isinstance(datos_evento, dict):
@@ -991,6 +986,7 @@ class Persistencia:
 
             estaciones.append(estacion)
 
+    # Validates serialized reports and rebuilds the pending-report queue.
     def _validarReportes(self, cola_datos, cola_reportes, ids_estaciones):
         for datos_reporte in cola_datos:
             if not isinstance(datos_reporte, dict):
@@ -1098,6 +1094,7 @@ class Persistencia:
             metricas_avl[nombre] = valor
         return metricas_avl
 
+    # Ensures the AVL and BST contain matching active events and keys.
     def _validarMismosEventosyMismaKey(self, ids_activos_avl, nodosAvl, nodosBst):
         for id_evento in ids_activos_avl:
             evento_avl = nodosAvl[id_evento].evento

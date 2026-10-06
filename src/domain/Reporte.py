@@ -1,3 +1,4 @@
+# Represents a reported event revision and its associated data.
 class Reporte:
     def __init__(self, id_evento, nRevision, magnitud, profundidad, zonax, zonay, fecha, estacion):
         self.id_evento = id_evento

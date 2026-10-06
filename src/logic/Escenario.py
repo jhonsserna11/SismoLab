@@ -14,7 +14,9 @@ from decimal import Decimal
 from decimal import Decimal, InvalidOperation
 from copy import deepcopy
 
+# Coordinates events, reports, trees, zones, stations, and operations in the seismic scenario.
 class Escenario:
+    # Initializes the trees, collections, scenario parameters, metrics, clock, and report queue.
     def __init__(self, w, r, l, t, reloj):
         self.avl = Avl()
         self.bst = Bst()
@@ -25,10 +27,10 @@ class Escenario:
         self.historico: list[Evento] = []
         self.eliminados = set()
 
-        self.W = w #48 
-        self.R = r #40
-        self.L = l #3
-        self.T = t #72
+        self.W = w
+        self.R = r
+        self.L = l
+        self.T = t
 
         self.modo_estres = False
         self.reloj = reloj
@@ -85,6 +87,7 @@ class Escenario:
         self.bst.insertar(key, evento)
 
 
+    # Rejects identifiers already active, archived, or previously deleted.
     def _IdUnica(self, id)->bool:
         if type(id) is not int:
             raise ValueError("el id ingresado debe ser numero entero")
@@ -126,6 +129,7 @@ class Escenario:
         self.reloj += timedelta(hours=horas)
 
 
+    # Searches active events for association candidates and tracks AVL nodes examined.
     def _buscarCandidatos(self, eventoB):
         candidatos = []
 
@@ -156,6 +160,7 @@ class Escenario:
             if eventoA.esCandidato(eventoB, self.W, self.R):
                 candidatos.append(eventoA)
 
+    # Selects the best candidate by magnitude, time difference, then event identifier.
     def _seleccionarCandidato(self, candidatos, eventoB):
         if not candidatos:
             return None
@@ -184,6 +189,7 @@ class Escenario:
 
         return mejor
 
+    # Combines active and archived candidates and selects the associated event.
     def _obtenerAsociaciones(self, eventoB, nodos_examinados_previos=0):
         candidatos, nodos_examinados = self._buscarCandidatos(eventoB)
 
@@ -292,6 +298,7 @@ class Escenario:
             evento.estaciones.append(reporte.estacion)
         return {"estado": "confirmado", "accion": "confirmar"}
 
+    # Applies a newer report revision and keeps the AVL and BST entries synchronized.
     def _actualizarEventoReporte(self, nodo: Nodo, reporte):
         evento = nodo.evento
         id_original = evento.id
@@ -360,6 +367,7 @@ class Escenario:
             self.metricas["reportes_descartados"] += 1
             return {"estado": "desconocido", "accion": "rechazar"}
 
+    # Reactivates an archived event when a newer report revision arrives.
     def _reactivarEventoArchivado(self, reporte):
         for evento in self.historico:
             if evento.id == reporte.id_evento:
@@ -383,6 +391,7 @@ class Escenario:
                 return {"estado": "reactivado", "accion": "reactivar"}
         return {"estado": "archivado", "accion": "descartar"}
 
+    # Routes a report to rejection, confirmation, update, reactivation, or event registration.
     def procesarReporte(self, reporte):
         if not self._datos_validos_reporte(reporte):
             self.metricas["reportes_descartados"] += 1
@@ -433,6 +442,7 @@ class Escenario:
         self._crearEvento(evento_nuevo)
         return {"estado": "registrado", "accion": "registrar"}
 
+    # Processes the oldest queued report and records the resulting AVL rotation metrics.
     def procesarSiguienteReporte(self):
         if not self.cola_reportes:
             return None
@@ -481,8 +491,8 @@ class Escenario:
             "rotaciones": rotaciones
         }
 
-# dhdhdhdhdh
 
+    # Checks AVL integrity and consistency of event identifiers, priorities, and archived events.
     def verificarEstructura(self):
         reporte = self.avl.verificarEstructura(self.modo_estres)
 
@@ -654,6 +664,7 @@ class Escenario:
     def _estadoAsociacion(self, evento, ids_activos):
         return "activo" if evento.id in ids_activos else "archivado"
 
+    # Finds an event's candidates, selected reference, and events that reference it.
     def consultarAsociaciones(self, idEvento: int):
         nodos_activos, examinados = self.avl.nodosConConteo()
         eventos_activos = [nodo.evento for nodo in nodos_activos]
@@ -810,6 +821,7 @@ class Escenario:
             raise ValueError("El id de evento ingresado no existe")
         else:
             return self._corregirEvento(idEvento, nodo, magnitud, profundidad, zonax, zonay, fecha, estaciones)
+    # Creates a new event revision and synchronizes its key in the AVL and BST.
     def _corregirEvento(self, idEvento, nodo:Nodo, magnitud=None, profundidad=None, zonax=None, zonay=None, fecha=None, estaciones=None):
         self._guardar_estado()
 
@@ -897,6 +909,7 @@ class Escenario:
     
 
     
+    # Ranks archivable branches by size, depth, and identifier to retain the preferred candidate.
     def _esMejorCandidato(self, candidatoA, candidatoB):
         if candidatoA is None:
             return candidatoB
@@ -924,6 +937,7 @@ class Escenario:
 
     def obtenerRamaArchivable(self):
         return self._obtenerRamaArchivable(self.avl.raiz)
+    # Recursively finds the best subtree whose events meet the archiving rules.
     def _obtenerRamaArchivable(self, subraiz:Nodo):
         if self.avl.raiz is None:
             return None
@@ -985,6 +999,7 @@ class Escenario:
         nodos.extend(self._obtenerNodosSubarbol(subraiz.der))
         return nodos
 
+    # Moves a subtree's events from both trees to history and updates archive metrics.
     def archivarRama(self, subraiz:Nodo):
         if subraiz is None:
             raise ValueError("No hay rama elegible para archivar")
@@ -1000,6 +1015,7 @@ class Escenario:
         self.metricas["archivos_masivos"] += 1
 
         
+    # Restores AVL balance and rolls back if structural validation fails.
     def recuperarArbol(self):
         self._guardar_estado()
 
@@ -1120,6 +1136,7 @@ class Escenario:
         self.metricas = estado["metricas"]
         self.cola_reportes = estado["cola_reportes"]
 
+    # Deep-copies the current scenario state onto the undo stack.
     def _guardar_estado(self):
         estado = {
             "avl": deepcopy(self.avl),

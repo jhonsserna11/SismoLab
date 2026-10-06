@@ -22,7 +22,7 @@ def crear_estado_inicial():
         reloj=reloj
     )
 
-    # Zonas
+    # Zones
     zonas = [
         Zona(1, "Zona poblada 1", 0.0, 500.0, 0.0, 500.0, True),
         Zona(2, "Zona poblada 2", 501.0, 1000.0, 501.0, 1000.0, True),
@@ -32,7 +32,7 @@ def crear_estado_inicial():
 
     escenario.zonas.extend(zonas)
 
-    # Estaciones
+    # Stations
     estaciones = [
         Estacion("EST-1", "Manizales"),
         Estacion("EST-2", "Medellín"),
@@ -42,7 +42,7 @@ def crear_estado_inicial():
 
     escenario.estaciones.extend(estaciones)
 
-    # Eventos iniciales
+    # Initial events
     escenario.crearEvento(
         100,
         Decimal("5.0"),

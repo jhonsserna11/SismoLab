@@ -103,7 +103,7 @@ def test_obtener_rama_archivable_raiz_no_elegible():
         1, ["EST-01"]
     )
 
-    # Magnitud 5.0 => prioridad 2
+    # Magnitude 5.0 => priority 2
     evento3 = Evento(
         3, 5.0, 100.0, 100.0, 100.0,
         datetime(2026, 9, 20, 12, 0, tzinfo=timezone.utc),
@@ -126,9 +126,9 @@ print("test obtener_rama_archivable_raiz_no_elegible: OK")
 def test_obtener_rama_archivable_arbol_10_eventos():
     escenario = crear_escenario()
 
-    # Los eventos 5, 6 y 7 son antiguos (> 72 horas).
-    # Los demás tienen exactamente 72 horas y por tanto NO cumplen,
-    # ya que la condición es estrictamente mayor que T.
+    # Events 5, 6, and 7 are old (> 72 hours).
+    # The others are exactly 72 hours old and therefore do NOT qualify,
+    # because the condition requires strictly more than T hours.
 
     fechas = [
         datetime(2026, 9, 20, 12, 0, tzinfo=timezone.utc),  # 1 -> 72 h ❌
@@ -169,18 +169,18 @@ print("test obtener_rama_archivable_arbol_10_eventos: OK")
 def test_obtener_rama_archivable_multiples_candidatos():
     escenario = crear_escenario()
 
-    # Todos los eventos tienen la misma magnitud y profundidad,
-    # por lo que sus claves mantienen el orden por ID.
+    # All events have the same magnitude and depth,
+    # so their keys remain ordered by ID.
     #
-    # Solo las fechas determinan si son elegibles.
+    # Only the timestamps determine eligibility.
 
     fecha_no_elegible = datetime(
         2026, 9, 20, 12, 0, tzinfo=timezone.utc
-    )  # exactamente 72 horas
+    )  # exactly 72 hours
 
     fecha_elegible = datetime(
         2026, 9, 20, 10, 0, tzinfo=timezone.utc
-    )  # 74 horas
+    )  # 74 hours
 
     fechas = {
         1: fecha_no_elegible,
@@ -188,21 +188,21 @@ def test_obtener_rama_archivable_multiples_candidatos():
         3: fecha_no_elegible,
         4: fecha_no_elegible,
 
-        # Candidato 1
+        # Candidate 1
         5: fecha_elegible,
         6: fecha_elegible,
         7: fecha_elegible,
 
         8: fecha_no_elegible,
 
-        # Candidato 2
+        # Candidate 2
         9: fecha_elegible,
         10: fecha_elegible,
         11: fecha_elegible,
 
         12: fecha_no_elegible,
 
-        # Candidato 3
+        # Candidate 3
         13: fecha_elegible,
         14: fecha_elegible,
         15: fecha_elegible,
@@ -227,14 +227,14 @@ def test_obtener_rama_archivable_multiples_candidatos():
     assert resultado["elegible"] is False
     assert resultado["mejor"] is not None
 
-    # Hay tres candidatos de tamaño 3:
+    # There are three candidates of size 3:
     #
     #     6 -> {5, 6, 7}
     #    10 -> {9, 10, 11}
     #    14 -> {13, 14, 15}
     #
-    # Tienen la misma cantidad y profundidad.
-    # Gana el de mayor ID: 14.
+    # They have the same size and depth.
+    # The candidate with the highest ID wins: 14.
 
     assert resultado["mejor"]["cantidad"] == 3
     assert resultado["mejor"]["nodo"].key.id_key == 14
@@ -356,7 +356,7 @@ def test_archivar_subarbol_con_reorganizacion():
 
         escenario._crearEvento(evento)
 
-    # Verificamos que la estructura inicial sea la esperada
+    # Verify that the initial structure is as expected.
     assert escenario.avl.raiz.key.id_key == 8
     assert escenario.avl.raiz.izq.key.id_key == 4
     assert escenario.avl.raiz.der.key.id_key == 12
@@ -366,7 +366,7 @@ def test_archivar_subarbol_con_reorganizacion():
 
     resultado = escenario.obtenerRamaArchivable()
 
-    # La rama elegida debe ser el subárbol cuya raíz es 4
+    # The selected branch should be the subtree rooted at 4.
     assert resultado["mejor"] is not None
     assert resultado["mejor"]["nodo"].key.id_key == 4
     assert resultado["mejor"]["cantidad"] == 3
@@ -379,30 +379,30 @@ def test_archivar_subarbol_con_reorganizacion():
 
     escenario.archivarRama(rama)
 
-    # EXACTAMENTE estos tres eventos debieron archivarse
+    # Exactly these three events should have been archived.
     ids_historico = sorted(
         evento.id for evento in escenario.historico
     )
 
     assert ids_historico == [2, 4, 6]
 
-    # Estos eventos NO pertenecían a la rama seleccionada
-    # y deben seguir activos.
+    # These events were NOT part of the selected branch
+    # and must remain active.
     assert escenario.avl.encontrarNodo(8) is not None
     assert escenario.avl.encontrarNodo(12) is not None
     assert escenario.avl.encontrarNodo(14) is not None
 
-    # Los eventos archivados ya no deben estar activos.
+    # Archived events must no longer be active.
     assert escenario.avl.encontrarNodo(2) is None
     assert escenario.avl.encontrarNodo(4) is None
     assert escenario.avl.encontrarNodo(6) is None
 
-    # Los eventos archivados tampoco deben estar en el BST
+    # Archived events must also be absent from the BST.
     assert escenario.bst.buscar(claves[2]) is None
     assert escenario.bst.buscar(claves[4]) is None
     assert escenario.bst.buscar(claves[6]) is None
 
-    # Los eventos que permanecieron activos deben seguir en el BST
+    # Events that remained active must still be in the BST.
     assert escenario.bst.buscar(claves[8]) is not None
     assert escenario.bst.buscar(claves[12]) is not None
     assert escenario.bst.buscar(claves[14]) is not None

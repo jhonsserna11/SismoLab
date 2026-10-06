@@ -213,7 +213,6 @@ class MapaSismologico:
                 x + radio,
                 y + radio,
                 fill=color,
-                #outline="black",
                 width=1,
                 tags=(tag,)
             )

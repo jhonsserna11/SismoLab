@@ -101,7 +101,7 @@ class PantallaConsultas:
         )
 
         # =====================================================
-        # PRIMEROS EVENTOS PENDIENTES
+        # TOP PENDING EVENTS
         # =====================================================
 
         tarjeta_pendientes = tk.Frame(
@@ -209,8 +209,8 @@ class PantallaConsultas:
 
         self.mostrar_estado("Consultas listas")
 
-                # =====================================================
-        # EVENTOS POR INTERVALO DE MAGNITUD
+        # =====================================================
+        # EVENTS WITHIN A MAGNITUDE RANGE
         # =====================================================
 
         tarjeta_magnitud = tk.Frame(

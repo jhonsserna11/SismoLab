@@ -183,7 +183,7 @@ class PantallaArboles:
             )
             return panel
 
-        # Desplazamiento tipo Google Maps
+        # Google Maps-style panning.
         canvas.bind(
             "<ButtonPress-1>",
             self.iniciar_desplazamiento

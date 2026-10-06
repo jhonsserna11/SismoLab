@@ -395,21 +395,21 @@ def test_recuperacion_arbol_desbalanceado():
         key = Key(1, 2, id_evento)
         arbol.insertar(key, crear_evento(id_evento), True)
 
-    # El árbol debe estar desbalanceado antes de recuperar
+    # The tree must be unbalanced before recovery.
     assert arbol.altura() == 4
     assert arbol._factor_balance(arbol.raiz) == -4
 
-    # Recuperación
+    # Recovery.
     arbol.raiz = arbol._recuperar(arbol.raiz)
 
-    # La nueva raíz debe ser 20
+    # The new root should be 20.
     assert arbol.raiz.key.id_key == 20
     assert arbol.raiz.altura == 3
 
-    # El árbol debe conservar todos los nodos
+    # The tree must retain all nodes.
     assert arbol.peso() == 9
 
-    # Debe conservar el orden BST
+    # BST ordering must be preserved.
     claves = []
 
     def guardar_inorder(nodo):
@@ -423,7 +423,7 @@ def test_recuperacion_arbol_desbalanceado():
 
     assert claves == [10, 15, 20, 22, 25, 27, 30, 40, 50]
 
-    # Verificar que el árbol recuperado cumple AVL
+    # Verify that the recovered tree satisfies AVL invariants.
     def verificar_avl(nodo):
         if nodo is None:
             return

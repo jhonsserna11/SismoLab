@@ -5,6 +5,7 @@ from src.domain.Evento import Evento
 from collections import deque
 from typing import Optional
 
+# Implements a self-balancing AVL tree with event queries and structural metrics.
 class Avl:
     def __init__(self):
         self.raiz = None
@@ -17,7 +18,7 @@ class Avl:
             "giros_derecha": 0
         }
 
-    #Metodo insertar: agrega un nuevo nodo al árbol
+    # Inserts a key, updates subtree heights, and rebalances unless stress mode is enabled.
     def insertar(self, key:Key, evento:Evento, modo_estres:bool)-> None:
         self.raiz = self._insertar(self.raiz, key, evento, modo_estres)
     def _insertar(self, nodo: Optional[Nodo], key: Key, evento:Evento, modo_estres:bool) -> Nodo:
@@ -64,7 +65,8 @@ class Avl:
         if nodo is None:
             return 0
         return (self._obtenerAltura(nodo.izq) - self._obtenerAltura(nodo.der))
-    #dfbl<sdfhdsbfjh
+
+    # Audits ordering, heights, balance, references, and consistency between keys and events.
     def verificarEstructura(self, modo_estres: bool = False) -> dict:
         registros = []
         visitados = {}
@@ -183,13 +185,14 @@ class Avl:
             "nodos_visitados": len(visitados),
             "eventos_inconsistentes": inconsistentes
         }
-    #akfbkadhfkbhaj
+
     def obtenerDatosNodo(self, nodo:Nodo):
         altura = self._obtenerAltura(nodo)
         factor = self._factor_balance(nodo)
 
         return {"altura": altura, "factor": factor}
 
+    # Restores local AVL balance with a right rotation.
     def _rotacion_derecha(self, y: Nodo) -> Nodo:
         self.metricas["giros_derecha"] += 1
         x = y.izq
@@ -203,6 +206,7 @@ class Avl:
 
         return x
 
+    # Restores local AVL balance with a left rotation.
     def _rotacion_izquierda(self, x: Nodo) -> Nodo:
         self.metricas["giros_izquierda"] += 1
         y = x.der
@@ -216,7 +220,6 @@ class Avl:
 
         return y
 
-     #Método inOrder: imprime el arbol de menor a mayor keys
     def inOrder(self):
        recorrido = []
        self._inOrder(self.raiz, recorrido)
@@ -312,6 +315,7 @@ class Avl:
 
         return None, nodos_examinados
 
+    # Prunes subtrees outside the requested key range and counts examined nodes.
     def buscarRangoConConteo(self, limite_inferior: Key, limite_superior: Key):
         resultados = []
         nodos_examinados = 0
@@ -324,17 +328,12 @@ class Avl:
 
             nodos_examinados += 1
 
-            # Si el nodo está por encima del límite inferior,
-            # su subárbol izquierdo todavía puede contener resultados.
             if nodo.key > limite_inferior:
                 recorrer(nodo.izq)
 
-            # Verifica si el nodo está dentro del intervalo.
             if not (nodo.key < limite_inferior) and not (nodo.key > limite_superior):
                 resultados.append(nodo)
 
-            # Si el nodo está por debajo del límite superior,
-            # su subárbol derecho todavía puede contener resultados.
             if nodo.key < limite_superior:
                 recorrer(nodo.der)
 
@@ -416,6 +415,7 @@ class Avl:
         return actual
 
 
+    # Removes a key and rebalances the affected path unless stress mode is enabled.
     def eliminar(self, key: Key, modo_estres:bool) -> None:
         self.raiz = self._eliminar(self.raiz, key, modo_estres)
 
@@ -430,19 +430,15 @@ class Avl:
             raiz.der = self._eliminar(raiz.der, key, modo_estres)
 
         else:
-            # Nodo hoja
             if raiz.esHoja():
                 return None
 
-            # Solo tiene hijo derecho
             if raiz.izq is None:
                 return raiz.der
 
-            # Solo tiene hijo izquierdo
             if raiz.der is None:
                 return raiz.izq
 
-            # Tiene dos hijos
             sucesor = self._buscar_minimo(
                 raiz.der
             )
@@ -458,6 +454,7 @@ class Avl:
             return self._balancear(raiz)
         return raiz
 
+    # Selects the AVL rotation required to restore the balance factor constraints.
     def _balancear(self, raiz):
         balance = self._factor_balance(raiz)
         
@@ -477,6 +474,7 @@ class Avl:
             return self._rotacion_izquierda(raiz)
         return raiz
 
+    # Rebalances the complete tree to restore AVL invariants.
     def recuperar(self):
         self.raiz = self._recuperar(self.raiz)
     def _recuperar(self, subraiz:Nodo):

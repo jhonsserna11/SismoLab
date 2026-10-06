@@ -121,7 +121,7 @@ def test_metricas_acumulativas():
     )
 
     # --------------------------------
-    # Corrección manual
+    # Manual correction.
     # --------------------------------
 
     escenario.corregirEvento(
@@ -132,7 +132,7 @@ def test_metricas_acumulativas():
     assert escenario.metricas["correcciones_aceptadas"] == 1
 
     # --------------------------------
-    # Reporte con revisión mayor
+    # Report with a newer revision.
     # --------------------------------
 
     reporte = Reporte(
@@ -152,7 +152,7 @@ def test_metricas_acumulativas():
     assert escenario.metricas["correcciones_aceptadas"] == 2
 
     # --------------------------------
-    # Reporte antiguo
+    # Older report
     # --------------------------------
 
     reporte_antiguo = Reporte(
@@ -171,8 +171,8 @@ def test_metricas_acumulativas():
     assert escenario.metricas["reportes_descartados"] == 1
 
     # --------------------------------
-    # Conflicto
-    # misma revisión, datos diferentes
+    # Conflict
+    # same revision, different data
     # --------------------------------
 
     reporte_conflicto = Reporte(
@@ -235,7 +235,7 @@ def test_limite_L_acceso_costoso():
 
     nodos_profundidad = escenario.avl.nodos_con_profundidad()
 
-    # El árbol debe alcanzar profundidad 3.
+    # The tree must reach depth 3.
     profundidades = {
         nodo.key.id_key: profundidad
         for nodo, profundidad in nodos_profundidad
@@ -251,12 +251,12 @@ def test_limite_L_acceso_costoso():
         for evento in costosos["eventos"]
     }
 
-    # Profundidad 2 == L -> NO es costoso.
+    # Depth 2 == L -> NOT considered costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 2:
             assert nodo.key.id_key not in ids_costosos
 
-    # Profundidad 3 > L -> SÍ es costoso.
+    # Depth 3 > L -> considered costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 3:
             assert nodo.key.id_key in ids_costosos
@@ -443,10 +443,10 @@ def test_metrica_correccion_al_reactivar_archivado():
         ["EST-01"]
     )
 
-    # Obtener el evento activo
+    # Get the active event.
     nodo = escenario.avl.encontrarNodo(1)
 
-    # Simular que el evento fue archivado
+    # Simulate archiving the event.
     escenario.historico.append(nodo.evento)
     escenario.avl.eliminar(nodo.key, escenario.modo_estres)
     escenario.bst.eliminar(nodo.key)
@@ -609,7 +609,7 @@ def test_metricas_acumulativas():
         ["EST-01"]
     )
 
-    # Corrección manual
+    # Manual correction.
     escenario.corregirEvento(
         1,
         magnitud=4.2
@@ -617,7 +617,7 @@ def test_metricas_acumulativas():
 
     assert escenario.metricas["correcciones_aceptadas"] == 1
 
-    # Reporte con revisión mayor
+    # Report with a newer revision.
     reporte = Reporte(
         id_evento=1,
         magnitud=4.3,
@@ -634,7 +634,7 @@ def test_metricas_acumulativas():
     assert resultado["estado"] == "actualizado"
     assert escenario.metricas["correcciones_aceptadas"] == 2
 
-    # Reporte antiguo
+    # Older report
     reporte_antiguo = Reporte(
         id_evento=1,
         magnitud=4.3,
@@ -650,8 +650,8 @@ def test_metricas_acumulativas():
 
     assert escenario.metricas["reportes_descartados"] == 1
 
-    # Conflicto
-    # Misma revisión, pero datos diferentes
+    # Conflict
+    # Same revision, but different data.
     reporte_conflicto = Reporte(
         id_evento=1,
         magnitud=5.9,
@@ -719,7 +719,7 @@ def test_limite_L_acceso_costoso():
 
     nodos_profundidad = escenario.avl.nodos_con_profundidad()
 
-    # El árbol debe alcanzar profundidad 3.
+    # The tree must reach depth 3.
     profundidades = {
         nodo.key.id_key: profundidad
         for nodo, profundidad in nodos_profundidad
@@ -735,12 +735,12 @@ def test_limite_L_acceso_costoso():
         for evento in costosos["eventos"]
     }
 
-    # Profundidad 2 == L -> NO es costoso.
+    # Depth 2 == L -> NOT considered costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 2:
             assert nodo.key.id_key not in ids_costosos
 
-    # Profundidad 3 > L -> SÍ es costoso.
+    # Depth 3 > L -> considered costly.
     for nodo, profundidad in nodos_profundidad:
         if profundidad == 3:
             assert nodo.key.id_key in ids_costosos

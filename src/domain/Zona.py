@@ -1,9 +1,11 @@
 from decimal import Decimal
 
+# Defines a rectangular scenario region and provides boundary and population queries.
 class Zona:
     ESCENARIO_MIN = 0.0
     ESCENARIO_MAX = 1000.0
 
+    # Validates and normalizes the zone identifier, name, coordinate bounds, and population flag.
     def __init__(self, id_zona, nombre, x_min, x_max, y_min, y_max, poblada=False):
 
         if not isinstance(id_zona, (int, str)):
@@ -45,6 +47,7 @@ class Zona:
         self.y_max = y_max
         self.poblada = bool(poblada)
 
+    # Checks whether a point lies within the zone bounds, including their edges.
     def contiene(self, x, y):
 
         if isinstance(x, bool) or not isinstance(x, (int, float, Decimal)):

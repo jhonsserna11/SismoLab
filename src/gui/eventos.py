@@ -123,7 +123,7 @@ class PantallaEventos:
         )
 
         # =========================================================
-        # ACTIVOS
+        # ACTIVE
         # =========================================================
 
         self.crear_seccion(
@@ -137,7 +137,7 @@ class PantallaEventos:
         )
 
         # =========================================================
-        # HISTÓRICOS
+        # ARCHIVED
         # =========================================================
 
         eventos_historicos = list(self.escenario.historico)
@@ -153,7 +153,7 @@ class PantallaEventos:
         )
 
         # =========================================================
-        # ELIMINADOS
+        # DELETED
         # =========================================================
 
         eventos_eliminados = list(self.escenario.eliminados)
@@ -250,7 +250,7 @@ class PantallaEventos:
         for elemento in eventos:
 
             # -----------------------------------------------------
-            # EVENTOS ELIMINADOS
+            # DELETED EVENTS
             # -----------------------------------------------------
 
             if eliminados:
@@ -294,7 +294,7 @@ class PantallaEventos:
                 continue
 
             # -----------------------------------------------------
-            # EVENTOS ACTIVOS / HISTÓRICOS
+            # ACTIVE / HISTORICAL EVENTS
             # -----------------------------------------------------
 
             evento = elemento
@@ -303,8 +303,8 @@ class PantallaEventos:
             magnitud = getattr(evento, "magnitud", "-")
             estado = getattr(evento, "estado", "-")
 
-            # Para eventos históricos, la prioridad puede no estar
-            # directamente en el objeto; se obtiene de su clave si existe.
+            # For historical events, the priority may not be stored
+            # directly on the object; use its key if available.
             clave = self.obtener_clave_evento(evento)
 
             if clave is not None:
