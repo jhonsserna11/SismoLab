@@ -1,0 +1,128 @@
+{
+  "tipo_carga": "escenario",
+  "configuracion": {
+    "W": 48,
+    "R": 40,
+    "L": 3,
+    "T": 72,
+    "modo_estres": false,
+    "reloj": "2026-10-06T12:00:00+00:00"
+  },
+  "avl": {
+    "raiz": 201,
+    "altura": 0,
+    "profundidad_maxima": 0,
+    "hojas": 1,
+    "nodos": [
+      {
+        "id": 201,
+        "key": {
+          "prioridad": 2,
+          "magnitud": 4.8,
+          "id_key": 201
+        },
+        "evento": {
+          "id": 201,
+          "magnitud": 4.8,
+          "profundidad": 70.0,
+          "zonax": 200.0,
+          "zonay": 200.0,
+          "fechaHora": "2026-10-06T11:00:00+00:00",
+          "revision": 1,
+          "estaciones": [
+            "STA-01"
+          ],
+          "estado": "Pendiente"
+        },
+        "altura": 0,
+        "izquierda": null,
+        "derecha": null,
+        "factor": 0
+      }
+    ]
+  },
+  "bst": {
+    "raiz": 201,
+    "altura": 0,
+    "profundidad_maxima": 0,
+    "hojas": 1,
+    "nodos": [
+      {
+        "id": 201,
+        "key": {
+          "prioridad": 2,
+          "magnitud": 4.8,
+          "id_key": 201
+        },
+        "evento": {
+          "id": 201,
+          "magnitud": 4.8,
+          "profundidad": 70.0,
+          "zonax": 200.0,
+          "zonay": 200.0,
+          "fechaHora": "2026-10-06T11:00:00+00:00",
+          "revision": 1,
+          "estaciones": [
+            "STA-01"
+          ],
+          "estado": "Pendiente"
+        },
+        "altura": 0,
+        "izquierda": null,
+        "derecha": null
+      }
+    ]
+  },
+  "historico": [],
+  "eliminados": [],
+  "estaciones": [
+    {
+      "id_estacion": "STA-01",
+      "nombre": "Station One"
+    },
+    {
+      "id_estacion": "STA-02",
+      "nombre": "Station Two"
+    }
+  ],
+  "zonas": [
+    {
+      "id_zona": 1,
+      "nombre": "Populated zone",
+      "x_min": 0.0,
+      "x_max": 500.0,
+      "y_min": 0.0,
+      "y_max": 500.0,
+      "poblada": true
+    }
+  ],
+  "cola_reportes": [
+    {
+      "id_evento": 201,
+      "nRevision": 1,
+      "magnitud": 4.8,
+      "profundidad": 70.0,
+      "zonax": 200.0,
+      "zonay": 200.0,
+      "fecha": "2026-10-06T11:00:00+00:00",
+      "estacion": "STA-01"
+    }
+  ],
+  "metricas": {
+    "escenario": {
+      "correcciones_aceptadas": 0,
+      "reportes_descartados": 0,
+      "conflictos": 0,
+      "archivos_masivos": 0,
+      "eventos_archivados": 0
+    },
+    "avl": {
+      "casos_LL": 0,
+      "casos_RR": 0,
+      "casos_LR": 0,
+      "casos_RL": 0,
+      "giros_izquierda": 0,
+      "giros_derecha": 0
+    }
+  }
+}

@@ -12,7 +12,7 @@
         "raiz": 100,
         "altura": 6,
         "profundidad_maxima": 6,
-        "hojas": 5,
+        "hojas": 4,
         "nodos": [
             {
                 "id": 100,
@@ -36,8 +36,8 @@
                 },
                 "altura": 6,
                 "izquierda": 700,
-                "derecha": 200,
-                "factor": 4
+                "derecha": 400,
+                "factor": 3
             },
             {
                 "id": 700,
@@ -259,9 +259,9 @@
                     ],
                     "estado": "Pendiente"
                 },
-                "altura": 1,
-                "izquierda": 400,
-                "derecha": 600,
+                "altura": 0,
+                "izquierda": null,
+                "derecha": null,
                 "factor": 0
             },
             {
@@ -284,10 +284,10 @@
                     ],
                     "estado": "Pendiente"
                 },
-                "altura": 0,
+                "altura": 2,
                 "izquierda": null,
-                "derecha": null,
-                "factor": 0
+                "derecha": 600,
+                "factor": -2
             },
             {
                 "id": 600,
@@ -309,10 +309,10 @@
                     ],
                     "estado": "Pendiente"
                 },
-                "altura": 0,
-                "izquierda": null,
+                "altura": 1,
+                "izquierda": 200,
                 "derecha": null,
-                "factor": 0
+                "factor": 1
             }
         ]
     },
